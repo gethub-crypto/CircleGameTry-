@@ -190,17 +190,54 @@
     }
 
     function loadPlayerData(uid) {
-      db.ref("leaderboard/" + uid).once("value").then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          score = data.score || 0;
-          clickPower = data.clickPower || 1;
-          updateCounterDisplay();
-          updateClickPowerBar();
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+
+      // Восстанавливаем состояние автокликера
+      if (data.autoclickActive && data.autoclickEndTime) {
+        const remainingTime = data.autoclickEndTime - Date.now();
+        if (remainingTime > 0) {
+          autoclickActive = true;
+          autoclickCooldown = true;
+          document.getElementById("autoclickBtn").disabled = true;
           updateProfilePanel();
+          showMessage("Autoclicker restored!");
+
+          autoclickInterval = setInterval(() => clickToken(), 1000);
+
+          setTimeout(() => {
+            clearInterval(autoclickInterval);
+            autoclickActive = false;
+            updateProfilePanel();
+            showMessage("Autoclicker deactivated.");
+
+            db.ref("leaderboard/" + uid).update({
+              autoclickActive: false
+            });
+
+            setTimeout(() => {
+              autoclickCooldown = false;
+              document.getElementById("autoclickBtn").disabled = false;
+              showMessage("Autoclicker available again.");
+            }, 1000);
+          }, remainingTime);
+        } else {
+          // Время автокликера истекло, обновляем состояние в базе данных
+          db.ref("leaderboard/" + uid).update({
+            autoclickActive: false
+          });
         }
-      });
+      }
     }
+  });
+}
+
 
  function submitScore() {
   if (!user) return;
