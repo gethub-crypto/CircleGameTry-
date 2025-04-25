@@ -202,15 +202,17 @@
       });
     }
 
-    function submitScore() {
-      if (!user) return;
-      db.ref("leaderboard/" + user.uid).set({
-        id: user.uid,
-        name: user.displayName || "Anonymous",
-        score: score,
-        clickPower: clickPower
-      });
-    }
+ function submitScore() {
+  if (!user) return;
+  db.ref("leaderboard/" + user.uid).set({
+    id: user.uid,
+    name: user.displayName || "Anonymous",
+    email: user.email || "",
+    score: score,
+    clickPower: clickPower
+  });
+}
+
 
     function buyUpgrade(type) {
       if (type === "clickPower") {
