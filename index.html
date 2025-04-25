@@ -195,6 +195,7 @@
         if (data) {
           score = data.score || 0;
           clickPower = data.clickPower || 1;
+          autoclickActive = data.autoclick || false; // загружаем autoclick
           updateCounterDisplay();
           updateClickPowerBar();
           updateProfilePanel();
@@ -208,7 +209,8 @@
         id: user.uid,
         name: user.displayName || "Anonymous",
         score: score,
-        clickPower: clickPower
+        clickPower: clickPower,
+        autoclick: autoclickActive // сохраняем autoclick
       });
     }
 
@@ -282,6 +284,7 @@
         user = null;
         score = 0;
         clickPower = 1;
+        autoclickActive = false; // обнуляем autoclick
         document.getElementById("authSection").style.display = "block";
         document.getElementById("gameSection").style.display = "none";
         updateCounterDisplay();
