@@ -196,6 +196,7 @@
           score = data.score || 0;
           clickPower = data.clickPower || 1;
           autoclickActive = data.autoclick || false; // добавляем загрузку autoclick
+          autoclickActive = data.autoclick === true; // добавляем загрузку autoclick
           updateCounterDisplay();
           updateClickPowerBar();
           updateProfilePanel();
