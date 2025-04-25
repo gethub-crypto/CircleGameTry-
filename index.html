@@ -265,17 +265,32 @@
     }
 
     function signInWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).then(result => {
-        user = result.user;
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("gameSection").style.display = "block";
-        loadPlayerData(user.uid);
-      }).catch(error => {
-        showMessage("Google sign-in failed.");
-        console.error(error);
-      });
-    }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result => {
+    user = result.user;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    
+    // Сохранение имени и email в базе данных
+    db.ref("leaderboard/" + user.uid).once("value").then(snapshot => {
+      if (!snapshot.exists()) {
+        db.ref("leaderboard/" + user.uid).set({
+          id: user.uid,
+          name: user.displayName || "Anonymous",
+          email: user.email || "",
+          score: 0,
+          clickPower: 1
+        });
+      }
+    });
+
+    loadPlayerData(user.uid);
+  }).catch(error => {
+    showMessage("Google sign-in failed.");
+    console.error(error);
+  });
+}
+
 
     function signOut() {
       auth.signOut().then(() => {
