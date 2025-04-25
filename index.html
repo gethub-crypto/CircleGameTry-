@@ -199,9 +199,18 @@
           clickPower = data.clickPower || 1;
           autoclickActive = data.autoclick || false; // добавляем загрузку autoclick
           autoclickActive = data.autoclick === true; // добавляем загрузку autoclick
+          autoclickEndTime = data.autoclickEndTime || 0;
           updateCounterDisplay();
           updateClickPowerBar();
           updateProfilePanel();
+
+          // ВАЖНО: проверяем автоклик
+        if (autoclickActive && autoclickEndTime > Date.now()) {
+        startAutoclicker(autoclickEndTime - Date.now());
+       } else {
+        autoclickActive = false;
+        autoclickEndTime = 0;
+         }
         }
       });
     }
