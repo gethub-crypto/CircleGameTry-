@@ -232,32 +232,55 @@
           showMessage("Not enough tokens for upgrade.");
         }
       } else if (type === "autoclick") {
-        if (autoclickCooldown) {
-          showMessage("Autoclicker on cooldown.");
-          return;
-        }
-        if (score >= 200) {
-          score -= 200;
-          updateCounterDisplay();
-          showMessage("Autoclicker activated for 1 minute!");
-          autoclickCooldown = true;
-          autoclickActive = true;
-          updateProfilePanel();
-          document.getElementById("autoclickBtn").disabled = true;
+  if (autoclickCooldown) {
+    showMessage("Autoclicker on cooldown.");
+    return;
+  }
+  if (score >= 200) {
+    score -= 200;
+    updateCounterDisplay();
+    showMessage("Autoclicker activated for 1 minute!");
+    autoclickCooldown = true;
+    autoclickActive = true;
+    updateProfilePanel();
+    document.getElementById("autoclickBtn").disabled = true;
 
-          autoclickInterval = setInterval(() => clickToken(), 1000);
+    // Сохраняем состояние автокликера в базе данных
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        autoclickActive: true,
+        autoclickEndTime: Date.now() + 60000 // Текущее время + 1 минута
+      });
+    }
 
-          setTimeout(() => {
-            clearInterval(autoclickInterval);
-            autoclickActive = false;
-            updateProfilePanel();
-            showMessage("Autoclicker deactivated.");
-            setTimeout(() => {
-              autoclickCooldown = false;
-              document.getElementById("autoclickBtn").disabled = false;
-              showMessage("Autoclicker available again.");
-            }, 1000);
-          }, 60000);
+    autoclickInterval = setInterval(() => clickToken(), 1000);
+
+    setTimeout(() => {
+      clearInterval(autoclickInterval);
+      autoclickActive = false;
+      updateProfilePanel();
+      showMessage("Autoclicker deactivated.");
+
+      // Обновляем состояние автокликера в базе данных
+      if (user) {
+        db.ref("leaderboard/" + user.uid).update({
+          autoclickActive: false
+        });
+      }
+
+      setTimeout(() => {
+        autoclickCooldown = false;
+        document.getElementById("autoclickBtn").disabled = false;
+        showMessage("Autoclicker available again.");
+      }, 1000);
+    }, 60000);
+
+    submitScore();
+  } else {
+    showMessage("Not enough tokens for autoclicker.");
+  }
+}
+
 
           submitScore();
         } else {
