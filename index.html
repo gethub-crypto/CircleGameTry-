@@ -208,7 +208,9 @@
         id: user.uid,
         name: user.displayName || "Anonymous",
         score: score,
-        clickPower: clickPower
+        clickPower: clickPower,
+        autoclickActive: autoclickActive,
+    autoclickEndTime: autoclickActive ? Date.now() + 60000 : null
       });
     }
 
