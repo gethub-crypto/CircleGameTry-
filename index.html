@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Crypto Clicker</title>
   <style>
+    /* --- твои стили без изменений --- */
     body {
       background: #0f0f0f;
       color: #fff;
@@ -11,13 +12,7 @@
       text-align: center;
       padding: 20px;
     }
-    input {
-      padding: 8px;
-      font-size: 16px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: none;
-    }
+    input { padding: 8px; font-size: 16px; margin-bottom: 10px; border-radius: 5px; border: none; }
     .click-button {
       background: linear-gradient(135deg, #00ffa6, #00c3ff);
       color: white;
@@ -28,307 +23,274 @@
       margin: 10px;
       border: none;
     }
-    table {
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 80%;
-      max-width: 600px;
-    }
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #333;
-    }
-    th {
-      background-color: #00c3ff;
-      color: #000;
-    }
-    #message {
-      margin-top: 10px;
-      color: #ff5555;
-    }
-    .progress-container {
-      background-color: #222;
-      border-radius: 10px;
-      height: 12px;
-      width: 140px;
-      margin: 10px auto;
-      overflow: hidden;
-      box-shadow: 0 0 5px #00ffc8;
-    }
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #00ffc8 0%, #00c3ff 100%);
-      width: 0%;
-      transition: width 0.3s ease-in-out;
-      border-radius: 10px;
-    }
-    #profilePanel {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background-color: #1a1a1a;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #00c3ff;
-      width: 200px;
-      text-align: left;
-    }
-    #profilePanel div {
-      margin: 6px 0;
-    }
-    #buttonGroup {
-      margin-top: 180px;
-    }
+    table { margin: 20px auto; border-collapse: collapse; width: 80%; max-width: 600px; }
+    th, td { padding: 10px; border-bottom: 1px solid #333; }
+    th { background-color: #00c3ff; color: #000; }
+    #message { margin-top: 10px; color: #ff5555; }
+    .progress-container { background-color: #222; border-radius: 10px; height: 12px; width: 140px; margin: 10px auto; overflow: hidden; box-shadow: 0 0 5px #00ffc8; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #00ffc8 0%, #00c3ff 100%); width: 0%; transition: width 0.3s ease-in-out; border-radius: 10px; }
+    #profilePanel { position: absolute; top: 20px; left: 20px; background-color: #1a1a1a; padding: 15px; border-radius: 12px; box-shadow: 0 0 10px #00c3ff; width: 200px; text-align: left; }
+    #profilePanel div { margin: 6px 0; }
+    #buttonGroup { margin-top: 180px; }
   </style>
 </head>
 <body>
-  <div id="profilePanel">
-    <div><strong>Player:</strong> <span id="profileName">Anonymous</span></div>
-    <div><strong>Level:</strong> <span id="playerLevel">1</span> / 10</div>
-    <div><strong>Click Power:</strong> <span id="profileClickPower">1</span></div>
-    <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
-    <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
-    <div><button class="click-button" onclick="signOut()">Sign Out</button></div>
+
+<div id="profilePanel">
+  <div><strong>Player:</strong> <span id="profileName">Anonymous</span></div>
+  <div><strong>Level:</strong> <span id="playerLevel">1</span> / 10</div>
+  <div><strong>Click Power:</strong> <span id="profileClickPower">1</span></div>
+  <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
+  <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
+  <div><button class="click-button" onclick="signOut()">Sign Out</button></div>
+</div>
+
+<h1>Crypto Clicker 💰</h1>
+
+<div id="authSection">
+  <button class="click-button" onclick="signInWithGoogle()">Sign in with Google</button>
+</div>
+
+<div id="gameSection" style="display:none;">
+  <div id="counter">Tokens: 0</div>
+  <div id="message"></div>
+  <div id="buttonGroup">
+    <button class="click-button" onclick="clickToken()">Collect Token</button>
+    <button class="click-button" onclick="submitScore()">Save</button>
+    <button class="click-button" onclick="toggleShop()">Shop</button>
   </div>
 
-  <h1>Crypto Clicker 💰</h1>
-
-  <div id="authSection">
-    <button class="click-button" onclick="signInWithGoogle()">Sign in with Google</button>
-  </div>
-
-  <div id="gameSection" style="display:none;">
-    <div id="counter">Tokens: 0</div>
-    <div id="message"></div>
-    <div id="buttonGroup">
-      <button class="click-button" onclick="clickToken()">Collect Token</button>
-      <button class="click-button" onclick="submitScore()">Save</button>
-      <button class="click-button" onclick="toggleShop()">Shop</button>
+  <div id="shop" style="display:none; margin-top: 20px;">
+    <h2>🛒 Upgrades</h2>
+    <p>💪 Click Power +1 (Cost: 50)</p>
+    <p>Current: <span id="clickPowerDisplay">1</span> / 8</p>
+    <div class="progress-container">
+      <div class="progress-bar" id="clickPowerBar"></div>
     </div>
+    <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
 
-    <div id="shop" style="display:none; margin-top: 20px;">
-      <h2>🛒 Upgrades</h2>
-      <p>💪 Click Power +1 (Cost: 50)</p>
-      <p>Current: <span id="clickPowerDisplay">1</span> / 8</p>
-      <div class="progress-container">
-        <div class="progress-bar" id="clickPowerBar"></div>
-      </div>
-      <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
-
-      <div style="margin-top: 20px;">
-        <p>Autoclicker (Cost: 200)</p>
-        <button class="click-button" id="autoclickBtn" onclick="buyUpgrade('autoclick')">Buy</button>
-      </div>
+    <div style="margin-top: 20px;">
+      <p>Autoclicker (Cost: 200)</p>
+      <button class="click-button" id="autoclickBtn" onclick="buyUpgrade('autoclick')">Buy</button>
     </div>
-
-    <h2>Leaderboard</h2>
-    <table>
-      <thead><tr><th>#</th><th>Player</th><th>Tokens</th></tr></thead>
-      <tbody id="leaderboard"></tbody>
-    </table>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <h2>Leaderboard</h2>
+  <table>
+    <thead><tr><th>#</th><th>Player</th><th>Tokens</th></tr></thead>
+    <tbody id="leaderboard"></tbody>
+  </table>
+</div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGK_Tuwke5TfltTt9Dtkeh9aWuZkSNFt4",
-      authDomain: "cryptoclicker-e6a69.firebaseapp.com",
-      databaseURL: "https://cryptoclicker-e6a69-default-rtdb.firebaseio.com",
-      projectId: "cryptoclicker-e6a69",
-      storageBucket: "cryptoclicker-e6a69.appspot.com",
-      messagingSenderId: "290231276060",
-      appId: "1:290231276060:web:406a5f2ce9c3a0a354c5d9"
-    };
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBGK_Tuwke5TfltTt9Dtkeh9aWuZkSNFt4",
+  authDomain: "cryptoclicker-e6a69.firebaseapp.com",
+  databaseURL: "https://cryptoclicker-e6a69-default-rtdb.firebaseio.com",
+  projectId: "cryptoclicker-e6a69",
+  storageBucket: "cryptoclicker-e6a69.appspot.com",
+  messagingSenderId: "290231276060",
+  appId: "1:290231276060:web:406a5f2ce9c3a0a354c5d9"
+};
 
-    let user = null;
-    let score = 0;
-    let clickPower = 1;
-    let autoclickActive = false;
-    let autoclickCooldown = false;
-    let autoclickInterval = null;
-    let autoclickEndTime = 0;
-    
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
 
-    function updateProfilePanel() {
-      document.getElementById("profileClickPower").innerText = clickPower;
-      document.getElementById("profileAutoclick").innerText = autoclickActive ? "Active" : "Inactive";
-      document.getElementById("playerLevel").innerText = Math.floor(score / 100) + 1;
-      document.getElementById("profileTokens").innerText = score;
-      document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
-    }
+let user = null;
+let score = 0;
+let clickPower = 1;
+let autoclickActive = false;
+let autoclickInterval = null;
+let autoclickEndTime = 0;
+let autoclickCooldown = false;
 
-    function updateClickPowerBar() {
-      document.getElementById("clickPowerDisplay").innerText = clickPower;
-      const progress = Math.min((clickPower / 8) * 100, 100);
-      document.getElementById("clickPowerBar").style.width = progress + "%";
-    }
+function updateProfilePanel() {
+  document.getElementById("profileClickPower").innerText = clickPower;
+  document.getElementById("profileAutoclick").innerText = autoclickActive ? "Active" : "Inactive";
+  document.getElementById("playerLevel").innerText = Math.floor(score / 100) + 1;
+  document.getElementById("profileTokens").innerText = score;
+  document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
+}
 
-    function updateCounterDisplay() {
-      document.getElementById("counter").innerText = `Tokens: ${score}`;
-    }
+function updateClickPowerBar() {
+  document.getElementById("clickPowerDisplay").innerText = clickPower;
+  const progress = Math.min((clickPower / 8) * 100, 100);
+  document.getElementById("clickPowerBar").style.width = progress + "%";
+}
 
-    function showMessage(msg) {
-      const el = document.getElementById("message");
-      el.innerText = msg;
-      setTimeout(() => el.innerText = '', 3000);
-    }
+function updateCounterDisplay() {
+  document.getElementById("counter").innerText = `Tokens: ${score}`;
+}
 
-    function clickToken() {
-      score += clickPower;
+function showMessage(msg) {
+  const el = document.getElementById("message");
+  el.innerText = msg;
+  setTimeout(() => el.innerText = '', 3000);
+}
+
+function clickToken() {
+  score += clickPower;
+  updateCounterDisplay();
+  updateProfilePanel();
+}
+
+function toggleShop() {
+  const shop = document.getElementById("shop");
+  shop.style.display = shop.style.display === "none" ? "block" : "none";
+}
+
+function startAutoclicker(duration) {
+  clearInterval(autoclickInterval);
+  autoclickInterval = setInterval(() => clickToken(), 1000);
+  setTimeout(() => stopAutoclicker(), duration);
+}
+
+function stopAutoclicker() {
+  clearInterval(autoclickInterval);
+  autoclickActive = false;
+  autoclickEndTime = 0;
+  updateProfilePanel();
+  submitScore();
+  showMessage("Autoclicker deactivated.");
+  setTimeout(() => {
+    autoclickCooldown = false;
+    document.getElementById("autoclickBtn").disabled = false;
+    showMessage("Autoclicker available again.");
+  }, 1000);
+}
+
+function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickEndTime = data.autoclickEndTime || 0;
       updateCounterDisplay();
+      updateClickPowerBar();
       updateProfilePanel();
-    }
 
-    function toggleShop() {
-      const shop = document.getElementById("shop");
-      shop.style.display = shop.style.display === "none" ? "block" : "none";
-    }
-
-    function loadPlayerData(uid) {
-      db.ref("leaderboard/" + uid).once("value").then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          score = data.score || 0;
-          clickPower = data.clickPower || 1;
-          autoclickActive = data.autoclick || false; // добавляем загрузку autoclick
-          autoclickActive = data.autoclick === true; // добавляем загрузку autoclick
-          autoclickEndTime = data.autoclickEndTime || 0;
-          updateCounterDisplay();
-          updateClickPowerBar();
-          updateProfilePanel();
-
-          // ВАЖНО: проверяем автоклик
-        if (autoclickActive && autoclickEndTime > Date.now()) {
+      // Восстанавливаем автокликер
+      if (autoclickEndTime > Date.now()) {
+        autoclickActive = true;
+        document.getElementById("autoclickBtn").disabled = true;
         startAutoclicker(autoclickEndTime - Date.now());
-       } else {
+      } else {
         autoclickActive = false;
         autoclickEndTime = 0;
-         }
-        }
-      });
-    }
-
-    function submitScore() {
-      if (!user) return;
-      db.ref("leaderboard/" + user.uid).set({
-        id: user.uid,
-        name: user.displayName || "Anonymous",
-        score: score,
-        clickPower: clickPower,
-        autoclick: autoclickActive, // сохраняем autoclick
-        autoclickEndTime: autoclickEndTime // сохраняем время окончания автоклика
-        
-      });
-    }
-
-    function buyUpgrade(type) {
-      if (type === "clickPower") {
-        if (clickPower >= 8) {
-          showMessage("Click Power is at maximum!");
-          return;
-        }
-        if (score >= 50) {
-          score -= 50;
-          clickPower++;
-          updateCounterDisplay();
-          updateClickPowerBar();
-          updateProfilePanel();
-          submitScore();
-          showMessage("Click Power upgraded!");
-        } else {
-          showMessage("Not enough tokens for upgrade.");
-        }
-      } else if (type === "autoclick") {
-        if (autoclickCooldown) {
-          showMessage("Autoclicker on cooldown.");
-          return;
-        }
-        if (score >= 200) {
-          score -= 200;
-          updateCounterDisplay();
-          showMessage("Autoclicker activated for 1 minute!");
-          autoclickCooldown = true;
-          autoclickActive = true;
-          updateProfilePanel();
-          document.getElementById("autoclickBtn").disabled = true;
-
-          autoclickInterval = setInterval(() => clickToken(), 1000);
-
-          setTimeout(() => {
-            clearInterval(autoclickInterval);
-            autoclickActive = false;
-            updateProfilePanel();
-            showMessage("Autoclicker deactivated.");
-            setTimeout(() => {
-              autoclickCooldown = false;
-              document.getElementById("autoclickBtn").disabled = false;
-              showMessage("Autoclicker available again.");
-            }, 1000);
-          }, 60000);
-
-          submitScore();
-        } else {
-          showMessage("Not enough tokens for autoclicker.");
-        }
       }
     }
+  });
+}
 
-    function signInWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).then(result => {
-        user = result.user;
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("gameSection").style.display = "block";
-        loadPlayerData(user.uid);
-      }).catch(error => {
-        showMessage("Google sign-in failed.");
-        console.error(error);
-      });
+function submitScore() {
+  if (!user) return;
+  db.ref("leaderboard/" + user.uid).set({
+    id: user.uid,
+    name: user.displayName || "Anonymous",
+    score: score,
+    clickPower: clickPower,
+    autoclickEndTime: autoclickEndTime
+  });
+}
+
+function buyUpgrade(type) {
+  if (type === "clickPower") {
+    if (clickPower >= 8) {
+      showMessage("Click Power is at maximum!");
+      return;
     }
-
-    function signOut() {
-      auth.signOut().then(() => {
-        user = null;
-        score = 0;
-        clickPower = 1;
-        document.getElementById("authSection").style.display = "block";
-        document.getElementById("gameSection").style.display = "none";
-        updateCounterDisplay();
-        updateClickPowerBar();
-        updateProfilePanel();
-      });
+    if (score >= 50) {
+      score -= 50;
+      clickPower++;
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      submitScore();
+      showMessage("Click Power upgraded!");
+    } else {
+      showMessage("Not enough tokens for upgrade.");
     }
+  } else if (type === "autoclick") {
+    if (autoclickCooldown) {
+      showMessage("Autoclicker on cooldown.");
+      return;
+    }
+    if (score >= 200) {
+      score -= 200;
+      updateCounterDisplay();
+      showMessage("Autoclicker activated for 1 minute!");
+      autoclickCooldown = true;
+      autoclickActive = true;
+      autoclickEndTime = Date.now() + 60000;
+      updateProfilePanel();
+      document.getElementById("autoclickBtn").disabled = true;
+      startAutoclicker(60000);
+      submitScore();
+    } else {
+      showMessage("Not enough tokens for autoclicker.");
+    }
+  }
+}
 
-    auth.onAuthStateChanged(currentUser => {
-      if (currentUser) {
-        user = currentUser;
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("gameSection").style.display = "block";
-        loadPlayerData(user.uid);
-      }
-    });
+function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result => {
+    user = result.user;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    loadPlayerData(user.uid);
+  }).catch(error => {
+    showMessage("Google sign-in failed.");
+    console.error(error);
+  });
+}
 
-    db.ref("leaderboard").on("value", snapshot => {
-      const data = [];
-      snapshot.forEach(child => data.push(child.val()));
-      data.sort((a, b) => b.score - a.score);
-      const leaderboard = document.getElementById("leaderboard");
-      leaderboard.innerHTML = "";
-      data.slice(0, 10).forEach((entry, index) => {
-        leaderboard.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
-      });
-    });
+function signOut() {
+  auth.signOut().then(() => {
+    user = null;
+    score = 0;
+    clickPower = 1;
+    autoclickActive = false;
+    autoclickEndTime = 0;
+    clearInterval(autoclickInterval);
+    document.getElementById("authSection").style.display = "block";
+    document.getElementById("gameSection").style.display = "none";
+    updateCounterDisplay();
+    updateClickPowerBar();
+    updateProfilePanel();
+  });
+}
 
-    setInterval(() => {
-      if (user && score > 0) submitScore();
-    }, 5000);
-  </script>
+auth.onAuthStateChanged(currentUser => {
+  if (currentUser) {
+    user = currentUser;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    loadPlayerData(user.uid);
+  }
+});
+
+db.ref("leaderboard").on("value", snapshot => {
+  const data = [];
+  snapshot.forEach(child => data.push(child.val()));
+  data.sort((a, b) => b.score - a.score);
+  const leaderboard = document.getElementById("leaderboard");
+  leaderboard.innerHTML = "";
+  data.slice(0, 10).forEach((entry, index) => {
+    leaderboard.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
+  });
+});
+
+setInterval(() => {
+  if (user && score > 0) submitScore();
+}, 5000);
+</script>
+
 </body>
 </html>
