@@ -251,6 +251,7 @@ function signInWithGoogle() {
     document.getElementById("authSection").style.display = "none";
     document.getElementById("gameSection").style.display = "block";
     loadPlayerData(user.uid);
+    submitScore();
   }).catch(error => {
     showMessage("Google sign-in failed.");
     console.error(error);
@@ -279,6 +280,7 @@ auth.onAuthStateChanged(currentUser => {
     document.getElementById("authSection").style.display = "none";
     document.getElementById("gameSection").style.display = "block";
     loadPlayerData(user.uid);
+    submitScore();
   }
 });
 
