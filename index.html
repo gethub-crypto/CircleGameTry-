@@ -11,17 +11,10 @@
       text-align: center;
       padding: 20px;
     }
-    input {
-      padding: 8px;
-      font-size: 16px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: none;
-    }
+    input { padding: 8px; font-size: 16px; margin-bottom: 10px; border-radius: 5px; border: none; }
     .click-button {
       background: linear-gradient(135deg, #00ffa6, #00c3ff);
-      color: #000; /* Цвет текста на кнопках стал черным */
-      font-weight: bold; /* Жирный текст */
+      color: white;
       padding: 15px 30px;
       font-size: 18px;
       border-radius: 12px;
@@ -29,69 +22,21 @@
       margin: 10px;
       border: none;
     }
-    table {
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 80%;
-      max-width: 600px;
-    }
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #333;
-    }
-    th {
-      background-color: #00c3ff;
-      color: #000;
-    }
-    #message {
-      margin-top: 10px;
-      color: #ff5555;
-    }
-    .progress-container {
-      background-color: #222;
-      border-radius: 10px;
-      height: 12px;
-      width: 140px;
-      margin: 10px auto;
-      overflow: hidden;
-      box-shadow: 0 0 5px #00ffc8;
-    }
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #00ffc8 0%, #00c3ff 100%);
-      width: 0%;
-      transition: width 0.3s ease-in-out;
-      border-radius: 10px;
-    }
-    #profilePanel {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background-color: #1a1a1a;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #00c3ff;
-      width: 200px;
-      text-align: left;
-    }
-    #profilePanel div {
-      margin: 6px 0;
-    }
-    #buttonGroup {
-      margin-top: 180px;
-    }
-    #motiveText {
+    table { margin: 20px auto; border-collapse: collapse; width: 80%; max-width: 600px; }
+    th, td { padding: 10px; border-bottom: 1px solid #333; }
+    th { background-color: #00c3ff; color: #000; }
+    #message { margin-top: 10px; color: #ff5555; }
+    .progress-container { background-color: #222; border-radius: 10px; height: 12px; width: 140px; margin: 10px auto; overflow: hidden; box-shadow: 0 0 5px #00ffc8; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #00ffc8 0%, #00c3ff 100%); width: 0%; transition: width 0.3s ease-in-out; border-radius: 10px; }
+    #profilePanel { position: absolute; top: 20px; left: 20px; background-color: #1a1a1a; padding: 15px; border-radius: 12px; box-shadow: 0 0 10px #00c3ff; width: 200px; text-align: left; }
+    #profilePanel div { margin: 6px 0; }
+    #buttonGroup { margin-top: 180px; }
+    #motiveText { /* Новый стиль для мотивационных фраз */
       margin-top: 20px;
       font-size: 18px;
       color: #00ffc8;
       text-shadow: 0 0 8px #00ffc8;
       transition: opacity 0.5s ease-in-out;
-    }
-    /* Новый стиль для большого отображения токенов */
-    #counter {
-      font-size: 48px;
-      font-weight: bold;
-      margin: 20px 0;
     }
   </style>
 </head>
@@ -111,6 +56,8 @@
 
 <div id="authSection">
   <button class="click-button" onclick="signInWithGoogle()">Sign in with Google</button>
+  
+  <!-- Новый блок мотивации -->
   <div id="motiveText">Кликай — зарабатывай токены.</div>
 </div>
 
@@ -150,10 +97,236 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
 <script>
-// Твой скрипт остается без изменений, за исключением описанных до этого моментов (цвета и размера текста)
-... 
-(сюда вставляется твой старый JavaScript код без изменений)
-...
+const firebaseConfig = {
+  apiKey: "AIzaSyBGK_Tuwke5TfltTt9Dtkeh9aWuZkSNFt4",
+  authDomain: "cryptoclicker-e6a69.firebaseapp.com",
+  databaseURL: "https://cryptoclicker-e6a69-default-rtdb.firebaseio.com",
+  projectId: "cryptoclicker-e6a69",
+  storageBucket: "cryptoclicker-e6a69.appspot.com",
+  messagingSenderId: "290231276060",
+  appId: "1:290231276060:web:406a5f2ce9c3a0a354c5d9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+let user = null;
+let score = 0;
+let clickPower = 1;
+let autoclickActive = false;
+let autoclickInterval = null;
+let autoclickEndTime = 0;
+let autoclickCooldown = false;
+
+function updateProfilePanel() {
+  document.getElementById("profileClickPower").innerText = clickPower;
+  if (autoclickActive) {
+    const remaining = Math.max(0, autoclickEndTime - Date.now());
+    const seconds = Math.floor(remaining / 1000) % 60;
+    const minutes = Math.floor(remaining / 60000);
+    document.getElementById("profileAutoclick").innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+  } else {
+    document.getElementById("profileAutoclick").innerText = "Inactive";
+  }
+  document.getElementById("playerLevel").innerText = Math.floor(score / 100) + 1;
+  document.getElementById("profileTokens").innerText = score;
+  document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
+}
+
+function updateClickPowerBar() {
+  document.getElementById("clickPowerDisplay").innerText = clickPower;
+  const progress = Math.min((clickPower / 8) * 100, 100);
+  document.getElementById("clickPowerBar").style.width = progress + "%";
+}
+
+function updateCounterDisplay() {
+  document.getElementById("counter").innerText = `Tokens: ${score}`;
+}
+
+function showMessage(msg) {
+  const el = document.getElementById("message");
+  el.innerText = msg;
+  setTimeout(() => el.innerText = '', 3000);
+}
+
+function clickToken() {
+  score += clickPower;
+  updateCounterDisplay();
+  updateProfilePanel();
+}
+
+function toggleShop() {
+  const shop = document.getElementById("shop");
+  shop.style.display = shop.style.display === "none" ? "block" : "none";
+}
+
+function startAutoclicker(duration) {
+  clearInterval(autoclickInterval);
+  autoclickInterval = setInterval(() => clickToken(), 1000);
+  setTimeout(() => stopAutoclicker(), duration);
+}
+
+function stopAutoclicker() {
+  clearInterval(autoclickInterval);
+  autoclickActive = false;
+  autoclickEndTime = 0;
+  updateProfilePanel();
+  submitScore();
+  showMessage("Autoclicker deactivated.");
+  setTimeout(() => {
+    autoclickCooldown = false;
+    document.getElementById("autoclickBtn").disabled = false;
+    showMessage("Autoclicker available again.");
+  }, 1000);
+}
+
+function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+
+      if (autoclickEndTime > Date.now()) {
+        autoclickActive = true;
+        document.getElementById("autoclickBtn").disabled = true;
+        startAutoclicker(autoclickEndTime - Date.now());
+      } else {
+        autoclickActive = false;
+        autoclickEndTime = 0;
+      }
+    }
+  });
+}
+
+function submitScore() {
+  if (!user) return;
+  db.ref("leaderboard/" + user.uid).set({
+    id: user.uid,
+    name: user.displayName || "Anonymous",
+    score: score,
+    clickPower: clickPower,
+    autoclickEndTime: autoclickEndTime
+  });
+}
+
+function buyUpgrade(type) {
+  if (type === "clickPower") {
+    if (clickPower >= 8) {
+      showMessage("Click Power is at maximum!");
+      return;
+    }
+    if (score >= 50) {
+      score -= 50;
+      clickPower++;
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      submitScore();
+      showMessage("Click Power upgraded!");
+    } else {
+      showMessage("Not enough tokens for upgrade.");
+    }
+  } else if (type === "autoclick") {
+    if (autoclickCooldown) {
+      showMessage("Autoclicker on cooldown.");
+      return;
+    }
+    if (score >= 200) {
+      score -= 200;
+      updateCounterDisplay();
+      showMessage("Autoclicker activated for 1 minute!");
+      autoclickCooldown = true;
+      autoclickActive = true;
+      autoclickEndTime = Date.now() + 60000;
+      updateProfilePanel();
+      document.getElementById("autoclickBtn").disabled = true;
+      startAutoclicker(60000);
+      submitScore();
+    } else {
+      showMessage("Not enough tokens for autoclicker.");
+    }
+  }
+}
+
+function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result => {
+    user = result.user;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    loadPlayerData(user.uid);
+  }).catch(error => {
+    showMessage("Google sign-in failed.");
+    console.error(error);
+  });
+}
+
+function signOut() {
+  auth.signOut().then(() => {
+    user = null;
+    score = 0;
+    clickPower = 1;
+    autoclickActive = false;
+    autoclickEndTime = 0;
+    clearInterval(autoclickInterval);
+    document.getElementById("authSection").style.display = "block";
+    document.getElementById("gameSection").style.display = "none";
+    updateCounterDisplay();
+    updateClickPowerBar();
+    updateProfilePanel();
+  });
+}
+
+auth.onAuthStateChanged(currentUser => {
+  if (currentUser) {
+    user = currentUser;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    loadPlayerData(user.uid);
+  }
+});
+
+db.ref("leaderboard").on("value", snapshot => {
+  const data = [];
+  snapshot.forEach(child => data.push(child.val()));
+  data.sort((a, b) => b.score - a.score);
+  const leaderboard = document.getElementById("leaderboard");
+  leaderboard.innerHTML = "";
+  data.slice(0, 10).forEach((entry, index) => {
+    leaderboard.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
+  });
+});
+
+setInterval(() => {
+  if (user) {
+    updateProfilePanel();
+    if (score > 0) submitScore();
+  }
+}, 1000);
+
+// --- Новый код для мотивации ---
+const motivationalPhrases = [
+  "Click — earn tokens.", "Sign in — save your progress.", "Your crypto journey starts here.", "No account — no profit!", "Log in and turn clicks into income!", "The first tokens are always the most valuable.", "Top farmers are waiting for you!", "Level up — earn even more tokens!", "Crypto wealth starts with a single click.", "Skip signing in — miss the rewards!"
+
+];
+
+let motiveIndex = 0;
+const motiveElement = document.getElementById("motiveText");
+
+setInterval(() => {
+  motiveElement.style.opacity = 0;
+  setTimeout(() => {
+    motiveIndex = (motiveIndex + 1) % motivationalPhrases.length;
+    motiveElement.innerText = motivationalPhrases[motiveIndex];
+    motiveElement.style.opacity = 1;
+  }, 500);
+}, 3000);
 </script>
 
 </body>
