@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Crypto Clicker</title>
   <style>
-    /* --- твои стили без изменений --- */
     body {
       background: #0f0f0f;
       color: #fff;
@@ -32,8 +31,16 @@
     #profilePanel { position: absolute; top: 20px; left: 20px; background-color: #1a1a1a; padding: 15px; border-radius: 12px; box-shadow: 0 0 10px #00c3ff; width: 200px; text-align: left; }
     #profilePanel div { margin: 6px 0; }
     #buttonGroup { margin-top: 180px; }
+    #motiveText { /* Новый стиль для мотивационных фраз */
+      margin-top: 20px;
+      font-size: 18px;
+      color: #00ffc8;
+      text-shadow: 0 0 8px #00ffc8;
+      transition: opacity 0.5s ease-in-out;
+    }
   </style>
 </head>
+
 <body>
 
 <div id="profilePanel">
@@ -49,6 +56,9 @@
 
 <div id="authSection">
   <button class="click-button" onclick="signInWithGoogle()">Sign in with Google</button>
+  
+  <!-- Новый блок мотивации -->
+  <div id="motiveText">Кликай — зарабатывай токены.</div>
 </div>
 
 <div id="gameSection" style="display:none;">
@@ -299,6 +309,32 @@ setInterval(() => {
     if (score > 0) submitScore();
   }
 }, 1000);
+
+// --- Новый код для мотивации ---
+const motivationalPhrases = [
+  "Кликай — зарабатывай токены.",
+  "Авторизуйся — сохрани свой прогресс.",
+  "Твоя крипто-история начинается здесь.",
+  "Без аккаунта — без профита!",
+  "Войди и прокачай клики в доход!",
+  "Первые токены всегда самые ценные.",
+  "Топ фармеров ждёт тебя!",
+  "Прокачивай уровень — получай больше токенов!",
+  "Крипто-богатство начинается с одного клика.",
+  "Пропускаешь вход? Пропускаешь награды!"
+];
+
+let motiveIndex = 0;
+const motiveElement = document.getElementById("motiveText");
+
+setInterval(() => {
+  motiveElement.style.opacity = 0;
+  setTimeout(() => {
+    motiveIndex = (motiveIndex + 1) % motivationalPhrases.length;
+    motiveElement.innerText = motivationalPhrases[motiveIndex];
+    motiveElement.style.opacity = 1;
+  }, 500);
+}, 3000);
 </script>
 
 </body>
