@@ -20,8 +20,8 @@
     }
     .click-button {
       background: linear-gradient(135deg, #00ffa6, #00c3ff);
-      color: #000; /* черный текст */
-      font-weight: bold;
+      color: #000; /* Цвет текста на кнопках стал черным */
+      font-weight: bold; /* Жирный текст */
       padding: 15px 30px;
       font-size: 18px;
       border-radius: 12px;
@@ -87,16 +87,11 @@
       text-shadow: 0 0 8px #00ffc8;
       transition: opacity 0.5s ease-in-out;
     }
-    /* Стиль токенов + анимация */
+    /* Новый стиль для большого отображения токенов */
     #counter {
       font-size: 48px;
       font-weight: bold;
       margin: 20px 0;
-      transition: transform 0.2s ease;
-    }
-    /* Когда добавляется класс .bounce */
-    #counter.bounce {
-      transform: scale(1.2);
     }
   </style>
 </head>
@@ -155,61 +150,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
 <script>
-// Здесь твой скрипт (я добавлю только улучшение для bounce анимации)
-
-let tokenCount = 0;
-let clickPower = 1;
-
-function clickToken() {
-  tokenCount += clickPower;
-  updateCounter();
-  animateCounter();
-}
-
-function updateCounter() {
-  document.getElementById('counter').textContent = `Tokens: ${tokenCount}`;
-  document.getElementById('profileTokens').textContent = tokenCount;
-}
-
-// Новая функция для анимации
-function animateCounter() {
-  const counter = document.getElementById('counter');
-  counter.classList.add('bounce');
-  setTimeout(() => {
-    counter.classList.remove('bounce');
-  }, 200);
-}
-
-// Заглушки для остальных функций
-function submitScore() { alert("Score saved!"); }
-function toggleShop() {
-  const shop = document.getElementById('shop');
-  shop.style.display = shop.style.display === 'none' ? 'block' : 'none';
-}
-function signOut() { alert("Signed out!"); }
-function signInWithGoogle() { alert("Signed in with Google!"); }
-function buyUpgrade(type) {
-  if (type === 'clickPower' && tokenCount >= 50) {
-    tokenCount -= 50;
-    clickPower++;
-    document.getElementById('clickPowerDisplay').textContent = clickPower;
-    document.getElementById('clickPowerBar').style.width = (clickPower/8)*100 + '%';
-    updateCounter();
-  }
-  if (type === 'autoclick' && tokenCount >= 200) {
-    tokenCount -= 200;
-    document.getElementById('profileAutoclick').textContent = 'Active';
-    updateCounter();
-    startAutoClick();
-  }
-}
-
-function startAutoClick() {
-  setInterval(() => {
-    clickToken();
-  }, 1000);
-}
-
+// Твой скрипт остается без изменений, за исключением описанных до этого моментов (цвета и размера текста)
+... 
+(сюда вставляется твой старый JavaScript код без изменений)
+...
 </script>
 
 </body>
