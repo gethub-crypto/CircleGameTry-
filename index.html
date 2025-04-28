@@ -173,10 +173,10 @@ function updateProfilePanel() {
   const levelMessageElement = document.getElementById("levelMessage");
   if (level === 10) {
     levelMessageElement.innerText = "Maximum level reached!";
-    levelMessageElement.style.display = "block";
+   /* levelMessageElement.style.display = "block"; */
     levelMessageElement.classList.add("show");
   } else {
-    levelMessageElement.style.display = "none";
+  /*  levelMessageElement.style.display = "none"; */
     levelMessageElement.classList.remove("show");
   }
 }
