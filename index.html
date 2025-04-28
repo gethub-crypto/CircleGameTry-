@@ -144,7 +144,9 @@ function updateProfilePanel() {
   } else {
     document.getElementById("profileAutoclick").innerText = "Inactive";
   }
-  document.getElementById("playerLevel").innerText = Math.floor(score / 100) + 1;
+  const level = Math.min(Math.floor(score / 100) + 1, 10);
+  document.getElementById("playerLevel").innerText = level;
+  
   document.getElementById("profileTokens").innerText = score;
   document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
 }
