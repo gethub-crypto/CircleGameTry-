@@ -149,6 +149,15 @@ function updateProfilePanel() {
   
   document.getElementById("profileTokens").innerText = score;
   document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
+
+  // Message when maximum level is reached
+  const levelMessageElement = document.getElementById("levelMessage");
+  if (level === 10) {
+    levelMessageElement.innerText = "Maximum level reached!";
+    levelMessageElement.style.display = "block";
+  } else {
+    levelMessageElement.style.display = "none";
+  }
 }
 
 function updateClickPowerBar() {
