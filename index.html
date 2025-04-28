@@ -170,7 +170,22 @@ function clickToken() {
   updateCounterDisplay();
   updateProfilePanel();
 }
+  
+function updateCounter() {
+  document.getElementById('counter').textContent = `Tokens: ${tokenCount}`;
+  document.getElementById('profileTokens').textContent = tokenCount;
+}
 
+// Новая функция для анимации
+function animateCounter() {
+  const counter = document.getElementById('counter');
+  counter.classList.add('bounce');
+  setTimeout(() => {
+    counter.classList.remove('bounce');
+  }, 200);
+}
+  
+  
 function toggleShop() {
   const shop = document.getElementById("shop");
   shop.style.display = shop.style.display === "none" ? "block" : "none";
