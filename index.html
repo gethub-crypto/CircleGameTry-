@@ -35,7 +35,18 @@
     #counter.bounce {
       transform: scale(1.2);
     }
-    
+    #levelMessage {
+    display: none;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    color: gold;
+    font-weight: bold;
+    margin-top: 5px;
+  }
+  #levelMessage.show {
+    display: block;
+    opacity: 1;
+       }
     
     table { margin: 20px auto; border-collapse: collapse; width: 80%; max-width: 600px; }
     th, td { padding: 10px; border-bottom: 1px solid #333; }
