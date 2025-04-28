@@ -178,7 +178,18 @@ function updateProfilePanel() {
   } else {
     document.getElementById("profileAutoclick").innerText = "Inactive";
   }
-  const level = Math.min(Math.floor(score / 100) + 1, 10);
+  // Найти текущий уровень
+  let level = 1;
+  for (let i = 0; i < levelUpRequirements.length; i++) {
+    if (score >= levelUpRequirements[i]) {
+      level = i + 2; // так как уровень = индекс + 2
+    } else {
+      break;
+    }
+  }
+
+  
+/*  const level = Math.min(Math.floor(score / 100) + 1, 10); */
   document.getElementById("playerLevel").innerText = level;
   
   document.getElementById("profileTokens").innerText = score;
