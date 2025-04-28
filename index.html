@@ -174,8 +174,10 @@ function updateProfilePanel() {
   if (level === 10) {
     levelMessageElement.innerText = "Maximum level reached!";
     levelMessageElement.style.display = "block";
+    levelMessageElement.classList.add("show");
   } else {
     levelMessageElement.style.display = "none";
+    levelMessageElement.classList.remove("show");
   }
 }
 
