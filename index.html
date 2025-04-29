@@ -342,7 +342,7 @@ function animateCounter() {
   
   function checkAchievements() {
   // Секретное достижение: 10,000 кликов
-  if (!achievements.superClicker && totalClicks >= 10) {
+  if (!achievements.superClicker && totalClicks >= 20) {
     achievements.superClicker = true;
     boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
     showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
