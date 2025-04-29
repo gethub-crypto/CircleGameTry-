@@ -270,7 +270,7 @@ function setClickPower(newPower) {
   }, duration);
 }*/
 
-function boostClickPowerTemporarily(amount, duration) {
+/* function boostClickPowerTemporarily(amount, duration) {
   if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
   originalClickPower = clickPower;
@@ -284,7 +284,24 @@ function boostClickPowerTemporarily(amount, duration) {
     setClickPower(originalClickPower);
     showMessage(`Boost expired: Click Power restored to ${originalClickPower}`);
   }, duration);
+} */
+
+function boostClickPowerTemporarily(amount, duration) {
+  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+
+  originalClickPower = clickPower;
+  const boosted = Math.min(clickPower + amount, 8);
+  clickPower = boosted;
+
+  const actualBoost = boosted - originalClickPower;
+  showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} sec`);
+
+  tempBoostTimeout = setTimeout(() => {
+    clickPower = originalClickPower;
+    showMessage(`Boost expired: Click Power restored`);
+  }, duration);
 }
+  
 
   
 
