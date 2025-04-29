@@ -176,7 +176,7 @@ const allAchievements = {
   superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
   tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2min)" },
   level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
-  autoclickerMaster: { name: "Autoclicker Master", description: "Use autoclicker 10 times", reward: "Autoclicker speed x2" }
+  autoclickerMaster: { name: "Autoclicker Master", description: "Use autoclicker 10 times", reward: " Free Autoclicker 2 minutes " }
 };
   
   
@@ -324,7 +324,7 @@ function renderAchievements() {
 } */
 
   function updateClickPowerBar() {
-  const displayPower = Math.min(clickPower, 8); // ограничиваем визуально
+  const displayPower = Math.min(clickPower); // ограничиваем визуально
   document.getElementById("clickPowerDisplay").innerText = `${displayPower} / 8`;
 
   const progress = Math.min((displayPower / 8) * 100, 100);
