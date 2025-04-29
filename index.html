@@ -393,8 +393,9 @@ function animateCounter() {
   const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
   if (!achievements.level5 && currentLevel >= 5) {
     achievements.level5 = true;
-    clickPower += 1;
-    showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +1!");
+   /* clickPower += 1;*/
+    boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
+    showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +1 for 2 minutes!");
     updateClickPowerBar();
     renderAchievements();
     saveAchievements(); // сохранить в базу!
