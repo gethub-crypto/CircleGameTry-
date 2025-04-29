@@ -408,8 +408,10 @@ function animateCounter() {
     // Удвоить скорость автокликера
     /*clearInterval(autoclickInterval);
     autoclickInterval = setInterval(() => clickToken(), 500); // 0.5 секунды вместо 1*/
-    boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
-    showMessage("Secret Achievement Unlocked: Autoclicker Master! Click Power +2 for 2 minutes!");
+    
+    showMessage("Secret Achievement Unlocked: Autoclicker Master! Free Autoclicker for 2 minutes!");
+    // Включаем автокликер на 2 минуты без вычета токенов
+    startFreeAutoclicker(120000); // 2 минуты
     renderAchievements();
     saveAchievements(); // сохранить в базу!
 
@@ -421,7 +423,21 @@ function saveAchievements() {
   db.ref("achievements/" + user.uid).set(achievements);
 }
   
+function startFreeAutoclicker(duration) {
+  clearInterval(autoclickInterval);
+  autoclickInterval = setInterval(() => clickToken(), 1000);
+  autoclickActive = true;
+  autoclickEndTime = Date.now() + duration;
 
+  // Обновить интерфейс
+  updateProfilePanel();
+
+  setTimeout(() => {
+    stopAutoclicker(); // стандартная остановка
+    showMessage("Free Autoclicker expired.");
+  }, duration);
+}
+  
   
 function toggleShop() {
   const shop = document.getElementById("shop");
