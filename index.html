@@ -287,6 +287,42 @@ function animateCounter() {
   }, 200);
 }
   
+  function checkAchievements() {
+  // Секретное достижение: 10,000 кликов
+  if (!achievements.superClicker && totalClicks >= 10000) {
+    achievements.superClicker = true;
+    clickPower += 10;
+    showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +10!");
+    updateClickPowerBar();
+  }
+
+  // Секретное достижение: 1 миллион токенов
+  if (!achievements.tokenHoarder && score >= 1000000) {
+    achievements.tokenHoarder = true;
+    clickPower += 5;
+    showMessage("Secret Achievement Unlocked: Token Hoarder! Click Power +5!");
+    updateClickPowerBar();
+  }
+
+  // Секретное достижение: Достиг 5 уровня
+  const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
+  if (!achievements.level5 && currentLevel >= 5) {
+    achievements.level5 = true;
+    clickPower += 1;
+    showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +1!");
+    updateClickPowerBar();
+  }
+
+  // Секретное достижение: Активировать автокликер 10 раз
+  if (!achievements.autoclickerMaster && autoclickerUses >= 10) {
+    achievements.autoclickerMaster = true;
+    // Удвоить скорость автокликера
+    clearInterval(autoclickInterval);
+    autoclickInterval = setInterval(() => clickToken(), 500); // 0.5 секунды вместо 1
+    showMessage("Secret Achievement Unlocked: Autoclicker Master! Autoclicker speed x2!");
+  }
+}
+
   
 function toggleShop() {
   const shop = document.getElementById("shop");
