@@ -395,7 +395,7 @@ function animateCounter() {
     achievements.level5 = true;
    /* clickPower += 1;*/
     boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
-    showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +1 for 2 minutes!");
+    showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +2 for 2 minutes!");
     updateClickPowerBar();
     renderAchievements();
     saveAchievements(); // сохранить в базу!
@@ -406,9 +406,10 @@ function animateCounter() {
   if (!achievements.autoclickerMaster && autoclickerUses >= 10) {
     achievements.autoclickerMaster = true;
     // Удвоить скорость автокликера
-    clearInterval(autoclickInterval);
-    autoclickInterval = setInterval(() => clickToken(), 500); // 0.5 секунды вместо 1
-    showMessage("Secret Achievement Unlocked: Autoclicker Master! Autoclicker speed x2!");
+    /*clearInterval(autoclickInterval);
+    autoclickInterval = setInterval(() => clickToken(), 500); // 0.5 секунды вместо 1*/
+    boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
+    showMessage("Secret Achievement Unlocked: Autoclicker Master! Click Power +2 for 2 minutes!");
     renderAchievements();
     saveAchievements(); // сохранить в базу!
 
