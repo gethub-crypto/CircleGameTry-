@@ -254,6 +254,25 @@ function toggleAchievements() {
   btn.innerHTML = isOpen ? '🏆 Achievements ▲' : '🏆 Achievements ▼';
 }
   
+function renderAchievements() {
+  const list = document.getElementById('achievementsList');
+  list.innerHTML = '';
+
+  for (const key in allAchievements) {
+    const achieved = achievements[key];
+    const ach = allAchievements[key];
+
+    const div = document.createElement('div');
+    div.style.marginBottom = '10px';
+    div.style.padding = '8px';
+    div.style.border = '1px solid #00c3ff';
+    div.style.borderRadius = '8px';
+    div.style.backgroundColor = achieved ? '#00ffa6' : '#222';
+    div.style.color = achieved ? '#000' : '#fff';
+    div.innerHTML = `<strong>${ach.name}</strong><br>${ach.description}<br><em>${ach.reward}</em>`;
+    list.appendChild(div);
+  }
+}
 
 
   
