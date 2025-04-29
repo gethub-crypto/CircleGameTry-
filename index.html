@@ -248,6 +248,21 @@ function updateProfilePanel() {
   }
 }
 
+function boostClickPowerTemporarily(amount, duration) {
+  clickPower += amount;
+  updateClickPowerBar();
+  showMessage(`Temporary boost: Click Power +${amount} for ${duration / 1000} seconds!`);
+
+  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+
+  tempBoostTimeout = setTimeout(() => {
+    clickPower -= amount;
+    updateClickPowerBar();
+    showMessage(`Boost expired: Click Power -${amount}`);
+  }, duration);
+}
+  
+
 function toggleAchievements() {
   const panel = document.getElementById('achievementsPanel');
   const btn = document.getElementById('achievementsBtn');
