@@ -510,6 +510,8 @@ function loadPlayerData(uid) {
       updateCounterDisplay();
       updateClickPowerBar();
       updateProfilePanel();
+      updateAchievementsUI();
+      updateAutoClickerDisplay();
 
       if (autoclickEndTime > Date.now()) {
         autoclickActive = true;
