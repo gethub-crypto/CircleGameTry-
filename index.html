@@ -419,6 +419,15 @@ function loadPlayerData(uid) {
       }
     }
   });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+  const data = snapshot.val();
+  if (data) {
+    achievements = data;
+    renderAchievements();
+  }
+});
+  
 }
 
 function submitScore() {
