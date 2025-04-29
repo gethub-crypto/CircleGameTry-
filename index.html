@@ -172,6 +172,15 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
+const allAchievements = {
+  superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+10 Click Power" },
+  tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+5 Click Power" },
+  level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
+  autoclickerMaster: { name: "Autoclicker Master", description: "Use autoclicker 10 times", reward: "Autoclicker speed x2" }
+};
+  
+  
+
 // >>> СЮДА вставить <<<
 const levelUpRequirements = [
   50000,          // уровень 1 → 2
