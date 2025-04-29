@@ -507,6 +507,7 @@ function loadPlayerData(uid) {
       score = data.score || 0;
       clickPower = data.clickPower || 1;
       autoclickEndTime = data.autoclickEndTime || 0;
+      originalClickPower = data.originalClickPower || 1;
       updateCounterDisplay();
       updateClickPowerBar();
       updateProfilePanel();
