@@ -356,7 +356,9 @@ function updateClickPowerBar() {
   const currentPower = originalClickPower ?? clickPower; // только постоянная сила
   const maxPower = 8;
 
-  document.getElementById("clickPowerDisplay").innerText = `${currentPower} / ${maxPower}`;
+  /* document.getElementById("clickPowerDisplay").innerText = `${currentPower} / ${maxPower}`;*/
+  
+document.getElementById("clickPowerDisplay").innerText = `${originalClickPower} / ${maxClickPower}`;
 
   const progress = Math.min((currentPower / maxPower) * 100, 100);
   document.getElementById("clickPowerBar").style.width = progress + "%";
