@@ -234,6 +234,16 @@ function updateProfilePanel() {
   }
 }
 
+function toggleAchievements() {
+  const panel = document.getElementById('achievementsPanel');
+  const btn = document.getElementById('achievementsBtn');
+  const isOpen = panel.classList.toggle('open');
+  btn.innerHTML = isOpen ? '🏆 Achievements ▲' : '🏆 Achievements ▼';
+}
+  
+
+
+  
 function updateClickPowerBar() {
   document.getElementById("clickPowerDisplay").innerText = clickPower;
   const progress = Math.min((clickPower / 8) * 100, 100);
