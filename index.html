@@ -266,6 +266,8 @@ function showMessage(msg) {
 
 function clickToken() {
   score += clickPower;
+  totalClicks++;
+  checkAchievements();
   updateCounterDisplay();
   updateProfilePanel();
   animateCounter(); // добавляем анимацию после обновления текста
