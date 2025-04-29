@@ -211,7 +211,7 @@ let originalClickPower = null;
   
 
 function updateProfilePanel() {
-  document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);;
+  document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
   if (autoclickActive) {
     const remaining = Math.max(0, autoclickEndTime - Date.now());
     const seconds = Math.floor(remaining / 1000) % 60;
