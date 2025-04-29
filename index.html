@@ -322,6 +322,9 @@ function animateCounter() {
     clickPower += 10;
     showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +10!");
     updateClickPowerBar();
+    renderAchievements();
+    saveAchievements(); // сохранить в базу!
+    
   }
 
   // Секретное достижение: 1 миллион токенов
@@ -330,6 +333,9 @@ function animateCounter() {
     clickPower += 5;
     showMessage("Secret Achievement Unlocked: Token Hoarder! Click Power +5!");
     updateClickPowerBar();
+    renderAchievements();
+    saveAchievements(); // сохранить в базу!
+
   }
 
   // Секретное достижение: Достиг 5 уровня
@@ -339,6 +345,9 @@ function animateCounter() {
     clickPower += 1;
     showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +1!");
     updateClickPowerBar();
+    renderAchievements();
+    saveAchievements(); // сохранить в базу!
+
   }
 
   // Секретное достижение: Активировать автокликер 10 раз
@@ -348,6 +357,9 @@ function animateCounter() {
     clearInterval(autoclickInterval);
     autoclickInterval = setInterval(() => clickToken(), 500); // 0.5 секунды вместо 1
     showMessage("Secret Achievement Unlocked: Autoclicker Master! Autoclicker speed x2!");
+    renderAchievements();
+    saveAchievements(); // сохранить в базу!
+
   }
 }
 
