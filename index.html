@@ -345,7 +345,7 @@ function animateCounter() {
   if (!achievements.superClicker && totalClicks >= 10) {
     achievements.superClicker = true;
     boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
-    showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2!");
+    showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
     updateClickPowerBar();
     renderAchievements();
     saveAchievements(); // сохранить в базу!
