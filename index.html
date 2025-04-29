@@ -342,6 +342,7 @@ function renderAchievements() {
 
   function updateClickPowerBar() {
   /*const displayPower = Math.min(); // ограничиваем визуально */
+   const displayPower = originalClickPower ?? clickPower; // показываем базовую силу 
   document.getElementById("clickPowerDisplay").innerText = `${displayPower} / 8`;
 
   const progress = Math.min((displayPower / 8) * 100, 100);
