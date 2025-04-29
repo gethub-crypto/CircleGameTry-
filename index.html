@@ -363,6 +363,12 @@ function animateCounter() {
   }
 }
 
+function saveAchievements() {
+  if (!user) return;
+  db.ref("achievements/" + user.uid).set(achievements);
+}
+  
+
   
 function toggleShop() {
   const shop = document.getElementById("shop");
