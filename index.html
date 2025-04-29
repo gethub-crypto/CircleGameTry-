@@ -248,6 +248,13 @@ function updateProfilePanel() {
   }
 }
 
+function setClickPower(newPower) {
+  clickPower = Math.min(newPower, 8); // ограничиваем максимумом 8
+  updateClickPowerBar();
+  updateProfilePanel();
+}
+  
+  
 function boostClickPowerTemporarily(amount, duration) {
   clickPower += amount;
   updateClickPowerBar();
