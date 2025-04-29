@@ -369,7 +369,7 @@ function animateCounter() {
   // Секретное достижение: 10,000 кликов
   if (!achievements.superClicker && totalClicks >= 20) {
     achievements.superClicker = true;
-    boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
+    boostClickPowerTemporarily(2, 120000); // +2 на 1 мин
     showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
     updateClickPowerBar();
     renderAchievements();
@@ -381,7 +381,7 @@ function animateCounter() {
   if (!achievements.tokenHoarder && score >= 10) {
     achievements.tokenHoarder = true;
    /* clickPower += 5; */
-    boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
+    boostClickPowerTemporarily(2, 120000); // +2 на 1 мин
     showMessage("Secret Achievement Unlocked: Token Hoarder! Click Power +2 for 2 minutes!");
     updateClickPowerBar();
     renderAchievements();
@@ -394,7 +394,7 @@ function animateCounter() {
   if (!achievements.level5 && currentLevel >= 5) {
     achievements.level5 = true;
    /* clickPower += 1;*/
-    boostClickPowerTemporarily(2, 60000); // +2 на 1 мин
+    boostClickPowerTemporarily(2, 120000); // +2 на 1 мин
     showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +2 for 2 minutes!");
     updateClickPowerBar();
     renderAchievements();
