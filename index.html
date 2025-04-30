@@ -269,9 +269,18 @@ function setClickPower(newPower) {
   
 
 function updateClickPowerCostText() {
+  const costText = document.getElementById('clickPowerCostText');
+  if (costText) {
+    const cost = getClickPowerUpgradeCost();
+    costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
+  }
+}
+
+  
+/*function updateClickPowerCostText() {
   const cost = getClickPowerUpgradeCost();
   document.getElementById("clickPowerCostText").innerText = `💪 Click Power +1 (Cost: ${cost})`;
-}
+} */
   
   
 /*function boostClickPowerTemporarily(amount, duration) {
