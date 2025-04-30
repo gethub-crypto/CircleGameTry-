@@ -536,7 +536,10 @@ function buyUpgrade(type) {
       return;
     }
  const cost = clickPowerUpgradeCosts[nextLevel - 1]; // уровни начинаются с 1
-    
+    const cost = getClickPowerUpgradeCost();
+    if (tokenBalance >= cost) {
+      tokenBalance -= cost;
+      clickPower++;
     /*if (score >= 50) {
       score -= 50;
       clickPower++; */
