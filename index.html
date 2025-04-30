@@ -272,21 +272,7 @@ function setClickPower(newPower) {
   }, duration);
 }*/
 
-/* function boostClickPowerTemporarily(amount, duration) {
-  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
-  originalClickPower = clickPower;
-  const boosted = Math.min(clickPower + amount, 8);
-  setClickPower(boosted); // безопасно установить
-
-  const actualBoost = boosted - originalClickPower;
-  showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} sec`);
-
-  tempBoostTimeout = setTimeout(() => {
-    setClickPower(originalClickPower);
-    showMessage(`Boost expired: Click Power restored to ${originalClickPower}`);
-  }, duration);
-} */
 
 function boostClickPowerTemporarily(amount, duration) {
   if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
