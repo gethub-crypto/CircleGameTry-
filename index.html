@@ -513,14 +513,38 @@ function toggleShop() {
   shop.style.display = shop.style.display === "none" ? "block" : "none";
 }
 
-function startAutoclicker(duration) {
+/*function startAutoclicker(duration) {
   clearInterval(autoclickInterval);
   autoclickInterval = setInterval(() => clickToken(), 1000);
   setTimeout(() => stopAutoclicker(), duration);
 
   autoclickerUses++;
   checkAchievements();
+} */
+
+function startAutoclicker(duration) {
+  const interval = setInterval(() => {
+    click(); // твоя основная функция клика
+  }, 1000); // автоклик раз в секунду
+
+  setTimeout(() => {
+    clearInterval(interval);
+    autoclickCooldown = false;
+    autoclickActive = false;
+    autoclickEndTime = null;
+    showMessage("Autoclicker ended.");
+
+    const userId = firebase.auth().currentUser?.uid;
+    if (userId) {
+      firebase.firestore().collection("users").doc(userId).update({
+        autoclickerActive: false,
+        autoclickerEndTime: null
+      });
+    }
+  }, duration);
 }
+  
+  
 
 function stopAutoclicker() {
   clearInterval(autoclickInterval);
