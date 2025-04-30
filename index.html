@@ -554,13 +554,14 @@ function submitScore() {
 }
 
 function buyUpgrade(type) {
+  const cost = getClickPowerUpgradeCost();
   if (type === "clickPower") {
     if (clickPower >= 8) {
       showMessage("Click Power is at maximum!");
       return;
     }
 /* const cost = clickPowerUpgradeCosts[nextLevel - 1]; // уровни начинаются с 1 */
-    const cost = getClickPowerUpgradeCost();
+  /*  const cost = getClickPowerUpgradeCost(); */
     if (tokenBalance >= cost) {
       tokenBalance -= cost;
       clickPower++;
