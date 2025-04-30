@@ -259,6 +259,11 @@ function setClickPower(newPower) {
   updateClickPowerBar();
   updateProfilePanel();
 }
+
+
+  function getClickPowerUpgradeCost() {
+  return Math.floor(50 * Math.pow(1.5, clickPower - 1));
+  }
   
   
 /*function boostClickPowerTemporarily(amount, duration) {
