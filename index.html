@@ -526,8 +526,13 @@ function buyUpgrade(type) {
       showMessage("Click Power is at maximum!");
       return;
     }
-    if (score >= 50) {
+ const cost = clickPowerUpgradeCosts[nextLevel - 1]; // уровни начинаются с 1
+    
+    /*if (score >= 50) {
       score -= 50;
+      clickPower++; */
+    if (score >= cost) {
+      score -= cost;
       clickPower++;
       updateCounterDisplay();
       updateClickPowerBar();
