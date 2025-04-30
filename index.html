@@ -342,6 +342,7 @@ function renderAchievements() {
   document.getElementById("clickPowerDisplay").innerText = clickPower;
   const progress = Math.min((clickPower / 8) * 100, 100);
   document.getElementById("clickPowerBar").style.width = progress + "%";
+   updateClickPowerCostText(); // <-- добавьте это
 } 
 
 
