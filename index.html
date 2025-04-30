@@ -270,13 +270,26 @@ function setClickPower(newPower) {
   }
   
 
-function updateClickPowerCostText() {
+/*function updateClickPowerCostText() {
   const costText = document.getElementById('clickPowerCostText');
   if (costText) {
     const cost = getClickPowerUpgradeCost();
     costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
   }
-}
+} */
+
+function updateClickPowerCostText() {
+  const costText = document.getElementById('clickPowerCostText');
+  if (costText) {
+    if (clickPower >= MAX_CLICK_POWER) {
+      costText.textContent = "💪 Click Power: MAX LEVEL";
+    } else {
+      const cost = getClickPowerUpgradeCost();
+      costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
+    }
+  }
+        }
+      
 
   
 /*function updateClickPowerCostText() {
