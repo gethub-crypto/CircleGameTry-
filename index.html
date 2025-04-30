@@ -631,6 +631,39 @@ function buyUpgrade(type) {
   }
 }
 
+
+function buyAutoclicker(minutes) {
+  if (autoclickCooldown) {
+    showMessage("Autoclicker on cooldown.");
+    return;
+  }
+
+  const prices = {
+    1: 200,
+    5: 800,
+    10: 1400
+  };
+
+  const cost = prices[minutes];
+  if (score >= cost) {
+    score -= cost;
+    updateCounterDisplay();
+    showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
+    autoclickCooldown = true;
+    autoclickActive = true;
+    autoclickEndTime = Date.now() + minutes * 60000;
+    updateProfilePanel();
+    startAutoclicker(minutes * 60000);
+    submitScore();
+  } else {
+    showMessage("Not enough tokens for autoclicker.");
+  }
+}
+  
+
+
+
+  
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).then(result => {
