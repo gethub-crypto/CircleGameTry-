@@ -267,6 +267,12 @@ function setClickPower(newPower) {
   return Math.floor(50 * Math.pow(1.5, clickPower - 1));
   }
   
+
+function updateClickPowerCostText() {
+  const cost = getClickPowerUpgradeCost();
+  document.getElementById("clickPowerCostText").innerText = `💪 Click Power +1 (Cost: ${cost})`;
+}
+  
   
 /*function boostClickPowerTemporarily(amount, duration) {
   clickPower += amount;
