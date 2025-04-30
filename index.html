@@ -555,7 +555,7 @@ function submitScore() {
 
 function buyUpgrade(type) {
   if (type === "clickPower") {
-    if (clickPower >= 8) {
+    if (clickPower >= MAX_CLICK_POWER) {
       showMessage("Click Power is at maximum!");
       return;
     }
