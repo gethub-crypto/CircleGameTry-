@@ -765,6 +765,35 @@ auth.onAuthStateChanged(currentUser => {
   }
 });
 
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    const userId = user.uid;
+    firebase.firestore().collection("users").doc(userId).get().then(doc => {
+      const data = doc.data();
+      const endTime = data?.autoclickerEndTime;
+      const isActive = data?.autoclickerActive;
+
+      if (isActive && endTime && Date.now() < endTime) {
+        const remainingTime = endTime - Date.now();
+        autoclickCooldown = true;
+        autoclickActive = true;
+        autoclickEndTime = endTime;
+
+        showMessage(`Autoclicker resumed for ${Math.ceil(remainingTime / 60000)} minute(s)`);
+        startAutoclicker(remainingTime);
+      } else if (isActive) {
+        // Автокликер истёк — сбрасываем в Firebase
+        firebase.firestore().collection("users").doc(userId).update({
+          autoclickerActive: false,
+          autoclickerEndTime: null
+        });
+      }
+    });
+  }
+});
+  
+
+  
 db.ref("leaderboard").on("value", snapshot => {
   const data = [];
   snapshot.forEach(child => data.push(child.val()));
