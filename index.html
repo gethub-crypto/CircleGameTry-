@@ -342,7 +342,7 @@ function renderAchievements() {
   document.getElementById("clickPowerDisplay").innerText = clickPower;
   const progress = Math.min((clickPower / 8) * 100, 100);
   document.getElementById("clickPowerBar").style.width = progress + "%";
-   updateClickPowerCostText(); // <-- добавьте это
+   updateClickPowerCostText(); // <-- добавьте это 
 } 
 
 
@@ -535,7 +535,7 @@ function buyUpgrade(type) {
       showMessage("Click Power is at maximum!");
       return;
     }
- const cost = clickPowerUpgradeCosts[nextLevel - 1]; // уровни начинаются с 1
+/* const cost = clickPowerUpgradeCosts[nextLevel - 1]; // уровни начинаются с 1 */
     const cost = getClickPowerUpgradeCost();
     if (tokenBalance >= cost) {
       tokenBalance -= cost;
@@ -543,9 +543,9 @@ function buyUpgrade(type) {
     /*if (score >= 50) {
       score -= 50;
       clickPower++; */
-    if (score >= cost) {
+  /*  if (score >= cost) {
       score -= cost;
-      clickPower++;
+      clickPower++; */
       updateCounterDisplay();
       updateClickPowerBar();
       updateProfilePanel();
