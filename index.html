@@ -629,7 +629,8 @@ function submitScore() {
     name: user.displayName || "Anonymous",
     score: score,
     clickPower: clickPower,
-    autoclickEndTime: autoclickEndTime
+    autoclickEndTime: autoclickEndTime,
+    autoclick: autoclickActive // сохраняем autoclick
   });
 }
 
