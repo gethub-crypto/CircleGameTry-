@@ -242,7 +242,7 @@ let autoclickerUses = 0; // Сколько раз активирован авт�
 let achievements = {}; // Полученные достижения
 let tempBoostTimeout = null;
 let originalClickPower = null;
-let tokenBalance = 100;
+//let tokenBalance = 100;
 
   
 
@@ -472,7 +472,7 @@ function animateCounter() {
   }
 
   // Секретное достижение: Активировать автокликер 10 раз
-  if (!achievements.autoclickerMaster && autoclickerUses >= 2) {
+ if (!achievements.autoclickerMaster && autoclickerUses >= 2) {
     achievements.autoclickerMaster = true;
     // Удвоить скорость автокликера
     /*clearInterval(autoclickInterval);
