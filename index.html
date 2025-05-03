@@ -676,7 +676,7 @@ function buyUpgrade(type) {
       autoclickEndTime = Date.now() + 60000;
       updateProfilePanel();
       document.getElementById("autoclickBtn").disabled = true;
-      startAutoclicker(60000);
+     // startAutoclicker(60000);
       submitScore();
     } else {
       showMessage("Not enough tokens for autoclicker.");
