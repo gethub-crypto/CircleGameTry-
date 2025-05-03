@@ -516,6 +516,7 @@ function toggleShop() {
 function startAutoclicker(duration) {
   clearInterval(autoclickInterval);
   autoclickInterval = setInterval(() => clickToken(), 1000);
+  updateProfilePanel();
   setTimeout(() => stopAutoclicker(), duration);
 
   autoclickerUses++;
