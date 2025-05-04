@@ -492,7 +492,7 @@ function animateCounter() {
   db.ref("achievements/" + user.uid).set(achievements);
 }
   
-/* !!! function startFreeAutoclicker(duration) {
+function startFreeAutoclicker(duration) {
   clearInterval(autoclickInterval);
   autoclickInterval = setInterval(() => clickToken(), 1000);
   autoclickActive = true;
@@ -505,10 +505,10 @@ function animateCounter() {
     stopAutoclicker(); // стандартная остановка
     showMessage("Free Autoclicker expired.");
   }, duration);
-} !!!!*/
+} 
 
 
-  function startFreeAutoclicker(duration) {
+ /*  function startFreeAutoclicker(duration) {
   if (autoclickActive) {
     stopAutoclicker();
   }
@@ -535,7 +535,7 @@ function animateCounter() {
     stopAutoclicker();
     showMessage("Free Autoclicker expired.");
   }, duration);
-}
+} */
   
   
   
