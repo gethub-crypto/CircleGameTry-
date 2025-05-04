@@ -839,7 +839,7 @@ function buyUpgrade(type) {
     } else {
       showMessage("Not enough tokens for upgrade.");
     }
-  } else if (type === "autoclick") {
+  } else /* ????if (type === "autoclick") {
   if (autoclickCooldown) {
     showMessage("Autoclicker on cooldown.");
     return;
@@ -887,10 +887,10 @@ function buyUpgrade(type) {
   } else {
     showMessage("Not enough tokens for autoclicker.");
   }
-}
+} ???*/
 
     
-    /*!!! if (type === "autoclick") {
+     if (type === "autoclick") {
     if (autoclickCooldown) {
       showMessage("Autoclicker on cooldown.");
       return;
@@ -909,7 +909,7 @@ function buyUpgrade(type) {
     } else {
       showMessage("Not enough tokens for autoclicker.");
     }
-  }!!!*/
+  }
 }
 
 
