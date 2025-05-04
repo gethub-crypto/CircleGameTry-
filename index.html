@@ -924,43 +924,7 @@ function buyUpgrade(type) {
 } */
 
 
-/*  function buyAutoclicker(minutes) {
-  if (autoclickCooldown) {
-    showMessage("Autoclicker on cooldown.");
-    return;
-  }
 
-  const prices = {
-    1: 200,
-    5: 400,
-    10: 1400
-  };
-
-  const cost = prices[minutes];
-  if (score >= cost) {
-    score -= cost;
-    updateCounterDisplay();
-    showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
-    autoclickCooldown = true;
-    autoclickActive = true;
-    const endTime = Date.now() + minutes * 60000;
-    autoclickEndTime = endTime;
-
-    const userId = firebase.auth().currentUser?.uid;
-    if (userId) {
-      firebase.firestore().collection("users").doc(userId).update({
-        autoclickerActive: true,
-        autoclickerEndTime: endTime
-      });
-    }
-
-    updateProfilePanel();
-    startAutoclicker(minutes * 60000);
-    submitScore();
-  } else {
-    showMessage("Not enough tokens for autoclicker.");
-  }
-  } */
 
 
 /*. ???function buyAutoclicker(minutes) {
@@ -1043,7 +1007,9 @@ function buyAutoclicker(minutes) {
   }
 }  
 
-/* ??!!! function buyAutoclicker(minutes) {
+
+  
+  function buyAutoclicker(minutes) {
   if (autoclickCooldown) {
     showMessage("Autoclicker on cooldown.");
     return;
@@ -1067,7 +1033,7 @@ function buyAutoclicker(minutes) {
 
     const userId = firebase.auth().currentUser?.uid;
     if (userId) {
-      firebase.firestore().collection("users").doc(userId).update({
+      firebase.database().ref("users/" + userId).update({
         autoclickerActive: true,
         autoclickerEndTime: endTime
       });
@@ -1079,9 +1045,8 @@ function buyAutoclicker(minutes) {
   } else {
     showMessage("Not enough tokens for autoclicker.");
   }
-} ??!!!*/
-  
-  
+}
+
   
   
 
