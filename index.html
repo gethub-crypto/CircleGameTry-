@@ -802,6 +802,7 @@ function submitScore() {
     clickPower: clickPower,
     autoclickEndTime: autoclickEndTime,
     autoclickActive: autoclickActive,
+    autoclick: autoclickActive, // сохраняем autoclick !!!!!
     lastUpdate: Date.now(), // Сохраняем время последнего обновления
     level: calculateLevel(score)
   }).catch(error => {
