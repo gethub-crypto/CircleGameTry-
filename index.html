@@ -544,7 +544,7 @@ function toggleShop() {
   shop.style.display = shop.style.display === "none" ? "block" : "none";
 }
 
- function startAutoclicker(duration) {
+/*!!!! function startAutoclicker(duration) {
   //clearInterval(autoclickInterval);
   autoclickInterval = setInterval(() => clickToken(), 1000);
   updateProfilePanel();
@@ -552,14 +552,15 @@ function toggleShop() {
 
   autoclickerUses++;
   checkAchievements();
-} 
+} !!!*/
 
-/*function startAutoclicker(duration) {
+
+  function startAutoclicker(duration) {
   const interval = setInterval(() => {
-    score++; // Увеличиваем очки
-    updateCounterDisplay(); // Обновляем отображение
-    submitScore(); // Сохраняем очки в Firebase
-  }, 1000); // Каждую секунду
+    score++;
+    updateCounterDisplay();
+    submitScore(); // Отправка очков в БД
+  }, 1000);
 
   setTimeout(() => {
     clearInterval(interval);
@@ -570,62 +571,18 @@ function toggleShop() {
 
     const userId = firebase.auth().currentUser?.uid;
     if (userId) {
-      firebase.firestore().collection("users").doc(userId).update({
+      firebase.database().ref("users/" + userId).update({
         autoclickerActive: false,
         autoclickerEndTime: null
       });
     }
   }, duration);
-} */
-  
+}
 
-/*function startAutoclicker(duration) {
-  const interval = setInterval(() => {
-    click(); // твоя основная функция клика
-  }, 1000); // автоклик раз в секунду
 
-  setTimeout(() => {
-    clearInterval(interval);
-    autoclickCooldown = false;
-    autoclickActive = false;
-    autoclickEndTime = null;
-    showMessage("Autoclicker ended.");
 
-    const userId = firebase.auth().currentUser?.uid;
-    if (userId) {
-      firebase.firestore().collection("users").doc(userId).update({
-        autoclickerActive: false,
-        autoclickerEndTime: null
-      });
-    }
-  }, duration);
-  autoclickerUses++;
-  checkAchievements();
-} */
 
-/*  function startAutoclicker(duration) {
-  const interval = setInterval(() => {
-    score++; // Увеличиваем очки
-    updateCounterDisplay(); // Обновляем отображение
-    submitScore(); // Сохраняем очки в Firebase
-  }, 1000); // Каждую секунду
 
-  setTimeout(() => {
-    clearInterval(interval);
-    autoclickCooldown = false;
-    autoclickActive = false;
-    autoclickEndTime = null;
-    showMessage("Autoclicker ended.");
-
-    const userId = firebase.auth().currentUser?.uid;
-    if (userId) {
-      firebase.firestore().collection("users").doc(userId).update({
-        autoclickerActive: false,
-        autoclickerEndTime: null
-      });
-    }
-  }, duration);
-  } */
 
   
  /* ????function startAutoclicker(duration) {
