@@ -778,7 +778,7 @@ function loadPlayerData(uid) {
 
 
   
-/* !!!!!!function submitScore() {
+function submitScore() {
   if (!user) return;
   db.ref("leaderboard/" + user.uid).set({
     id: user.uid,
@@ -788,9 +788,9 @@ function loadPlayerData(uid) {
     autoclickEndTime: autoclickEndTime,
     autoclick: autoclickActive // сохраняем autoclick !!!!!
   });
-} !!!!! */
+} 
 
-function submitScore() {
+/*function submitScore() {
   if (!user) {
     console.warn("Cannot submit score: No user is authenticated.");
     return;
@@ -809,7 +809,7 @@ function submitScore() {
     console.error("Ошибка сохранения счета:", error);
     showMessage("Не удалось сохранить прогресс.");
   });
-}
+} */
   
 
 function buyUpgrade(type) {
