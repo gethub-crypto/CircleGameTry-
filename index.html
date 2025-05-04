@@ -1044,14 +1044,38 @@ function signOut() {
   });
 }
 
-auth.onAuthStateChanged(currentUser => {
+/* !!!!! auth.onAuthStateChanged(currentUser => {
   if (currentUser) {
     user = currentUser;
     document.getElementById("authSection").style.display = "none";
     document.getElementById("gameSection").style.display = "block";
     loadPlayerData(user.uid);
   }
+}); !!!!*///
+
+auth.onAuthStateChanged(currentUser => {
+  if (currentUser) {
+    user = currentUser;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    loadPlayerData(user.uid);
+    updateLeaderboard();
+  } else {
+    user = null;
+    score = 0;
+    clickPower = 1;
+    autoclickActive = false;
+    autoclickEndTime = 0;
+    clearInterval(autoclickInterval);
+    document.getElementById("authSection").style.display = "block";
+    document.getElementById("gameSection").style.display = "none";
+    updateCounterDisplay();
+    updateClickPowerBar();
+    updateProfilePanel();
+    updateLeaderboard();
+  }
 });
+  
 
 /*firebase.auth().onAuthStateChanged(user => {
   if (user) {
