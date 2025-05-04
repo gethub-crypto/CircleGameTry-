@@ -475,12 +475,12 @@ function animateCounter() {
  if (!achievements.autoclickerMaster && autoclickerUses >= 2) {
     achievements.autoclickerMaster = true;
     // Удвоить скорость автокликера
-    /*clearInterval(autoclickInterval);
-    autoclickInterval = setInterval(() => clickToken(), 500); // 0.5 секунды вместо 1*/
+    clearInterval(autoclickInterval);
+    autoclickInterval = setInterval(() => clickToken(), 500); // 0.5 секунды вместо 1
     
-    showMessage("Secret Achievement Unlocked: Autoclicker Master! Free Autoclicker for 2 minutes!");
+    showMessage("Secret Achievement Unlocked: Autoclicker Master!");
     // Включаем автокликер на 2 минуты без вычета токенов
-    startFreeAutoclicker(120000); // 2 минуты
+  //  startFreeAutoclicker(120000); // 2 минуты
     renderAchievements();
     saveAchievements(); // сохранить в базу!
 
