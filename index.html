@@ -544,15 +544,15 @@ function toggleShop() {
   shop.style.display = shop.style.display === "none" ? "block" : "none";
 }
 
-/* !!! function startAutoclicker(duration) {
-  clearInterval(autoclickInterval);
+ function startAutoclicker(duration) {
+  //clearInterval(autoclickInterval);
   autoclickInterval = setInterval(() => clickToken(), 1000);
   updateProfilePanel();
   setTimeout(() => stopAutoclicker(), duration);
 
   autoclickerUses++;
   checkAchievements();
-} !!!! */
+} 
 
 /*function startAutoclicker(duration) {
   const interval = setInterval(() => {
@@ -603,7 +603,7 @@ function toggleShop() {
   } */
 
   
-  function startAutoclicker(duration) {
+ /* ????function startAutoclicker(duration) {
   // Останавливаем существующий автокликер, если он активен
   if (autoclickActive) {
     stopAutoclicker();
@@ -632,7 +632,7 @@ function toggleShop() {
 
   // Планируем остановку автокликера
   setTimeout(() => stopAutoclicker(), duration);
-  }
+  } ?????*/
   
   
 
@@ -801,7 +801,7 @@ function submitScore() {
     score: score,
     clickPower: clickPower,
     autoclickEndTime: autoclickEndTime,
-    autoclickActive: autoclickActive,
+    //autoclickActive: autoclickActive,
     autoclick: autoclickActive, // сохраняем autoclick !!!!!
     lastUpdate: Date.now(), // Сохраняем время последнего обновления
     level: calculateLevel(score)
