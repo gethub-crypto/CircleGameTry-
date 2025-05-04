@@ -778,7 +778,7 @@ function loadPlayerData(uid) {
 
 
   
-function submitScore() {
+/* !!!!!!function submitScore() {
   if (!user) return;
   db.ref("leaderboard/" + user.uid).set({
     id: user.uid,
@@ -786,9 +786,30 @@ function submitScore() {
     score: score,
     clickPower: clickPower,
     autoclickEndTime: autoclickEndTime,
-    autoclick: autoclickActive // сохраняем autoclick
+    autoclick: autoclickActive // сохраняем autoclick !!!!!
+  });
+} !!!!! */
+
+function submitScore() {
+  if (!user) {
+    console.warn("Cannot submit score: No user is authenticated.");
+    return;
+  }
+  db.ref("leaderboard/" + user.uid).set({
+    id: user.uid,
+    name: user.displayName || "Anonymous",
+    score: score,
+    clickPower: clickPower,
+    autoclickEndTime: autoclickEndTime,
+    autoclickActive: autoclickActive,
+    lastUpdate: Date.now(), // Сохраняем время последнего обновления
+    level: calculateLevel(score)
+  }).catch(error => {
+    console.error("Ошибка сохранения счета:", error);
+    showMessage("Не удалось сохранить прогресс.");
   });
 }
+  
 
 function buyUpgrade(type) {
   const cost = getClickPowerUpgradeCost();
