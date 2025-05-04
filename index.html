@@ -1085,7 +1085,7 @@ function signOut() {
     user = null;
     score = 0;
     clickPower = 1;
-    autoclickActive = false;
+ //   autoclickActive = false;
     autoclickEndTime = 0;
     clearInterval(autoclickInterval);
     document.getElementById("authSection").style.display = "block";
@@ -1094,18 +1094,18 @@ function signOut() {
     updateClickPowerBar();
     updateProfilePanel();
   });
-}
+} 
 
-/* !!!!! auth.onAuthStateChanged(currentUser => {
+ auth.onAuthStateChanged(currentUser => {
   if (currentUser) {
     user = currentUser;
     document.getElementById("authSection").style.display = "none";
     document.getElementById("gameSection").style.display = "block";
     loadPlayerData(user.uid);
   }
-}); !!!!*///
+}); 
 
-auth.onAuthStateChanged(currentUser => {
+/* ???auth.onAuthStateChanged(currentUser => {
   if (currentUser) {
     user = currentUser;
     document.getElementById("authSection").style.display = "none";
@@ -1126,7 +1126,7 @@ auth.onAuthStateChanged(currentUser => {
     updateProfilePanel();
     updateLeaderboard();
   }
-});
+}); ???*/
   
 
 /*firebase.auth().onAuthStateChanged(user => {
