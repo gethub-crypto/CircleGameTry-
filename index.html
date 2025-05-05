@@ -993,7 +993,7 @@ function signOut() {
 }); 
 
   
-db.ref("leaderboard").on("value", snapshot => {
+/* !db.ref("leaderboard").on("value", snapshot => {
   const data = [];
   snapshot.forEach(child => data.push(child.val()));
   data.sort((a, b) => b.score - a.score);
@@ -1002,7 +1002,40 @@ db.ref("leaderboard").on("value", snapshot => {
   data.slice(0, 10).forEach((entry, index) => {
     leaderboard.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
   });
-});
+}); !*/
+
+db.ref("leaderboard").on("value", snapshot => {
+  const data = [];
+  snapshot.forEach(child => {
+    const entry = child.val();
+    // Проверяем, что данные корректны
+    if (entry && entry.score !== undefined && entry.name) {
+      data.push({
+        id: entry.id,
+        name: entry.name,
+        score: entry.score
+      });
+    }
+  });
+
+  // Сортируем по убыванию очков
+  data.sort((a, b) => b.score - a.score);
+
+  const leaderboard = document.getElementById("leaderboard");
+  leaderboard.innerHTML = "";
+
+  if (data.length === 0) {
+    leaderboard.innerHTML = "<tr><td colspan='3'>No players yet</td></tr>";
+    return;
+  }
+
+  data.slice(0, 10).forEach((entry, index) => {
+    leaderboard.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
+  });
+}, error => {
+  console.error("Ошибка загрузки лидерборда:", error);
+  showMessage("Не удалось загрузить таблицу лидеров.");
+});  
 
 setInterval(() => {
   if (user) {
