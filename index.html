@@ -318,14 +318,7 @@ function updateClickPowerCostText() {
     }
   }
         } */
-      
-
-  
-/*function updateClickPowerCostText() {
-  const cost = getClickPowerUpgradeCost();
-  document.getElementById("clickPowerCostText").innerText = `💪 Click Power +1 (Cost: ${cost})`;
-} */
-  
+    
   
 /*function boostClickPowerTemporarily(amount, duration) {
   clickPower += amount;
@@ -555,70 +548,6 @@ function animateCounter() {
   checkAchievements();
 } !!!*/
 
-
-/*  function startAutoclicker(duration) {
-  const interval = setInterval(() => {
-    score++;
-    updateCounterDisplay();
-    submitScore(); // Отправка очков в БД
-  }, 1000);
-
-  setTimeout(() => {
-    clearInterval(interval);
-    autoclickCooldown = false;
-    autoclickActive = false;
-    autoclickEndTime = null;
-    showMessage("Autoclicker ended.");
-
-    const userId = firebase.auth().currentUser?.uid;
-    if (userId) {
-      firebase.database().ref("users/" + userId).update({
-        autoclickerActive: false,
-        autoclickerEndTime: null
-      });
-    }
-  }, duration);
-    
-    autoclickerUses++;
-  checkAchievements();
-} */
-
-
-
-
-
-
-  
- /* ????function startAutoclicker(duration) {
-  // Останавливаем существующий автокликер, если он активен
-  if (autoclickActive) {
-    stopAutoclicker();
-  }
-
-  // Устанавливаем параметры автокликера
-  autoclickActive = true;
-  autoclickEndTime = Date.now() + duration;
-  autoclickInterval = setInterval(() => clickToken(), 1000);
-  autoclickerUses++;
-  checkAchievements();
-
-  // Обновляем интерфейс
-  updateProfilePanel();
-  submitScore(); // Сохраняем начальное состояние
-
-  // Сохраняем состояние автокликера в базе
-  if (user) {
-    db.ref("leaderboard/" + user.uid).update({
-      autoclickActive: true,
-      autoclickEndTime: autoclickEndTime
-    }).catch(error => {
-      console.error("Ошибка сохранения состояния автокликера:", error);
-    });
-  }
-
-  // Планируем остановку автокликера
-  setTimeout(() => stopAutoclicker(), duration);
-  } ?????*/
 
 
  function startAutoclicker(duration) {
