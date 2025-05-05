@@ -734,8 +734,6 @@ function animateCounter() {
   });
 }
 
-
-
   
 /*!!! function submitScore() {
   if (!user) return;
@@ -765,26 +763,6 @@ function submitScore() {
   });
 }
   
-/*function submitScore() {
-  if (!user) {
-    console.warn("Cannot submit score: No user is authenticated.");
-    return;
-  }
-  db.ref("leaderboard/" + user.uid).set({
-    id: user.uid,
-    name: user.displayName || "Anonymous",
-    score: score,
-    clickPower: clickPower,
-    autoclickEndTime: autoclickEndTime,
-    //autoclickActive: autoclickActive,
-    autoclick: autoclickActive, // сохраняем autoclick !!!!!
-    lastUpdate: Date.now(), // Сохраняем время последнего обновления
-    level: calculateLevel(score)
-  }).catch(error => {
-    console.error("Ошибка сохранения счета:", error);
-    showMessage("Не удалось сохранить прогресс.");
-  });
-} */
   
 
 function buyUpgrade(type) {
@@ -814,58 +792,7 @@ function buyUpgrade(type) {
     } else {
       showMessage("Not enough tokens for upgrade.");
     }
-  } else /* ????if (type === "autoclick") {
-  if (autoclickCooldown) {
-    showMessage("Autoclicker on cooldown.");
-    return;
-  }
-  if (score >= 200) {
-    score -= 200;
-    updateCounterDisplay();
-    showMessage("Autoclicker activated for 1 minute!");
-    autoclickCooldown = true;
-    autoclickActive = true;
-    updateProfilePanel();
-    document.getElementById("autoclickBtn").disabled = true;
-
-    // Сохраняем состояние автокликера в базе данных
-    if (user) {
-      db.ref("leaderboard/" + user.uid).update({
-        autoclickActive: true,
-        autoclickEndTime: Date.now() + 60000 // Текущее время + 1 минута
-      });
-    }
-
-    autoclickInterval = setInterval(() => clickToken(), 1000);
-
-    setTimeout(() => {
-      clearInterval(autoclickInterval);
-      autoclickActive = false;
-      updateProfilePanel();
-      showMessage("Autoclicker deactivated.");
-
-      // Обновляем состояние автокликера в базе данных
-      if (user) {
-        db.ref("leaderboard/" + user.uid).update({
-          autoclickActive: false
-        });
-      }
-
-      setTimeout(() => {
-        autoclickCooldown = false;
-        document.getElementById("autoclickBtn").disabled = false;
-        showMessage("Autoclicker available again.");
-      }, 1000);
-    }, 60000);
-
-    submitScore();
-  } else {
-    showMessage("Not enough tokens for autoclicker.");
-  }
-} ???*/
-
-    
-     if (type === "autoclick") {
+  } else if (type === "autoclick") {
     if (autoclickCooldown) {
       showMessage("Autoclicker on cooldown.");
       return;
