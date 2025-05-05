@@ -669,7 +669,7 @@ function animateCounter() {
   }, 1000);
 } !!!*/
 
-function stopAutoclicker() {
+/*??? function stopAutoclicker() {
   clearInterval(autoclickInterval);
   autoclickActive = false;
   autoclickEndTime = 0;
@@ -696,7 +696,41 @@ function stopAutoclicker() {
       console.error("Ошибка обновления состояния автокликера:", error);
     });
   }
-}
+} ???*/
+
+
+ function stopAutoclicker() {
+  clearInterval(autoclickInterval);
+  autoclickActive = false;
+  autoclickEndTime = 0;
+  autoclickInterval = null;
+
+  // Обновляем интерфейс
+  updateProfilePanel();
+  submitScore();
+  showMessage("Autoclicker deactivated.");
+
+  // Снимаем кулдаун через 1 секунду
+  setTimeout(() => {
+    autoclickCooldown = false;
+    document.getElementById("autoclickBtn").disabled = false;
+    showMessage("Autoclicker available again.");
+  }, 1000);
+
+  // Обновляем состояние в базе
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: false,
+      autoclickEndTime: 0,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Ошибка обновления состояния автокликера:", error);
+    });
+  }
+} 
+
+
+  
 
 
 
