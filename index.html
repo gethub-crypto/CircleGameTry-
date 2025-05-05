@@ -810,8 +810,12 @@ function animateCounter() {
 
 function submitScore() {
   if (!user) return;
+  // Убедимся, что имя пользователя не пустое
+  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`; // Используем часть UID, если имени нет
+  
   db.ref("leaderboard/" + user.uid).set({
     id: user.uid,
+    name: userName, // Сохраняем корректное имя
     name: user.displayName || "Anonymous",
     score: score,
     clickPower: clickPower,
