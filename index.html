@@ -702,7 +702,7 @@ function stopAutoclicker() {
   
 } !!!!!*/
 
-function loadPlayerData(uid) {
+/* ??? function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -743,6 +743,72 @@ function loadPlayerData(uid) {
     // Сохраняем текущее время как lastUpdate
     if (user) {
       db.ref("leaderboard/" + user.uid).update({
+        lastUpdate: Date.now()
+      });
+    }
+  }).catch(error => {
+    console.error("Ошибка загрузки данных игрока:", error);
+    showMessage("Не удалось загрузить данные.");
+  });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      achievements = data;
+      renderAchievements();
+    }
+  });
+} ???*/
+
+
+  function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickActive = data.autoclickActive || false;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      const lastUpdate = data.lastUpdate || 0;
+
+      // Проверяем состояние автокликера
+      if (autoclickActive && autoclickEndTime > Date.now()) {
+        // Рассчитываем время, пока пользователь был оффлайн
+        const elapsedTime = Date.now() - lastUpdate;
+        const secondsPassed = Math.floor(elapsedTime / 1000);
+        const tokensEarned = secondsPassed * clickPower;
+
+        // Начисляем токены за оффлайн
+        if (tokensEarned > 0) {
+          score += tokensEarned;
+          showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
+        }
+
+        // Возобновляем автокликер на оставшееся время
+        const remainingTime = autoclickEndTime - Date.now();
+        startAutoclicker(remainingTime);
+        document.getElementById("autoclickBtn").disabled = true;
+      } else if (autoclickActive) {
+        // Автокликер истек
+        autoclickActive = false;
+        autoclickEndTime = 0;
+        db.ref("leaderboard/" + uid).update({
+          autoclickActive: false,
+          autoclickEndTime: 0
+        });
+        stopAutoclicker();
+      }
+
+      // Обновляем интерфейс
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      renderAchievements();
+    }
+
+    // Сохраняем текущее время как lastUpdate
+    if (user) {
+      db.ref("leaderboard/" + uid).update({
         lastUpdate: Date.now()
       });
     }
