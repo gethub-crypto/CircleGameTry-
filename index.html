@@ -972,43 +972,7 @@ function buyAutoclicker(minutes) {
   
 
   
-/*  function buyAutoclicker(minutes) {
-  if (autoclickCooldown) {
-    showMessage("Autoclicker on cooldown.");
-    return;
-  }
 
-  const prices = {
-    1: 200,
-    5: 800,
-    10: 1400
-  };
-
-  const cost = prices[minutes];
-  if (score >= cost) {
-    score -= cost;
-    updateCounterDisplay();
-    showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
-    autoclickCooldown = true;
-    autoclickActive = true;
-    const endTime = Date.now() + minutes * 60000;
-    autoclickEndTime = endTime;
-
-    const userId = firebase.auth().currentUser?.uid;
-    if (userId) {
-      firebase.database().ref("users/" + userId).update({
-        autoclickerActive: true,
-        autoclickerEndTime: endTime
-      });
-    }
-
-    updateProfilePanel();
-    startAutoclicker(minutes * 60000);
-    submitScore();
-  } else {
-    showMessage("Not enough tokens for autoclicker.");
-  }
-} */
 
   
   
@@ -1053,63 +1017,6 @@ function signOut() {
     loadPlayerData(user.uid);
   }
 }); 
-
-/* ???auth.onAuthStateChanged(currentUser => {
-  if (currentUser) {
-    user = currentUser;
-    document.getElementById("authSection").style.display = "none";
-    document.getElementById("gameSection").style.display = "block";
-    loadPlayerData(user.uid);
-    updateLeaderboard();
-  } else {
-    user = null;
-    score = 0;
-    clickPower = 1;
-    autoclickActive = false;
-    autoclickEndTime = 0;
-    clearInterval(autoclickInterval);
-    document.getElementById("authSection").style.display = "block";
-    document.getElementById("gameSection").style.display = "none";
-    updateCounterDisplay();
-    updateClickPowerBar();
-    updateProfilePanel();
-    updateLeaderboard();
-  }
-}); ???*/
-  
-
-
-
- /* firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    const userId = user.uid;
-    const userRef = firebase.database().ref('users/' + userId);
-
-    userRef.once('value').then(snapshot => {
-      const data = snapshot.val();
-      const endTime = data?.autoclickerEndTime;
-      const isActive = data?.autoclickerActive;
-
-      if (isActive && endTime && Date.now() < endTime) {
-        const remainingTime = endTime - Date.now();
-        autoclickCooldown = true;
-        autoclickActive = true;
-        autoclickEndTime = endTime;
-
-        showMessage(`Autoclicker resumed for ${Math.ceil(remainingTime / 60000)} minute(s)`);
-        startAutoclicker(remainingTime);
-      } else if (isActive) {
-        // Автокликер истёк — сбрасываем в Realtime Database
-        userRef.update({
-          autoclickerActive: false,
-          autoclickerEndTime: null
-        });
-      }
-    });
-  }
-});*/
-  
-  
 
   
 db.ref("leaderboard").on("value", snapshot => {
