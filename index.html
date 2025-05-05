@@ -898,7 +898,7 @@ function animateCounter() {
 
 
   
-function submitScore() {
+/*!!! function submitScore() {
   if (!user) return;
   db.ref("leaderboard/" + user.uid).set({
     id: user.uid,
@@ -908,8 +908,24 @@ function submitScore() {
     autoclickEndTime: autoclickEndTime,
     autoclick: autoclickActive // сохраняем autoclick !!!!!
   });
-} 
+} !!!*/
 
+function submitScore() {
+  if (!user) return;
+  db.ref("leaderboard/" + user.uid).set({
+    id: user.uid,
+    name: user.displayName || "Anonymous",
+    score: score,
+    clickPower: clickPower,
+    autoclickActive: autoclickActive,
+    autoclickEndTime: autoclickEndTime,
+    lastUpdate: Date.now()
+  }).catch(error => {
+    console.error("Ошибка сохранения счета:", error);
+    showMessage("Не удалось сохранить прогресс.");
+  });
+}
+  
 /*function submitScore() {
   if (!user) {
     console.warn("Cannot submit score: No user is authenticated.");
