@@ -1120,7 +1120,7 @@ function buyUpgrade(type) {
 } ???*/
 
 
-function buyAutoclicker(minutes) {
+/*??!! function buyAutoclicker(minutes) {
   if (autoclickCooldown) {
     showMessage("Autoclicker on cooldown.");
     return;
@@ -1159,8 +1159,51 @@ function buyAutoclicker(minutes) {
   } else {
     showMessage("Not enough tokens for autoclicker.");
   }
-}  
+} ??!!! */
 
+
+function buyAutoclicker(minutes) {
+  if (autoclickCooldown) {
+    showMessage("Autoclicker on cooldown.");
+    return;
+  }
+
+  const prices = {
+    1: 200,
+    5: 400,
+    10: 1400
+  };
+
+  const cost = prices[minutes];
+  if (score >= cost) {
+    score -= cost;
+    updateCounterDisplay();
+    showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
+    autoclickCooldown = true;
+    autoclickActive = true;
+    const duration = minutes * 60000;
+    autoclickEndTime = Date.now() + duration;
+
+    // Сохраняем состояние в базе
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        autoclickActive: true,
+        autoclickEndTime: autoclickEndTime,
+        score: score,
+        lastUpdate: Date.now()
+      }).catch(error => {
+        console.error("Ошибка сохранения покупки автокликера:", error);
+      });
+    }
+
+    updateProfilePanel();
+    startAutoclicker(duration);
+    submitScore();
+  } else {
+    showMessage("Not enough tokens for autoclicker.");
+  }
+}
+  
 
   
 /*  function buyAutoclicker(minutes) {
