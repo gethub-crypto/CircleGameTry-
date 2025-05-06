@@ -1049,6 +1049,7 @@ function signOut() {
     document.getElementById("authSection").style.display = "none";
     document.getElementById("gameSection").style.display = "block";
     loadPlayerData(user.uid);
+    checkDailyReward(); // Проверяем ежедневную награду
   }
 }); 
 
