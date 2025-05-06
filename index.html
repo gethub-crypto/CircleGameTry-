@@ -370,6 +370,44 @@ function updateProfilePanel() {
   }
 }
 
+function checkDailyReward() {
+  if (!user) return;
+  const today = new Date().toDateString();
+  db.ref("dailyRewards/" + user.uid).once("value").then(snapshot => {
+    const data = snapshot.val() || { lastLogin: "", streak: 0 };
+    const lastLogin = data.lastLogin || "";
+    let streak = data.streak || 0;
+
+    if (lastLogin !== today) {
+      document.getElementById("dailyReward").style.display = "block";
+      if (new Date(lastLogin).toDateString() === new Date(Date.now() - 86400000).toDateString()) {
+        streak++;
+      } else {
+        streak = 1;
+      }
+      db.ref("dailyRewards/" + user.uid).set({ lastLogin: today, streak: streak });
+      document.getElementById("streakText").innerText = `Login streak: ${streak} days`;
+    }
+  });
+}
+
+function claimDailyReward() {
+  db.ref("dailyRewards/" + user.uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    const streak = data.streak || 1;
+    const rewards = [50, 100, 200, 300, 500, 1000, 2000]; // Награды за 1-7 дней
+    const reward = rewards[Math.min(streak - 1, rewards.length - 1)];
+    
+    score += reward;
+    updateCounterDisplay();
+    submitScore();
+    showMessage(`Claimed ${reward} tokens for ${streak}-day streak!`);
+    document.getElementById("dailyReward").style.display = "none";
+  });
+}
+
+
+  
 function setClickPower(newPower) {
   clickPower = Math.min(newPower, 8); // ограничиваем максимумом 8
   updateClickPowerBar();
