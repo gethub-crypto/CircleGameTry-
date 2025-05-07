@@ -1193,6 +1193,7 @@ function signOut() {
     document.getElementById("gameSection").style.display = "block";
     loadPlayerData(user.uid);
     checkDailyReward(); // Проверяем ежедневную награду
+    renderTasks(); // Инициализируем задания
   }
 }); 
 
