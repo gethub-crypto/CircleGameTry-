@@ -158,7 +158,29 @@
     max-width: 300px; /* Или другой размер, подходящий для мобильных */
   }
 }
-    
+
+
+    #tasksPanel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+  padding: 0 10px;
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  margin-top: 20px;
+  box-shadow: 0 0 10px #00c3ff;
+}
+#tasksPanel.open {
+  max-height: 300px;
+  padding: 10px;
+}
+#tasksList div {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #00c3ff;
+  border-radius: 8px;
+  background-color: #222;
+}
     
   </style>
 </head>
