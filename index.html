@@ -670,6 +670,7 @@ function checkTaskCompletion(taskId) {
 function clickToken() {
   score += clickPower;
   totalClicks++;
+  updateTaskProgress("clickMarathon", 1); // Обновляем прогресс задания
   checkAchievements();
   updateCounterDisplay();
   updateProfilePanel();
