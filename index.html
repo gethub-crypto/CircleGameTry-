@@ -584,6 +584,89 @@ function showMessage(msg) {
   setTimeout(() => el.innerText = '', 3000);
 }
 
+// Определение ежедневного задания
+const dailyTasks = [
+  {
+    id: "clickMarathon",
+    description: "Make 100 clicks",
+    goal: 100,
+    reward: 50
+  }
+];
+
+// Функция для отображения заданий
+function renderTasks() {
+  const list = document.getElementById("tasksList");
+  list.innerHTML = "";
+  db.ref(`tasks/${user?.uid}`).once("value").then(snapshot => {
+    const tasksData = snapshot.val() || {};
+    const today = new Date().toDateString();
+
+    dailyTasks.forEach(task => {
+      const taskData = tasksData[task.id] || { progress: 0, lastReset: "" };
+      if (taskData.lastReset !== today) {
+        // Сбрасываем прогресс, если день изменился
+        taskData.progress = 0;
+        taskData.lastReset = today;
+        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
+      }
+
+      const div = document.createElement("div");
+      div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} tokens)`;
+      list.appendChild(div);
+    });
+  });
+}
+
+// Функция для переключения панели заданий
+function toggleTasks() {
+  const panel = document.getElementById("tasksPanel");
+  const btn = document.querySelector("button[onclick='toggleTasks()']");
+  const isOpen = panel.classList.toggle("open");
+  btn.innerHTML = isOpen ? "📋 Tasks ▲" : "📋 Tasks ▼";
+  if (isOpen) renderTasks();
+}
+
+// Функция для обновления прогресса задания
+function updateTaskProgress(taskId, increment) {
+  if (!user) return;
+  const today = new Date().toDateString();
+  db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
+    taskData = taskData || { progress: 0, lastReset: today };
+    if (taskData.lastReset !== today) {
+      taskData.progress = 0;
+      taskData.lastReset = today;
+    }
+    taskData.progress = (taskData.progress || 0) + increment;
+    return taskData;
+  }).then(() => {
+    checkTaskCompletion(taskId);
+    renderTasks();
+  });
+}
+
+// Функция для проверки завершения задания
+function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+    if (taskData && taskData.progress >= task.goal) {
+      score += task.reward;
+      showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+      updateCounterDisplay();
+      submitScore();
+      // Сбрасываем прогресс задания
+      db.ref(`tasks/${user.uid}/${taskId}`).set({
+        progress: 0,
+        lastReset: new Date().toDateString()
+      });
+      renderTasks();
+    }
+  });
+}
+
+  
+
 function clickToken() {
   score += clickPower;
   totalClicks++;
