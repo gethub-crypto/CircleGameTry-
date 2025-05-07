@@ -132,6 +132,31 @@
     }
     /* Previews*/
 
+/* Контейнер для iframe ads*/
+.ad-container {
+  text-align: center;
+  margin: 20px 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Стили для iframe ads */
+.ad-container iframe {
+  max-width: 100%;
+  width: 728px;
+  height: 90px;
+  border: none;
+}
+
+/* Медиа-запрос для мобильных устройств ads */
+@media (max-width: 768px) {
+  .ad-container iframe {
+    width: 100%;
+    height: auto;
+    max-width: 300px; /* Или другой размер, подходящий для мобильных */
+  }
+}
+    
     
   </style>
 </head>
