@@ -865,7 +865,7 @@ function updateTaskProgress(taskId, increment) {
   });
 }!*/
 
-  function checkTaskCompletion(taskId) {
+/*!?  function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -893,6 +893,49 @@ function updateTaskProgress(taskId, increment) {
         showMessage(`Task "${task.description}" completed! ${task.reward}`);
         updateClickPowerBar();
         submitScore();
+        db.ref(`tasks/${user.uid}/${taskId}`).update({
+          completed: true
+        });
+      }
+      renderTasks();
+    }
+  });
+}!?*/
+
+
+  function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+
+    // Если задание уже завершено или достигло лимита, ничего не делаем
+    if (taskData && (taskData.completed || (taskData.completions || 0) >= 3)) {
+      return; // Прерываем выполнение, чтобы не показывать сообщение
+    }
+
+    if (taskData && taskData.progress >= task.goal) {
+      const completions = (taskData.completions || 0) + 1;
+      if (completions <= 3) { // Ограничение: 3 выполнения в день
+        if (task.id === "clickMarathon") {
+          score += task.reward;
+          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+          updateCounterDisplay();
+          submitScore();
+        } else if (task.id === "levelUp") {
+          boostClickPowerTemporarily(1, 300000); // +1 Click Power на 5 минут
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          updateClickPowerBar();
+          submitScore();
+        }
+        // Сбрасываем прогресс, увеличиваем счётчик выполнений
+        db.ref(`tasks/${user.uid}/${taskId}`).set({
+          progress: 0,
+          lastReset: taskData.lastReset,
+          completions: completions
+        });
+      } else {
+        showMessage("Max completions reached for today!");
+        // Помечаем как завершённое
         db.ref(`tasks/${user.uid}/${taskId}`).update({
           completed: true
         });
