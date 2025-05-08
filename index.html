@@ -661,13 +661,30 @@ function renderTasks() {
 }
 
 // Функция для переключения панели заданий
-function toggleTasks() {
+/*!function toggleTasks() {
   const panel = document.getElementById("tasksPanel");
   const btn = document.querySelector("button[onclick='toggleTasks()']");
   const isOpen = panel.classList.toggle("open");
   btn.innerHTML = isOpen ? "📋 Tasks ▲" : "📋 Tasks ▼";
   if (isOpen) renderTasks();
-}
+}!*/
+
+// Функция для переключения видимости панели заданий (Tasks)
+function toggleTasks() {
+  const panel = document.getElementById("tasksPanel");
+  const btn = document.querySelector("button[onclick='toggleTasks()']");
+  const isCurrentlyOpen = panel.classList.contains("open"); // Проверяем, открыта ли панель сейчас
+
+  // Сначала закрываем все панели
+  closeAllPanels();
+
+  // Если панель заданий не была открыта, открываем её
+  if (!isCurrentlyOpen) {
+    panel.classList.add("open"); // Добавляем класс для открытия панели
+    btn.innerHTML = "📋 Tasks ▲"; // Меняем текст кнопки на "открыто"
+    renderTasks(); // Обновляем список заданий
+  }
+} 
 
 // Функция для обновления прогресса задания
 function updateTaskProgress(taskId, increment) {
