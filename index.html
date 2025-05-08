@@ -568,7 +568,8 @@ function boostClickPowerTemporarily(amount, duration) {
   // Функция для переключения видимости панели достижений (Achievements)
 function toggleAchievements() {
   const panel = document.getElementById("achievementsPanel");
-  const btn = document.querySelector("button[onclick='toggleAchievements()']");
+  const btn = document.getElementById('achievementsBtn');
+//  const btn = document.querySelector("button[onclick='toggleAchievements()']");
   const isCurrentlyOpen = panel.classList.contains("open"); // Проверяем, открыта ли панель сейчас
 
   // Сначала закрываем все панели
