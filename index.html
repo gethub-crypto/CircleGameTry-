@@ -468,6 +468,27 @@ function claimDailyReward() {
 }
 
 
+// Функция для закрытия всех панелей (Shop, Achievements, Tasks)
+function closeAllPanels() {
+  // Закрываем панель магазина (Shop)
+  const shop = document.getElementById("shop");
+  shop.style.display = "none";
+  const shopBtn = document.getElementById("shopBtn");
+  shopBtn.innerHTML = "Shop ▼"; // Устанавливаем текст кнопки на "закрыто"
+
+  // Закрываем панель достижений (Achievements)
+  const achievementsPanel = document.getElementById("achievementsPanel");
+  achievementsPanel.classList.remove("open");
+  const achievementsBtn = document.querySelector("button[onclick='toggleAchievements()']");
+  achievementsBtn.innerHTML = "🏆 Achievements ▼"; // Меняем текст кнопки на "закрыто"
+
+  // Закрываем панель заданий (Tasks)
+  const tasksPanel = document.getElementById("tasksPanel");
+  tasksPanel.classList.remove("open");
+  const tasksBtn = document.querySelector("button[onclick='toggleTasks()']");
+  tasksBtn.innerHTML = "📋 Tasks ▼"; // Меняем текст кнопки на "закрыто"
+}
+  
   
 function setClickPower(newPower) {
   clickPower = Math.min(newPower, 8); // ограничиваем максимумом 8
