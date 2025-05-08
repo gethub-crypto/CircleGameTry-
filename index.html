@@ -778,7 +778,7 @@ function showMessage(msg) {
 
   
 // Функция для отображения заданий
-function renderTasks() {
+/*! function renderTasks() {
   const list = document.getElementById("tasksList");
   list.innerHTML = "";
   db.ref(`tasks/${user?.uid}`).once("value").then(snapshot => {
@@ -799,7 +799,53 @@ function renderTasks() {
       list.appendChild(div);
     });
   });
-}
+}!*/
+
+function renderTasks() {
+  const list = document.getElementById("tasksList");
+  list.innerHTML = ""; // Очищаем список перед рендерингом
+
+  if (!user) return; // Если пользователь не авторизован, ничего не рендерим
+
+  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
+    const tasksData = snapshot.val() || {};
+    const today = new Date().toDateString();
+
+    // Перебираем только текущие задания из dailyTasks
+    dailyTasks.forEach(task => {
+      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+
+      // Сбрасываем прогресс, если день изменился
+      if (taskData.lastReset !== today) {
+        taskData = { progress: 0, lastReset: today, completions: 0, completed: false };
+        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
+      }
+
+      // Отображаем задание
+      const div = document.createElement("div");
+      if (taskData.completed || taskData.completions >= 3) {
+        div.innerHTML = `${task.description}: Max completions (${taskData.completions}/3) reached for today!`;
+      } else {
+        div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward}) [Completions: ${taskData.completions}/3]`;
+      }
+      list.appendChild(div);
+    });
+
+    // Удаляем устаревшие задания из Firebase, которых нет в dailyTasks
+    const validTaskIds = dailyTasks.map(task => task.id);
+    for (const taskId in tasksData) {
+      if (!validTaskIds.includes(taskId)) {
+        db.ref(`tasks/${user.uid}/${taskId}`).remove();
+      }
+    }
+  }).catch(error => {
+    console.error("Error rendering tasks:", error);
+    showMessage("Failed to load tasks.");
+  });
+}  
+
+
+  
 
 // Функция для переключения панели заданий
 /*!function toggleTasks() {
