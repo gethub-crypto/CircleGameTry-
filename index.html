@@ -784,7 +784,7 @@ function updateTaskProgress(taskId, increment) {
 }
 
 // Функция для проверки завершения задания
-function checkTaskCompletion(taskId) {
+/*! function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -798,6 +798,43 @@ function checkTaskCompletion(taskId) {
         progress: 0,
         lastReset: new Date().toDateString()
       });
+      renderTasks();
+    }
+  });
+}!*/
+
+  function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+    if (taskData && taskData.progress >= task.goal) {
+      if (task.id === "clickMarathon") {
+        const completions = (taskData.completions || 0) + 1;
+        if (completions <= 3) { // 3 выполнения для "Клик-марафона"
+          score += task.reward;
+          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+          updateCounterDisplay();
+          submitScore();
+          db.ref(`tasks/${user.uid}/${taskId}`).set({
+            progress: 0,
+            lastReset: taskData.lastReset,
+            completions: completions
+          });
+        } else {
+          showMessage("Max completions reached for today!");
+          db.ref(`tasks/${user.uid}/${taskId}`).update({
+            completed: true
+          });
+        }
+      } else if (task.id === "levelUp" && !taskData.completed) {
+        boostClickPowerTemporarily(1, 300000); // +1 Click Power на 5 минут
+        showMessage(`Task "${task.description}" completed! ${task.reward}`);
+        updateClickPowerBar();
+        submitScore();
+        db.ref(`tasks/${user.uid}/${taskId}`).update({
+          completed: true
+        });
+      }
       renderTasks();
     }
   });
