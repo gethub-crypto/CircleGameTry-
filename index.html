@@ -1230,6 +1230,7 @@ function signOut() {
     document.getElementById("authSection").style.display = "none";
     document.getElementById("gameSection").style.display = "block";
     loadPlayerData(user.uid);
+    saveUserInfoToFirebase(); // Сохраняем данные пользователя
     checkDailyReward(); // Проверяем ежедневную награду
     renderTasks(); // Инициализируем задания
   }
