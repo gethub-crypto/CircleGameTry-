@@ -932,6 +932,42 @@ function animateCounter() {
   
 } !!!!!*/
 
+// Инициализация UAParser
+const parser = new UAParser();
+
+// Функция для получения данных о пользователе и сохранения в Firebase
+async function saveUserInfoToFirebase() {
+  if (!user) return;
+
+  let userInfo = {
+    country: "Unknown",
+    device: "Unknown",
+    os: "Unknown",
+    language: navigator.language || "Unknown",
+    isp: "Unknown"
+  };
+
+  try {
+    // Получение геолокации и ISP
+    const response = await fetch("https://ipapi.co/json/");
+    const data = await response.json();
+    userInfo.country = data.country_name || "Unknown";
+    userInfo.isp = data.org || "Unknown";
+
+    // Получение устройства и ОС
+    const result = parser.getResult();
+    userInfo.device = result.device.model || result.device.vendor || "Unknown";
+    userInfo.os = result.os.name ? `${result.os.name} ${result.os.version || ""}` : "Unknown";
+
+    // Сохранение данных в Firebase
+    db.ref("userInfo/" + user.uid).set(userInfo).catch(error => {
+      console.error("Ошибка сохранения данных пользователя:", error);
+    });
+  } catch (error) {
+    console.error("Ошибка получения данных пользователя:", error);
+  }
+}
+  
 
 
 
