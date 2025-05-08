@@ -1209,6 +1209,9 @@ function signInWithGoogle() {
 }
 
 function signOut() {
+  if (user) {
+    submitScore(); // Сохраняем данные перед выходом
+  }
   auth.signOut().then(() => {
     user = null;
     score = 0;
