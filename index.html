@@ -469,7 +469,7 @@ function claimDailyReward() {
 
 
 // Функция для закрытия всех панелей (Shop, Achievements, Tasks)
-function closeAllPanels() {
+/*!function closeAllPanels() {
   // Закрываем панель магазина (Shop)
   const shop = document.getElementById("shop");
   shop.style.display = "none";
@@ -487,7 +487,55 @@ function closeAllPanels() {
   tasksPanel.classList.remove("open");
   const tasksBtn = document.querySelector("button[onclick='toggleTasks()']");
   tasksBtn.innerHTML = "📋 Tasks ▼"; // Меняем текст кнопки на "закрыто"
+}!*/
+
+// Функция для закрытия всех панелей (Shop, Achievements, Tasks)
+function closeAllPanels() {
+  console.log("Закрываем все панели...");
+
+  // Закрываем панель магазина (Shop)
+  const shop = document.getElementById("shop");
+  if (shop) {
+    shop.style.display = "none";
+    console.log("Панель магазина закрыта");
+  } else {
+    console.error("Элемент #shop не найден");
+  }
+
+  // Закрываем панель достижений (Achievements)
+  const achievementsPanel = document.getElementById("achievementsPanel");
+  if (achievementsPanel) {
+    achievementsPanel.classList.remove("open");
+    console.log("Панель достижений закрыта");
+  } else {
+    console.error("Элемент #achievementsPanel не найден");
+  }
+  const achievementsBtn = document.querySelector("button[onclick='toggleAchievements()']");
+  if (achievementsBtn) {
+    achievementsBtn.innerHTML = "🏆 Achievements ▼";
+    console.log("Текст кнопки достижений обновлен");
+  } else {
+    console.error("Кнопка для toggleAchievements не найдена");
+  }
+
+  // Закрываем панель заданий (Tasks)
+  const tasksPanel = document.getElementById("tasksPanel");
+  if (tasksPanel) {
+    tasksPanel.classList.remove("open");
+    console.log("Панель заданий закрыта");
+  } else {
+    console.error("Элемент #tasksPanel не найден");
+  }
+  const tasksBtn = document.querySelector("button[onclick='toggleTasks()']");
+  if (tasksBtn) {
+    tasksBtn.innerHTML = "📋 Tasks ▼";
+    console.log("Текст кнопки заданий обновлен");
+  } else {
+    console.error("Кнопка для toggleTasks не найдена");
+  }
 }
+
+  
   
   
 function setClickPower(newPower) {
