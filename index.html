@@ -1442,6 +1442,8 @@ function buyUpgrade(type) {
     // Проверка ограничения на силу клика
     if (clickPower >= 3 && currentLevel < clickPower + 1) {
       showMessage(`Reach player level ${clickPower + 1} to upgrade Click Power further!`);
+      buyButton.style.animation = "shake 0.3s";
+  setTimeout(() => buyButton.style.animation = "", 300);
       return;
     }
     
