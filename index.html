@@ -588,7 +588,7 @@ function setClickPower(newPower) {
   }
         } */
 
-  function updateClickPowerCostText() {
+/*!??  function updateClickPowerCostText() {
   const costText = document.getElementById('clickPowerCostText');
   const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
   const buyButton = document.querySelector("button[onclick=\"buyUpgrade('clickPower')\"]");
@@ -622,8 +622,45 @@ function setClickPower(newPower) {
       }
     }
   }
+} !?!*/
+
+  
+function updateClickPowerCostText() {
+ const costText = document.getElementById('clickPowerCostText');
+ const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
+ const buyButton = document.querySelector("button[onclick=\"buyUpgrade('clickPower')\"]");
+
+ if (costText) {
+ if (clickPower >= 8) {
+ costText.textContent = "💪 Click Power: MAX LEVEL";
+ if (buyButton) {
+ buyButton.style.background = "linear-gradient(135deg, #00ffa6, #00c3ff)";
+ buyButton.style.cursor = "pointer";
+ buyButton.title = "Maximum Click Power reached";
+ }
+ } else if (clickPower >= 3 && currentLevel < clickPower + 1) {
+ const cost = getClickPowerUpgradeCost();
+ costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
+ if (buyButton) {
+ buyButton.style.background = "linear-gradient(135deg, #00ffa6, #00c3ff)";
+ buyButton.style.cursor = "pointer";
+ buyButton.title = `Reach player level ${clickPower + 1} to upgrade`;
+ }
+ } else {
+ const cost = getClickPowerUpgradeCost();
+ costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
+ if (buyButton) {
+ buyButton.style.background = "linear-gradient(135deg, #00ffa6, #00c3ff)";
+ buyButton.style.cursor = "pointer";
+ buyButton.title = "";
+ }
+ }
+ }
 }
-    
+
+
+
+  
   
 /*function boostClickPowerTemporarily(amount, duration) {
   clickPower += amount;
