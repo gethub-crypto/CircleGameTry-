@@ -863,6 +863,7 @@ function clickToken() {
   score += clickPower;
   totalClicks++;
   updateTaskProgress("clickMarathon", 1); // Обновляем прогресс задания
+  updateTaskProgress("levelUp", clickPower); // Для "Подними уровень" (учитываем токены)
   checkAchievements();
   updateCounterDisplay();
   updateProfilePanel();
