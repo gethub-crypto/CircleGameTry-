@@ -1297,7 +1297,7 @@ function buyUpgrade(type) {
     }
 
 // Проверка ограничения на силу клика
-    if (clickPower >= 3 && currentLevel < 3) {
+   /*! if (clickPower >= 3 && currentLevel < 3) {
       showMessage("Reach player level 3 to upgrade Click Power further!");
       return;
     }
@@ -1307,6 +1307,12 @@ function buyUpgrade(type) {
       showMessage("Reach player level 3 to upgrade Click Power further!");
       return;
     }*/
+
+    // Проверка ограничения на силу клика
+    if (clickPower >= 3 && currentLevel < clickPower + 1) {
+      showMessage(`Reach player level ${clickPower + 1} to upgrade Click Power further!`);
+      return;
+    }
     
 /* const cost = clickPowerUpgradeCosts[nextLevel - 1]; // уровни начинаются с 1 */
   /*  const cost = getClickPowerUpgradeCost(); */
