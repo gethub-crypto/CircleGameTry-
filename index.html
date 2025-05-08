@@ -545,9 +545,18 @@ function setClickPower(newPower) {
 }
 
 
-  function getClickPowerUpgradeCost() {
+  /*!!function getClickPowerUpgradeCost() {
   return Math.floor(500 * Math.pow(6, clickPower - 1));
+  }!!*/
+
+  function getClickPowerUpgradeCost() {
+  // Если сила клика 2 и уровень игрока меньше 3, возвращаем null или сообщение
+  const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
+  if (clickPower >= 2 && currentLevel < 3) {
+    return null; // Улучшение заблокировано
   }
+  return Math.floor(500 * Math.pow(6, clickPower - 1));
+}
   
 
 function updateClickPowerCostText() {
