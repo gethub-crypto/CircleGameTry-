@@ -614,7 +614,7 @@ function boostClickPowerTemporarily(amount, duration) {
 } !*/
 
   // Функция для переключения видимости панели достижений (Achievements)
-function toggleAchievements() {
+/*?!function toggleAchievements() {
   const panel = document.getElementById("achievementsPanel");
   const btn = document.getElementById('achievementsBtn');
 //  const btn = document.querySelector("button[onclick='toggleAchievements()']");
@@ -628,6 +628,37 @@ function toggleAchievements() {
     panel.classList.add("open"); // Добавляем класс для открытия панели
     btn.innerHTML = "🏆 Achievements ▲"; // Меняем текст кнопки на "открыто"
    // renderAchievements(); // Обновляем список достижений
+  }
+}?!*/
+
+  // Функция для переключения видимости панели достижений (Achievements)
+function toggleAchievements() {
+  console.log("Вызываем toggleAchievements...");
+  const panel = document.getElementById("achievementsPanel");
+  if (!panel) {
+    console.error("Элемент #achievementsPanel не найден в toggleAchievements");
+    return;
+  }
+  const btn = document.querySelector("button[onclick='toggleAchievements()']");
+  if (!btn) {
+    console.error("Кнопка для toggleAchievements не найдена");
+    return;
+  }
+  const isCurrentlyOpen = panel.classList.contains("open"); // Проверяем, открыта ли панель сейчас
+  console.log("Панель достижений сейчас открыта:", isCurrentlyOpen);
+
+  if (isCurrentlyOpen) {
+    // Если панель уже открыта, просто закрываем её
+    panel.classList.remove("open");
+    btn.innerHTML = "🏆 Achievements ▼";
+    console.log("Закрываем панель достижений");
+  } else {
+    // Если панель закрыта, закрываем все остальные и открываем эту
+    closeAllPanels();
+    panel.classList.add("open");
+    btn.innerHTML = "🏆 Achievements ▲";
+    console.log("Открываем панель достижений");
+    renderAchievements();
   }
 }
   
