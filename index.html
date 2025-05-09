@@ -884,7 +884,7 @@ function showMessage(msg) {
   });
 }!*/
 
-function renderTasks() {
+/*!function renderTasks() {
   const list = document.getElementById("tasksList");
   list.innerHTML = ""; // Очищаем список перед рендерингом
 
@@ -925,10 +925,56 @@ function renderTasks() {
     console.error("Error rendering tasks:", error);
     showMessage("Failed to load tasks.");
   });
-}  
+}  !*/
 
 
-  
+  function renderTasks() {
+  if (isRenderingTasks) return; // Если уже рендерим, пропускаем
+  isRenderingTasks = true;
+
+  const list = document.getElementById("tasksList");
+  list.innerHTML = ""; // Очищаем список перед рендерингом
+
+  if (!user) {
+    isRenderingTasks = false;
+    return;
+  }
+
+  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
+    const tasksData = snapshot.val() || {};
+    const today = new Date().toDateString();
+
+    dailyTasks.forEach(task => {
+      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+
+      if (taskData.lastReset !== today) {
+        taskData = { progress: 0, lastReset: today, completions: 0, completed: false };
+        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
+      }
+
+      const div = document.createElement("div");
+      if (taskData.completed || taskData.completions >= 3) {
+        div.innerHTML = `${task.description}: Max completions (${taskData.completions}/3) reached for today!`;
+      } else {
+        div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward}) [Completions: ${taskData.completions}/3]`;
+      }
+      list.appendChild(div);
+    });
+
+    const validTaskIds = dailyTasks.map(task => task.id);
+    for (const taskId in tasksData) {
+      if (!validTaskIds.includes(taskId)) {
+        db.ref(`tasks/${user.uid}/${taskId}`).remove();
+      }
+    }
+
+    isRenderingTasks = false; // Сбрасываем флаг после завершения
+  }).catch(error => {
+    console.error("Ошибка рендеринга задач:", error);
+    showMessage("Не удалось загрузить задачи.");
+    isRenderingTasks = false;
+  });
+}
 
 // Функция для переключения панели заданий
 /*!function toggleTasks() {
