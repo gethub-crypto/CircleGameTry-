@@ -775,24 +775,6 @@ function toggleTasks() {
 } 
 
 // Функция для обновления прогресса задания
-/*!function updateTaskProgress(taskId, increment) {
-  if (!user) return;
-  const today = new Date().toDateString();
-  db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
-    taskData = taskData || { progress: 0, lastReset: today };
-    if (taskData.lastReset !== today) {
-      taskData.progress = 0;
-      taskData.lastReset = today;
-    }
-    taskData.progress = (taskData.progress || 0) + increment;
-    return taskData;
-  }).then(() => {
-    checkTaskCompletion(taskId);
-    renderTasks();
-  });
-}!*/
-
-
   function updateTaskProgress(taskId, increment) {
   if (!user) return;
   const today = new Date().toDateString();
@@ -844,43 +826,6 @@ function toggleTasks() {
     }
   });
 }!*/
-
-/*!?  function checkTaskCompletion(taskId) {
-  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-    const taskData = snapshot.val();
-    const task = dailyTasks.find(t => t.id === taskId);
-    if (taskData && taskData.progress >= task.goal) {
-      if (task.id === "clickMarathon") {
-        const completions = (taskData.completions || 0) + 1;
-        if (completions <= 3) { // 3 выполнения для "Клик-марафона"
-          score += task.reward;
-          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-          updateCounterDisplay();
-          submitScore();
-          db.ref(`tasks/${user.uid}/${taskId}`).set({
-            progress: 0,
-            lastReset: taskData.lastReset,
-            completions: completions
-          });
-        } else {
-          showMessage("Max completions reached for today!");
-          db.ref(`tasks/${user.uid}/${taskId}`).update({
-            completed: true
-          });
-        }
-      } else if (task.id === "levelUp" && !taskData.completed) {
-        boostClickPowerTemporarily(1, 300000); // +1 Click Power на 5 минут
-        showMessage(`Task "${task.description}" completed! ${task.reward}`);
-        updateClickPowerBar();
-        submitScore();
-        db.ref(`tasks/${user.uid}/${taskId}`).update({
-          completed: true
-        });
-      }
-      renderTasks();
-    }
-  });
-}!?*/
 
 
   function checkTaskCompletion(taskId) {
