@@ -1649,6 +1649,15 @@ setInterval(() => {
     motiveElement.style.opacity = 1;
   }, 500);
 }, 3000);
+
+
+window.addEventListener("beforeunload", () => {
+  if (user) {
+    submitScore(); // Сохраняем состояние при закрытии вкладки
+  }
+});
+
+  
 </script>
 
 <!-- Google tag (gtag.js) -->
