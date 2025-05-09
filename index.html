@@ -797,15 +797,6 @@ function showMessage(msg) {
 }
 
 // Определение ежедневного задания
-/*!const dailyTasks = [
-  {
-    id: "clickMarathon",
-    description: "Make 100 clicks",
-    goal: 100,
-    reward: 50
-  }
-]; !*/
-
 
   const dailyTasks = [
   {
@@ -953,10 +944,10 @@ function toggleTasks() {
     if (taskData.completed || taskData.completions >= 3) {
       return taskData; // Ничего не меняем
     }
-    taskData.progress = (taskData.progress || 0) + increment;
+   /*! taskData.progress = (taskData.progress || 0) + increment;
     if (taskId === "levelUp" && taskData.progress >= 4500 && taskData.progress < 5000) {
       showMessage("Only 500 tokens left to complete the task!");
-    }
+    }!*/
     return taskData;
   }).then(() => {
     // Проверяем завершение только если задание не завершено
