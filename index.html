@@ -396,8 +396,7 @@ let achievements = {}; // Полученные достижения
 let tempBoostTimeout = null;
 let originalClickPower = null;
 //let tokenBalance = 100;
-
-  
+let isRenderingTasks = false;
 
 function updateProfilePanel() {
   document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8); 
