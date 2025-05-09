@@ -663,30 +663,7 @@ function showMessage(msg) {
   }
 ];
 
-  
-// Функция для отображения заданий
-/*! function renderTasks() {
-  const list = document.getElementById("tasksList");
-  list.innerHTML = "";
-  db.ref(`tasks/${user?.uid}`).once("value").then(snapshot => {
-    const tasksData = snapshot.val() || {};
-    const today = new Date().toDateString();
 
-    dailyTasks.forEach(task => {
-      const taskData = tasksData[task.id] || { progress: 0, lastReset: "" };
-      if (taskData.lastReset !== today) {
-        // Сбрасываем прогресс, если день изменился
-        taskData.progress = 0;
-        taskData.lastReset = today;
-        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
-      }
-
-      const div = document.createElement("div");
-      div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} tokens)`;
-      list.appendChild(div);
-    });
-  });
-}!*/
 
 /*!function renderTasks() {
   const list = document.getElementById("tasksList");
@@ -779,15 +756,6 @@ function showMessage(msg) {
     isRenderingTasks = false;
   });
 }
-
-// Функция для переключения панели заданий
-/*!function toggleTasks() {
-  const panel = document.getElementById("tasksPanel");
-  const btn = document.querySelector("button[onclick='toggleTasks()']");
-  const isOpen = panel.classList.toggle("open");
-  btn.innerHTML = isOpen ? "📋 Tasks ▲" : "📋 Tasks ▼";
-  if (isOpen) renderTasks();
-}!*/
 
 // Функция для переключения видимости панели заданий (Tasks)
 function toggleTasks() {
