@@ -678,7 +678,7 @@ function updateClickPowerCostText() {
 
 
 
-/*!?function boostClickPowerTemporarily(amount, duration) {
+function boostClickPowerTemporarily(amount, duration) {
   if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
   originalClickPower = clickPower;
@@ -692,9 +692,9 @@ function updateClickPowerCostText() {
     clickPower = originalClickPower;
     showMessage(`Boost expired: Click Power restored`);
   }, duration);
-}!?*/
+}
   
-function boostClickPowerTemporarily(amount, duration) {
+/*?!function boostClickPowerTemporarily(amount, duration) {
   // Очищаем предыдущий таймер, если он существует
   if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
@@ -741,7 +741,7 @@ function boostClickPowerTemporarily(amount, duration) {
 
   updateClickPowerBar();
   updateProfilePanel();
-  }
+  }!?!*/
   
 
 /*! function toggleAchievements() {
