@@ -504,9 +504,6 @@ function setClickPower(newPower) {
     costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
   }
 } !*/
-
-
-
   
 function updateClickPowerCostText() {
  const costText = document.getElementById('clickPowerCostText');
@@ -541,8 +538,6 @@ function updateClickPowerCostText() {
  }
 }
 
-
-
   
   
 /*function boostClickPowerTemporarily(amount, duration) {
@@ -576,81 +571,6 @@ function boostClickPowerTemporarily(amount, duration) {
     showMessage(`Boost expired: Click Power restored`);
   }, duration);
 }
-  
-/*?!function boostClickPowerTemporarily(amount, duration) {
-  // Очищаем предыдущий таймер, если он существует
-  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
-
-  // Сохраняем текущее значение clickPower локально для этого буста
-  const currentClickPower = clickPower;
-
-  // Применяем буст, но не превышаем максимум (8)
-  const boosted = Math.min(clickPower + amount, 8);
-  clickPower = boosted;
-
-  // Показываем сообщение о бусте
-  const actualBoost = boosted - currentClickPower;
-  showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} sec`);
-
-  // Сохраняем новое значение clickPower в Firebase
-  if (user) {
-    db.ref("leaderboard/" + user.uid).update({
-      clickPower: clickPower,
-      lastUpdate: Date.now()
-    }).catch(error => {
-      console.error("Error saving clickPower during boost:", error);
-    });
-  }
-
-  // Устанавливаем таймер для восстановления clickPower
-  tempBoostTimeout = setTimeout(() => {
-    clickPower = currentClickPower; // Восстанавливаем исходное значение
-    showMessage(`Boost expired: Click Power restored to ${clickPower}`);
-
-    // Сохраняем восстановленное значение в Firebase
-    if (user) {
-      db.ref("leaderboard/" + user.uid).update({
-        clickPower: clickPower,
-        lastUpdate: Date.now()
-      }).catch(error => {
-        console.error("Error saving clickPower after boost expiration:", error);
-      });
-    }
-
-    updateClickPowerBar();
-    updateProfilePanel();
-    tempBoostTimeout = null; // Сбрасываем таймер
-  }, duration);
-
-  updateClickPowerBar();
-  updateProfilePanel();
-  }!?!*/
-  
-
-/*! function toggleAchievements() {
-  const panel = document.getElementById('achievementsPanel');
-  const btn = document.getElementById('achievementsBtn');
-  const isOpen = panel.classList.toggle('open');
-  btn.innerHTML = isOpen ? '🏆 Achievements ▲' : '🏆 Achievements ▼';
-} !*/
-
-  // Функция для переключения видимости панели достижений (Achievements)
-/*?!function toggleAchievements() {
-  const panel = document.getElementById("achievementsPanel");
-  const btn = document.getElementById('achievementsBtn');
-//  const btn = document.querySelector("button[onclick='toggleAchievements()']");
-  const isCurrentlyOpen = panel.classList.contains("open"); // Проверяем, открыта ли панель сейчас
-
-  // Сначала закрываем все панели
-  closeAllPanels();
-
-  // Если панель достижений не была открыта, открываем её
-  if (!isCurrentlyOpen) {
-    panel.classList.add("open"); // Добавляем класс для открытия панели
-    btn.innerHTML = "🏆 Achievements ▲"; // Меняем текст кнопки на "открыто"
-   // renderAchievements(); // Обновляем список достижений
-  }
-}?!*/
 
   // Функция для переключения видимости панели достижений (Achievements)
 function toggleAchievements() {
