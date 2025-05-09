@@ -428,27 +428,6 @@ function claimDailyReward() {
 
 
 // Функция для закрытия всех панелей (Shop, Achievements, Tasks)
-/*!function closeAllPanels() {
-  // Закрываем панель магазина (Shop)
-  const shop = document.getElementById("shop");
-  shop.style.display = "none";
-  const shopBtn = document.getElementById("shopBtn");
-  shopBtn.innerHTML = "Shop ▼"; // Устанавливаем текст кнопки на "закрыто"
-
-  // Закрываем панель достижений (Achievements)
-  const achievementsPanel = document.getElementById("achievementsPanel");
-  achievementsPanel.classList.remove("open");
-  const achievementsBtn = document.querySelector("button[onclick='toggleAchievements()']");
-  achievementsBtn.innerHTML = "🏆 Achievements ▼"; // Меняем текст кнопки на "закрыто"
-
-  // Закрываем панель заданий (Tasks)
-  const tasksPanel = document.getElementById("tasksPanel");
-  tasksPanel.classList.remove("open");
-  const tasksBtn = document.querySelector("button[onclick='toggleTasks()']");
-  tasksBtn.innerHTML = "📋 Tasks ▼"; // Меняем текст кнопки на "закрыто"
-}!*/
-
-// Функция для закрытия всех панелей (Shop, Achievements, Tasks)
 function closeAllPanels() {
   console.log("Закрываем все панели...");
 
@@ -526,53 +505,7 @@ function setClickPower(newPower) {
   }
 } !*/
 
-/*function updateClickPowerCostText() {
-  const costText = document.getElementById('clickPowerCostText');
-  if (costText) {
-    if (clickPower >= MAX_CLICK_POWER) {
-      costText.textContent = "💪 Click Power: MAX LEVEL";
-    } else {
-      const cost = getClickPowerUpgradeCost();
-      costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
-    }
-  }
-        } */
 
-/*!??  function updateClickPowerCostText() {
-  const costText = document.getElementById('clickPowerCostText');
-  const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
-  const buyButton = document.querySelector("button[onclick=\"buyUpgrade('clickPower')\"]");
-
-  if (costText) {
-    if (clickPower >= 8) {
-      costText.textContent = "💪 Click Power: MAX LEVEL";
-      if (buyButton) {
-        buyButton.disabled = true;
-        buyButton.style.background = "#555";
-        buyButton.style.cursor = "not-allowed";
-        buyButton.title = "Maximum Click Power reached";
-      }
-    } else if (clickPower >= 3 && currentLevel < clickPower + 1) {
-      const cost = getClickPowerUpgradeCost();
-      costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
-      if (buyButton) {
-        buyButton.disabled = true;
-        buyButton.style.background = "#555";
-        buyButton.style.cursor = "not-allowed";
-        buyButton.title = `Reach player level ${clickPower + 1} to upgrade`;
-      }
-    } else {
-      const cost = getClickPowerUpgradeCost();
-      costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
-      if (buyButton) {
-        buyButton.disabled = false;
-        buyButton.style.background = "linear-gradient(135deg, #00ffa6, #00c3ff)";
-        buyButton.style.cursor = "pointer";
-        buyButton.title = "";
-      }
-    }
-  }
-} !?!*/
 
   
 function updateClickPowerCostText() {
