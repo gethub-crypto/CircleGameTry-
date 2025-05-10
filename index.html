@@ -433,7 +433,7 @@
       }
     }
 
-    function boostClickPowerTemporarily(amount, duration) {
+   /*! function boostClickPowerTemporarily(amount, duration) {
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
       originalClickPower = clickPower;
@@ -447,7 +447,54 @@
         clickPower = originalClickPower;
         showMessage(`Boost expired: Click Power restored`);
       }, duration);
+    }!*/
+
+
+    function boostClickPowerTemporarily(amount, duration) {
+  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+
+  originalClickPower = clickPower;
+  const boosted = Math.min(clickPower + amount, 8);
+  clickPower = boosted;
+
+  const actualBoost = boosted - originalClickPower;
+  showMessage(`Временный буст: Сила клика +${actualBoost} на ${duration / 1000} сек`);
+
+  // Сохраняем состояние буста в Firebase
+  if (user) {
+    const boostEndTime = Date.now() + duration;
+    db.ref("leaderboard/" + user.uid).update({
+      tempBoostActive: true, // Флаг активного буста
+      tempBoostEndTime: boostEndTime, // Время окончания буста
+      tempBoostOriginalClickPower: originalClickPower, // Исходная сила клика
+      tempBoostAmount: amount, // Величина буста
+      lastUpdate: Date.now() // Время последнего обновления
+    }).catch(error => {
+      console.error("Ошибка сохранения состояния буста:", error);
+    });
+  }
+
+  tempBoostTimeout = setTimeout(() => {
+    clickPower = originalClickPower;
+    showMessage(`Буст закончился: Сила клика восстановлена`);
+    updateClickPowerBar();
+    updateProfilePanel();
+    submitScore();
+
+    // Очищаем состояние буста в Firebase
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        tempBoostActive: false,
+        tempBoostEndTime: 0,
+        tempBoostOriginalClickPower: 0,
+        tempBoostAmount: 0,
+        lastUpdate: Date.now()
+      }).catch(error => {
+        console.error("Ошибка очистки состояния буста:", error);
+      });
     }
+  }, duration);
+}
 
     function toggleAchievements() {
       console.log("Calling toggleAchievements...");
