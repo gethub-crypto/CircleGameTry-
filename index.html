@@ -957,7 +957,7 @@ function toggleTasks() {
 } 
 
 // Функция для обновления прогресса задания
-  /*!function updateTaskProgress(taskId, increment) {
+function updateTaskProgress(taskId, increment) {
   if (!user) return;
   const today = new Date().toDateString();
   db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
@@ -987,9 +987,9 @@ function toggleTasks() {
       renderTasks();
     });
   });
-}!*/
+}
 
-  function updateTaskProgress(taskId, increment) {
+ /* ?function updateTaskProgress(taskId, increment) {
   if (!user) return;
   const today = new Date().toDateString();
   db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
@@ -1016,7 +1016,7 @@ function toggleTasks() {
       renderTasks();
     });
   });
-}
+}?*/
 
 // Функция для проверки завершения задания
 /*! function checkTaskCompletion(taskId) {
