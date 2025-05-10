@@ -957,7 +957,7 @@ function toggleTasks() {
 } 
 
 // Функция для обновления прогресса задания
-  function updateTaskProgress(taskId, increment) {
+  /*!function updateTaskProgress(taskId, increment) {
   if (!user) return;
   const today = new Date().toDateString();
   db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
@@ -982,6 +982,35 @@ function toggleTasks() {
     db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
       const taskData = snapshot.val();
       if (taskData && !(taskData.completed || taskData.completions >= 3)) {
+        checkTaskCompletion(taskId);
+      }
+      renderTasks();
+    });
+  });
+}!*/
+
+  function updateTaskProgress(taskId, increment) {
+  if (!user) return;
+  const today = new Date().toDateString();
+  db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
+    taskData = taskData || { progress: 0, lastReset: today, completions: 0, completed: false };
+    if (taskData.lastReset !== today) {
+      taskData.progress = 0;
+      taskData.lastReset = today;
+      taskData.completions = 0;
+      taskData.completed = false;
+    }
+    // Если задание завершено, не увеличиваем прогресс
+    if (taskData.completed || taskData.completions >= (taskId === "levelUp" ? 1 : 3)) {
+      return taskData; // Ничего не меняем
+    }
+    taskData.progress = (taskData.progress || 0) + increment;
+    return taskData;
+  }).then(() => {
+    // Проверяем завершение только если задание не завершено
+    db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+      const taskData = snapshot.val();
+      if (taskData && !(taskData.completed || taskData.completions >= (taskId === "levelUp" ? 1 : 3))) {
         checkTaskCompletion(taskId);
       }
       renderTasks();
