@@ -814,7 +814,7 @@ function toggleShop() {
       }
     }
 
-    function loadPlayerData(uid) {
+  /*!  function loadPlayerData(uid) {
       db.ref("leaderboard/" + uid).once("value").then(snapshot => {
         const data = snapshot.val();
         if (data) {
@@ -869,8 +869,96 @@ function toggleShop() {
           renderAchievements();
         }
       });
+    }!*/
+
+    
+function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickActive = data.autoclickActive || false;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      const lastUpdate = data.lastUpdate || 0;
+
+      // Обрабатываем временный буст
+      const tempBoostActive = data.tempBoostActive || false;
+      const tempBoostEndTime = data.tempBoostEndTime || 0;
+      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
+      const tempBoostAmount = data.tempBoostAmount || 0;
+
+      if (tempBoostActive && tempBoostEndTime > Date.now()) {
+        // Возобновляем буст
+        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
+        const remainingDuration = tempBoostEndTime - Date.now();
+        originalClickPower = tempBoostOriginalClickPower;
+        boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
+      } else if (tempBoostActive) {
+        // Буст истёк, пока пользователь был оффлайн
+        clickPower = tempBoostOriginalClickPower;
+        db.ref("leaderboard/" + uid).update({
+          tempBoostActive: false,
+          tempBoostEndTime: 0,
+          tempBoostOriginalClickPower: 0,
+          tempBoostAmount: 0,
+          clickPower: clickPower,
+          lastUpdate: Date.now()
+        });
+      }
+
+      // Обрабатываем автокликер
+      if (autoclickActive && autoclickEndTime > Date.now()) {
+        const elapsedTime = Date.now() - lastUpdate;
+        const secondsPassed = Math.floor(elapsedTime / 1000);
+        const tokensEarned = secondsPassed * clickPower;
+        if (tokensEarned > 0) {
+          score += tokensEarned;
+          showMessage(`Autoclicker earning ${tokensEarned}  tokens while you were away!`);
+        }
+        const remainingTime = autoclickEndTime - Date.now();
+        startAutoclicker(remainingTime);
+        document.getElementById("autoclickBtn").disabled = true;
+      } else if (autoclickActive) {
+        autoclickActive = false;
+        autoclickEndTime = 0;
+        db.ref("leaderboard/" + uid).update({
+          autoclickActive: false,
+          autoclickEndTime: 0
+        });
+        stopAutoclicker();
+      }
+
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      renderAchievements();
+      updateClickPowerCostText();
     }
 
+    // Обновляем lastUpdate
+    if (user) {
+      db.ref("leaderboard/" + uid).update({
+        lastUpdate: Date.now()
+      });
+    }
+  }).catch(error => {
+    console.error("Ошибка загрузки данных игрока:", error);
+    showMessage("Не удалось загрузить данные.");
+  });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      achievements = data;
+      renderAchievements();
+    }
+  });
+}
+
+    
+
+    
     function submitScore() {
       if (!user) return;
       const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
