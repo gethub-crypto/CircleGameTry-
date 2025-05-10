@@ -1039,7 +1039,7 @@ function updateTaskProgress(taskId, increment) {
 }!*/
 
 
-/*!!  function checkTaskCompletion(taskId) {
+ function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -1079,9 +1079,9 @@ function updateTaskProgress(taskId, increment) {
       renderTasks();
     }
   });
-}!!*/
+}
 
-function checkTaskCompletion(taskId) {
+/*??!!function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -1118,7 +1118,7 @@ function checkTaskCompletion(taskId) {
           completions: completions,
           completed: completions >= maxCompletions
         });
-      } 
+      } ??!!*/
   
   
 
