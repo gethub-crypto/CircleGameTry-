@@ -350,7 +350,7 @@ let originalClickPower = null;
 //let tokenBalance = 100;
 let isRenderingTasks = false;
 
-/*!function updateProfilePanel() {
+!function updateProfilePanel() {
   document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8); 
 
  
@@ -374,7 +374,7 @@ let isRenderingTasks = false;
 
   
 /*  const level = Math.min(Math.floor(score / 100) + 1, 10); */
- /* document.getElementById("playerLevel").innerText = level;
+ document.getElementById("playerLevel").innerText = level;
   
   document.getElementById("profileTokens").innerText = score;
   document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
@@ -383,16 +383,15 @@ let isRenderingTasks = false;
   const levelMessageElement = document.getElementById("levelMessage");
   if (level === 10) {
     levelMessageElement.innerText = "Maximum level reached!";
-   /* levelMessageElement.style.display = "block"; */
-/*    levelMessageElement.classList.add("show");
+    levelMessageElement.style.display = "block"; */    levelMessageElement.classList.add("show");
   } else {
-  /*  levelMessageElement.style.display = "none"; */
- //   levelMessageElement.classList.remove("show");
-///  }
-//}!*/
+    levelMessageElement.style.display = "none"; */
+    levelMessageElement.classList.remove("show");
+  }
+}
 
 
-function updateProfilePanel() {
+/*??!!function updateProfilePanel() {
   document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
   // Обновляем статус автокликера
@@ -445,7 +444,7 @@ function updateProfilePanel() {
   } else {
     levelMessageElement.classList.remove("show");
   }
-}
+}??!!*/
 
 
 
