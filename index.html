@@ -699,6 +699,20 @@
       db.ref("achievements/" + user.uid).set(achievements);
     }
 
+// Функция для переключения видимости магазина (Shop)
+function toggleShop() {
+  const shop = document.getElementById("shop");
+  const btn = document.getElementById("shopBtn");
+  const isCurrentlyOpen = shop.style.display === "block"; // Проверяем, открыта ли панель сейчас
+
+  // Сначала закрываем все панели
+  closeAllPanels();
+
+  // Переключаем видимость магазина и обновляем текст кнопки
+  shop.style.display = isCurrentlyOpen ? "none" : "block";
+  btn.innerHTML = isCurrentlyOpen ? "Shop ▼" : "Shop ▲";
+}
+    
     function startAutoclicker(duration) {
       if (autoclickActive) {
         stopAutoclicker();
