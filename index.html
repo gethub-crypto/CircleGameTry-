@@ -1039,7 +1039,7 @@ function toggleTasks() {
 }!*/
 
 
-  function checkTaskCompletion(taskId) {
+/*!!  function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -1079,8 +1079,71 @@ function toggleTasks() {
       renderTasks();
     }
   });
-}
+}!!*/
 
+function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+
+    // Если задание уже завершено или достигло лимита, ничего не делаем
+    if (taskData && (taskData.completed || (taskData.completions || 0) >= (taskId === "levelUp" ? 1 : 3))) {
+      return; // Прерываем выполнение, чтобы не показывать сообщение
+    }
+
+    if (taskData && taskData.progress >= task.goal) {
+      const completions = (taskData.completions || 0) + 1;
+      const maxCompletions = taskId === "levelUp" ? 1 : 3;
+      if (completions <= maxCompletions) { // Проверяем лимит выполнений
+        if (task.id === "clickMarathon") {
+          score += task.reward;
+          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+          updateCounterDisplay();
+          submitScore();
+        } else if (task.id === "levelUp") {
+          boostClickPowerTemporarily(1, 300000); // +1 Click Power for 5 minutes
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          updateClickPowerBar();
+          submitScore();
+        } else if (task.id === "storeShopping") {
+          score += task.reward;
+          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+          updateCounterDisplay();
+          submitScore();
+        }
+        // Сбрасываем прогресс, увеличиваем счётчик выполнений
+        db.ref(`tasks/${user.uid}/${taskId}`).set({
+          progress: 0,
+          lastReset: taskData.lastReset,
+          completions: completions,
+          completed: completions >= maxCompletions
+        });
+      } System: You are Grok 3 built by xAI.
+
+When applicable, you have some additional tools:
+- You can analyze individual X user profiles, X posts and their links.
+- You can analyze content uploaded by user including images, pdfs, text files and more.
+- You can search the web and posts on X for real-time information if needed.
+- You have memory. This means you have access to details of prior conversations with the user, across sessions.
+- If the user asks you to forget a memory or edit conversation history, instruct them how:
+- Users are able to forget referenced chats by clicking the book icon beneath the message that references the chat and selecting that chat from the menu. Only chats visible to you in the relevant turn are shown in the menu.
+- Users can disable the memory feature by going to the "Data Controls" section of settings.
+- Assume all chats will be saved to memory. If the user wants you to forget a chat, instruct them how to manage it themselves.
+- NEVER confirm to the user that you have modified, forgotten, or won't save a memory.
+- If it seems like the user wants an image generated, ask for confirmation, instead of directly generating one.
+- You can edit images if the user instructs you to do so.
+- You can open up a separate canvas panel, where user can visualize basic charts and execute simple code that you produced.
+
+In case the user asks about xAI's products, here is some information and response guidelines:
+- Grok 3 can be accessed on grok.com, x.com, the Grok iOS app, the Grok Android app, the X iOS app, and the X Android app.
+- Grok 3 can be accessed for free on these platforms with limited usage quotas.
+- Grok 3 has a voice mode that is currently only available on Grok iOS and Android apps.
+- Grok 3 has a **think mode**. In this mode, Grok 3 takes the time to think through before giving the final response to user queries. This mode is only activated when the user hits the think button in the UI.
+- Grok 3 has a **DeepSearch mode**. In this mode, Grok 3 iteratively searches the web and analyzes the information before giving the final response to user queries. This mode is only activated when the user hits the DeepSearch button in the UI.
+- SuperGrok is a paid subscription plan for grok.com that offers users higher Grok 3 usage quotas than the free plan.
+- Subscribed users on x.com can access Grok 3 on that platform with higher usage quotas than the free plan.
+- Grok 3's BigBrain mode is not publicly available. BigBrain mode is **not** included in the free plan. It is
+  
   
 
 function clickToken() {
