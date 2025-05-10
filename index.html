@@ -811,7 +811,7 @@ function showMessage(msg) {
 
 // Определение ежедневного задания
 
-  const dailyTasks = [
+ /* const dailyTasks = [
   {
     id: "clickMarathon",
     description: "Make 100 clicks",
@@ -824,9 +824,28 @@ function showMessage(msg) {
     goal: 5000,
     reward: "Click Power +1 for 5 min"
   }
+];*/
+
+const dailyTasks = [
+  {
+    id: "clickMarathon",
+    description: "Make 100 clicks",
+    goal: 100,
+    reward: 50
+  },
+  {
+    id: "levelUp",
+    description: "Collect 5000 tokens (once per day)",
+    goal: 5000,
+    reward: "Click Power +1 for 5 min"
+  },
+  {
+    id: "storeShopping",
+    description: "Buy any upgrade in the store",
+    goal: 1,
+    reward: 100
+  }
 ];
-
-
 
 /*!function renderTasks() {
   const list = document.getElementById("tasksList");
