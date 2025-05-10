@@ -1489,7 +1489,7 @@ function toggleShop() {
         const tokensEarned = secondsPassed * clickPower;
         if (tokensEarned > 0) {
           score += tokensEarned;
-          showMessage(`Автокликер заработал ${tokensEarned} токенов, пока вас не было!`);
+          showMessage(`Autoclick earning ${tokensEarned} tokens!`);
         }
         const remainingTime = autoclickEndTime - Date.now();
         startAutoclicker(remainingTime);
