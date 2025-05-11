@@ -1054,6 +1054,21 @@ function loadPlayerData(uid) {
         lastUpdate: Date.now()
       });
     }
+// Запускаем таймер для задачи "Thrifty Player"
+    const today = new Date().toDateString();
+    db.ref(`tasks/${uid}/thriftyPlayer`).once("value").then(snapshot => {
+      const taskData = snapshot.val() || { progress: 0, lastReset: "", completions: 0, completed: false };
+      if (taskData.lastReset !== today && !taskData.completed) {
+        thriftyPlayerStartTime = Date.now();
+        if (thriftyPlayerTimer) clearInterval(thriftyPlayerTimer);
+        thriftyPlayerTimer = setInterval(() => {
+          const elapsedSeconds = Math.floor((Date.now() - thriftyPlayerStartTime) / 1000);
+          updateTaskProgress("thriftyPlayer", elapsedSeconds - taskData.progress);
+        }, 1000);
+      }
+    });
+    
+    
   }).catch(error => {
     console.error("Ошибка загрузки данных игрока:", error);
     showMessage("Не удалось загрузить данные.");
