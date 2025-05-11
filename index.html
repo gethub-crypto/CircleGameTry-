@@ -1112,26 +1112,7 @@ function loadPlayerData(uid) {
   });
 }
 
-    
-
-    
-  /*!  function submitScore() {
-      if (!user) return;
-      const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
-      db.ref("leaderboard/" + user.uid).set({
-        id: user.uid,
-        name: userName,
-        score: score,
-        clickPower: clickPower,
-        autoclickActive: autoclickActive,
-        autoclickEndTime: autoclickEndTime,
-        lastUpdate: Date.now()
-      }).catch(error => {
-        console.error("Error saving score:", error);
-        showMessage("Failed to save progress.");
-      });
-    }!*/
-
+  
 
    function submitScore() {
   if (!user) return;
@@ -1209,46 +1190,7 @@ function loadPlayerData(uid) {
       }
     }
 
-  /*!  function buyAutoclicker(minutes) {
-      if (autoclickCooldown) {
-        showMessage("Autoclicker on cooldown.");
-        return;
-      }
-
-      const prices = {
-        1: 200,
-        5: 800,
-        10: 1400
-      };
-
-      const cost = prices[minutes];
-      if (score >= cost) {
-        score -= cost;
-        updateCounterDisplay();
-        showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
-        autoclickCooldown = true;
-        autoclickActive = true;
-        const duration = minutes * 60000;
-        autoclickEndTime = Date.now() + duration;
-
-        if (user) {
-          db.ref("leaderboard/" + user.uid).update({
-            autoclickActive: true,
-            autoclickEndTime: autoclickEndTime,
-            score: score,
-            lastUpdate: Date.now()
-          }).catch(error => {
-            console.error("Error saving autoclicker purchase:", error);
-          });
-        }
-
-        updateProfilePanel();
-        startAutoclicker(duration);
-        submitScore();
-      } else {
-        showMessage("Not enough tokens for autoclicker.");
-      }
-    }!*/
+  
 
 
 function buyAutoclicker(minutes) {
