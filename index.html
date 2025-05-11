@@ -249,7 +249,7 @@
       50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000
     ];
 
-    const dailyTasks = [
+  /*!  const dailyTasks = [
       {
         id: "clickMarathon",
         description: "Make 100 clicks",
@@ -262,7 +262,30 @@
         goal: 5000,
         reward: "Click Power +1 for 5 min"
       }
-    ];
+    ];!*/
+
+
+    const dailyTasks = [
+  {
+    id: "clickMarathon",
+    description: "Make 100 clicks",
+    goal: 100,
+    reward: 50
+  },
+  {
+    id: "levelUp",
+    description: "Collect 5000 tokens",
+    goal: 5000,
+    reward: "Click Power +1 for 5 min"
+  },
+  {
+    id: "autoclickerMaster",
+    description: "Activate autoclicker 5 times in a week",
+    goal: 5,
+    reward: "Free 5-minute autoclicker",
+    period: "weekly" // Указываем, что задача недельная
+  }
+];
 
     let user = null;
     let score = 0;
