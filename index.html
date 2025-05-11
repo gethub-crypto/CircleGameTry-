@@ -970,62 +970,7 @@ function toggleShop() {
       }
     }
 
-  /*!  function loadPlayerData(uid) {
-      db.ref("leaderboard/" + uid).once("value").then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          score = data.score || 0;
-          clickPower = data.clickPower || 1;
-          autoclickActive = data.autoclickActive || false;
-          autoclickEndTime = data.autoclickEndTime || 0;
-          const lastUpdate = data.lastUpdate || 0;
-
-          if (autoclickActive && autoclickEndTime > Date.now()) {
-            const elapsedTime = Date.now() - lastUpdate;
-            const secondsPassed = Math.floor(elapsedTime / 1000);
-            const tokensEarned = secondsPassed * clickPower;
-            if (tokensEarned > 0) {
-              score += tokensEarned;
-              showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
-            }
-            const remainingTime = autoclickEndTime - Date.now();
-            startAutoclicker(remainingTime);
-            document.getElementById("autoclickBtn").disabled = true;
-          } else if (autoclickActive) {
-            autoclickActive = false;
-            autoclickEndTime = 0;
-            db.ref("leaderboard/" + uid).update({
-              autoclickActive: false,
-              autoclickEndTime: 0
-            });
-            stopAutoclicker();
-          }
-
-          updateCounterDisplay();
-          updateClickPowerBar();
-          updateProfilePanel();
-          renderAchievements();
-          updateClickPowerCostText();
-        }
-
-        if (user) {
-          db.ref("leaderboard/" + uid).update({
-            lastUpdate: Date.now()
-          });
-        }
-      }).catch(error => {
-        console.error("Error loading player data:", error);
-        showMessage("Failed to load data.");
-      });
-
-      db.ref("achievements/" + uid).once("value").then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          achievements = data;
-          renderAchievements();
-        }
-      });
-    }!*/
+  
 
     
 function loadPlayerData(uid) {
