@@ -1294,6 +1294,13 @@ function buyAutoclicker(minutes) {
       if (user) {
         submitScore();
       }
+
+       // Останавливаем таймер задачи "Thrifty Player"
+      if (thriftyPlayerTimer) {
+    clearInterval(thriftyPlayerTimer);
+      thriftyPlayerTimer = null;
+     }
+      
       auth.signOut().then(() => {
         user = null;
         score = 0;
