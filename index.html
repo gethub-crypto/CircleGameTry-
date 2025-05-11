@@ -1147,6 +1147,12 @@ function loadPlayerData(uid) {
           return;
         }
         if (score >= 200) {
+          // Сбрасываем прогресс задачи "Thrifty Player"
+      if (thriftyPlayerTimer) {
+        clearInterval(thriftyPlayerTimer);
+        thriftyPlayerTimer = null;
+        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0 });
+        }
           score -= 200;
           updateCounterDisplay();
           showMessage("Autoclicker activated for 1 minute!");
