@@ -1124,6 +1124,12 @@ function loadPlayerData(uid) {
         }
 
         if (score >= cost) {
+          // Сбрасываем прогресс задачи "Thrifty Player"
+      if (thriftyPlayerTimer) {
+        clearInterval(thriftyPlayerTimer);
+        thriftyPlayerTimer = null;
+        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0 });
+        }
           score -= cost;
           clickPower++;
           updateCounterDisplay();
