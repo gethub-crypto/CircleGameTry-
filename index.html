@@ -293,6 +293,10 @@
     let tempBoostTimeout = null;
     let originalClickPower = null;
     let isRenderingTasks = false;
+    let thriftyPlayerTimer = null;
+    let thriftyPlayerStartTime = 0;
+
+    
 
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
