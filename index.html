@@ -752,46 +752,7 @@ function updateTaskProgress(taskId, increment) {
     });
   });
 }
-
-    
-  /*!  function checkTaskCompletion(taskId) {
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-        const taskData = snapshot.val();
-        const task = dailyTasks.find(t => t.id === taskId);
-
-        if (taskData && (taskData.completed || (taskData.completions || 0) >= 3)) {
-          return;
-        }
-
-        if (taskData && taskData.progress >= task.goal) {
-          const completions = (taskData.completions || 0) + 1;
-          if (completions <= 3) {
-            if (task.id === "clickMarathon") {
-              score += task.reward;
-              showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-              updateCounterDisplay();
-              submitScore();
-            } else if (task.id === "levelUp") {
-              boostClickPowerTemporarily(1, 300000);
-              showMessage(`Task "${task.description}" completed! ${task.reward}`);
-              updateClickPowerBar();
-              submitScore();
-            }
-            db.ref(`tasks/${user.uid}/${taskId}`).set({
-              progress: 0,
-              lastReset: taskData.lastReset,
-              completions: completions
-            });
-          } else {
-            showMessage("Max completions reached for today!");
-            db.ref(`tasks/${user.uid}/${taskId}`).update({
-              completed: true
-            });
-          }
-          renderTasks();
-        }
-      });
-    }!*/
+  
 
 function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
@@ -1187,7 +1148,7 @@ function loadPlayerData(uid) {
       }
     }
 
-    function buyAutoclicker(minutes) {
+  /*!  function buyAutoclicker(minutes) {
       if (autoclickCooldown) {
         showMessage("Autoclicker on cooldown.");
         return;
@@ -1226,7 +1187,53 @@ function loadPlayerData(uid) {
       } else {
         showMessage("Not enough tokens for autoclicker.");
       }
+    }!*/
+
+
+function buyAutoclicker(minutes) {
+  if (autoclickCooldown) {
+    showMessage("Autoclicker on cooldown.");
+    return;
+  }
+
+  const prices = {
+    1: 200,
+    5: 800,
+    10: 1400
+  };
+
+  const cost = prices[minutes];
+  if (score >= cost) {
+    score -= cost;
+    updateCounterDisplay();
+    showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
+    autoclickCooldown = true;
+    autoclickActive = true;
+    const duration = minutes * 60000;
+    autoclickEndTime = Date.now() + duration;
+
+    // Обновляем прогресс задачи "Мастер автокликера"
+    updateTaskProgress("autoclickerMaster", 1);
+
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        autoclickActive: true,
+        autoclickEndTime: autoclickEndTime,
+        score: score,
+        lastUpdate: Date.now()
+      }).catch(error => {
+        console.error("Error saving autoclicker purchase:", error);
+      });
     }
+
+    updateProfilePanel();
+    startAutoclicker(duration);
+    submitScore();
+  } else {
+    showMessage("Not enough tokens for autoclicker.");
+  }
+}
+    
 
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
