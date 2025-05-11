@@ -736,63 +736,6 @@ function renderTasks() {
       }
     }
 
-   /*! function updateTaskProgress(taskId, increment) {
-      if (!user) return;
-      const today = new Date().toDateString();
-      db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
-        taskData = taskData || { progress: 0, lastReset: today, completions: 0, completed: false };
-        if (taskData.lastReset !== today) {
-          taskData.progress = 0;
-          taskData.lastReset = today;
-          taskData.completions = 0;
-          taskData.completed = false;
-        }
-        if (taskData.completed || taskData.completions >= 3) {
-          return taskData;
-        }
-        taskData.progress = (taskData.progress || 0) + increment;
-        if (taskId === "levelUp" && taskData.progress >= 4500 && taskData.progress < 5000) {
-          showMessage("Only 500 tokens left to complete the task!");
-        }
-        return taskData;
-      }).then(() => {
-        db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-          const taskData = snapshot.val();
-          if (taskData && !(taskData.completed || taskData.completions >= 3)) {
-            checkTaskCompletion(taskId);
-          }
-          renderTasks();
-        });
-      });
-    }!*/
-
-
-/*!!function updateTaskProgress(taskId, increment) {
-  if (!user) return;
-  const today = new Date().toDateString();
-  db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
-    taskData = taskData || { progress: 0, lastReset: today, completions: 0, completed: false };
-    if (taskData.lastReset !== today) {
-      taskData.progress = 0;
-      taskData.lastReset = today;
-      taskData.completions = 0;
-      taskData.completed = false;
-    }
-    if (taskData.completed || taskData.completions >= 1) {
-      return taskData;
-    }
-    taskData.progress = (taskData.progress || 0) + increment;
-    return taskData;
-  }).then(() => {
-    db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-      const taskData = snapshot.val();
-      if (taskData && !(taskData.completed || taskData.completions >= 1)) {
-        checkTaskCompletion(taskId);
-      }
-      renderTasks();
-    });
-  });
-}!!*/
 
 
 function updateTaskProgress(taskId, increment) {
