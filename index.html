@@ -1190,6 +1190,12 @@ function buyAutoclicker(minutes) {
 
   const cost = prices[minutes];
   if (score >= cost) {
+    // Сбрасываем прогресс задачи "Thrifty Player"
+    if (thriftyPlayerTimer) {
+      clearInterval(thriftyPlayerTimer);
+      thriftyPlayerTimer = null;
+      db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0 });
+    }
     score -= cost;
     updateCounterDisplay();
     showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
