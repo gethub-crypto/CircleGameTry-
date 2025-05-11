@@ -782,7 +782,7 @@ function renderTasks() {
     }!*/
 
 
-function updateTaskProgress(taskId, increment) {
+/*!!function updateTaskProgress(taskId, increment) {
   if (!user) return;
   const today = new Date().toDateString();
   db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
@@ -807,8 +807,43 @@ function updateTaskProgress(taskId, increment) {
       renderTasks();
     });
   });
-}
+}!!*/
+
+
+function updateTaskProgress(taskId, increment) {
+  if (!user) return;
+  const now = new Date();
+  const today = now.toDateString();
+  // Начало текущей недели
+  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
   
+  const task = dailyTasks.find(t => t.id === taskId);
+  const resetKey = task?.period === "weekly" ? startOfWeek : today;
+
+  db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
+    taskData = taskData || { progress: 0, lastReset: resetKey, completions: 0, completed: false };
+    if (taskData.lastReset !== resetKey) {
+      taskData.progress = 0;
+      taskData.lastReset = resetKey;
+      taskData.completions = 0;
+      taskData.completed = false;
+    }
+    if (taskData.completed || taskData.completions >= 1) {
+      return taskData;
+    }
+    taskData.progress = (taskData.progress || 0) + increment;
+    return taskData;
+  }).then(() => {
+    db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+      const taskData = snapshot.val();
+      if (taskData && !(taskData.completed || taskData.completions >= 1)) {
+        checkTaskCompletion(taskId);
+      }
+      renderTasks();
+    });
+  });
+}
+    
 
 function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
