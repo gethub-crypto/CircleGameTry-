@@ -1384,7 +1384,10 @@ function buyAutoclicker(minutes) {
     autoclickCooldown = true;
     autoclickActive = true;
     const duration = minutes * 60000;
-    autoclickEndTime = Date.now() + duration;
+   // autoclickEndTime = Date.now() + duration;
+
+    // Запускаем автокликер с учетом возможного суммирования времени
+    startAutoclicker(duration);
 
     // Обновляем прогресс задачи "Мастер автокликера"
     updateTaskProgress("autoclickerMaster", 1);
