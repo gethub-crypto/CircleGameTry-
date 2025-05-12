@@ -1425,12 +1425,12 @@ function buyAutoclicker(minutes) {
     updateCounterDisplay();
     showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
     autoclickCooldown = true;
-    autoclickActive = true;
+  //  autoclickActive = true;
     const duration = minutes * 60000;
    // autoclickEndTime = Date.now() + duration;
 
     // Запускаем автокликер с учетом возможного суммирования времени
-    startAutoclicker(duration);
+    startAutoclicker(duration, false);
 
     // Обновляем прогресс задачи "Мастер автокликера"
     updateTaskProgress("autoclickerMaster", 1);
@@ -1447,7 +1447,7 @@ function buyAutoclicker(minutes) {
     }
 
     updateProfilePanel();
-    startAutoclicker(duration);
+   // startAutoclicker(duration);
     submitScore();
   } else {
     showMessage("Not enough tokens for autoclicker.");
