@@ -954,7 +954,8 @@ function updateTaskProgress(taskId, increment) {
           submitScore();
         } else if (task.id === "autoclickerMaster") {
           showMessage(`Task "${task.description}" completed! ${task.reward}`);
-          startAutoclicker(300000); // Запускаем автокликер на 5 минут
+          //startAutoclicker(300000); // Запускаем автокликер на 5 минут
+          startAutoclicker(300000); // Запускаем автокликер на 5 минут с суммированием
           submitScore();
         } else if (task.id === "thriftyPlayer") {
           score += task.reward;
