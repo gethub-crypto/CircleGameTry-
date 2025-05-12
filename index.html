@@ -1076,7 +1076,7 @@ function toggleShop() {
     }!*/
 
 
-    function startAutoclicker(duration) {
+  /*?!?  function startAutoclicker(duration) {
   if (autoclickActive) {
     // Если автокликер уже активен, добавляем новую длительность к оставшемуся времени
     const remainingTime = Math.max(0, autoclickEndTime - Date.now());
@@ -1108,7 +1108,41 @@ function toggleShop() {
 
   // Устанавливаем таймер для остановки автокликера
   setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
+}?!?*/
+
+// Функция для запуска автокликера с возможностью суммирования времени
+function startAutoclicker(duration, stack = false) {
+  // Если автокликер уже активен и суммирование не требуется, останавливаем текущий
+  if (autoclickActive && !stack) {
+    stopAutoclicker();
+  }
+
+  autoclickActive = true;
+  // Устанавливаем новое время окончания автокликера
+  autoclickEndTime = Date.now() + duration;
+  // Запускаем автокликер: каждую секунду добавляем токены
+  autoclickInterval = setInterval(() => clickToken(), 1000);
+  autoclickerUses++; // Увеличиваем счетчик использований автокликера
+  checkAchievements(); // Проверяем достижения
+
+  updateProfilePanel(); // Обновляем панель профиля
+  submitScore(); // Сохраняем прогресс
+
+  // Сохраняем состояние автокликера в Firebase
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: true,
+      autoclickEndTime: autoclickEndTime,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error saving autoclicker state:", error);
+    });
+  }
+
+  // Устанавливаем таймер для остановки автокликера
+  setTimeout(() => stopAutoclicker(), duration);
 }
+    
     
 
   /*!  function stopAutoclicker() {
