@@ -1111,7 +1111,7 @@ function toggleShop() {
 }?!?*/
 
 // Функция для запуска автокликера с возможностью суммирования времени
-function startAutoclicker(duration, stack = false) {
+/*!?!??function startAutoclicker(duration, stack = false) {
   // Если автокликер уже активен и суммирование не требуется, останавливаем текущий
   if (autoclickActive && !stack) {
     stopAutoclicker();
@@ -1141,7 +1141,57 @@ function startAutoclicker(duration, stack = false) {
 
   // Устанавливаем таймер для остановки автокликера
   setTimeout(() => stopAutoclicker(), duration);
+}!???*/ 
+
+
+// Функция для запуска автокликера с возможностью суммирования времени
+function startAutoclicker(duration, stack = false) {
+  // Если автокликер уже активен
+  if (autoclickActive) {
+    if (!stack) {
+      // Если суммирование не требуется, останавливаем текущий автокликер
+      stopAutoclicker();
+      autoclickEndTime = Date.now() + duration; // Устанавливаем новое время окончания
+    } else {
+      // Если суммирование требуется, добавляем новую длительность к оставшемуся времени
+      const remainingTime = Math.max(0, autoclickEndTime - Date.now());
+      autoclickEndTime = Date.now() + remainingTime + duration;
+      // Очищаем текущий интервал и таймер остановки
+      clearInterval(autoclickInterval);
+      clearTimeout(stopAutoclicker); // Останавливаем предыдущий таймер остановки
+    }
+  } else {
+    // Если автокликер не активен, просто устанавливаем новое время
+    autoclickActive = true;
+    autoclickEndTime = Date.now() + duration;
+  }
+
+  // Запускаем автокликер: каждую секунду добавляем токены
+  autoclickInterval = setInterval(() => clickToken(), 1000);
+  autoclickerUses++; // Увеличиваем счетчик использований автокликера
+  checkAchievements(); // Проверяем достижения
+
+  updateProfilePanel(); // Обновляем панель профиля
+  submitScore(); // Сохраняем прогресс
+
+  // Сохраняем состояние автокликера в Firebase
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: true,
+      autoclickEndTime: autoclickEndTime,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error saving autoclicker state:", error);
+    });
+  }
+
+  // Устанавливаем таймер для остановки автокликера на основе оставшегося времени
+  const totalDuration = autoclickEndTime - Date.now();
+  setTimeout(() => stopAutoclicker(), totalDuration);
 }
+
+
+    
     
     
 
