@@ -1110,7 +1110,7 @@ function toggleShop() {
 }
     
 
-    function stopAutoclicker() {
+  /*!  function stopAutoclicker() {
       clearInterval(autoclickInterval);
       autoclickActive = false;
       autoclickEndTime = 0;
@@ -1135,6 +1135,32 @@ function toggleShop() {
           console.error("Error updating autoclicker state:", error);
         });
       }
+    }!*/
+
+
+    function stopAutoclicker() {
+  clearInterval(autoclickInterval);
+  autoclickActive = false;
+  autoclickEndTime = 0;
+  autoclickInterval = null;
+
+  updateProfilePanel();
+  submitScore();
+  showMessage("Autoclicker deactivated.");
+
+  autoclickCooldown = false; // Снимаем кулдаун сразу после завершения
+  document.getElementById("autoclickBtn").disabled = false;
+  showMessage("Autoclicker available again.");
+
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: false,
+      autoclickEndTime: 0,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error updating autoclicker state:", error);
+    });
+  }
     }
 
   
