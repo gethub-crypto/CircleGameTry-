@@ -1611,7 +1611,7 @@ function loadPlayerData(uid) {
       if (thriftyPlayerTimer) {
         clearInterval(thriftyPlayerTimer);
         thriftyPlayerTimer = null;
-        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0 });
+        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
         }
           score -= cost;
           clickPower++;
@@ -1634,7 +1634,7 @@ function loadPlayerData(uid) {
       if (thriftyPlayerTimer) {
         clearInterval(thriftyPlayerTimer);
         thriftyPlayerTimer = null;
-        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0 });
+        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime 0 });
         }
           score -= 200;
           updateCounterDisplay();
