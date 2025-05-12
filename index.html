@@ -1340,14 +1340,22 @@ function loadPlayerData(uid) {
           showMessage("Autoclicker activated for 1 minute!");
           autoclickCooldown = true;
           autoclickActive = true;
-          autoclickEndTime = Date.now() + 60000;
+          const duration = 60000;
+          //autoclickEndTime = Date.now() + 60000;
+          // Запускаем автокликер с учетом суммирования времени
+           startAutoclicker(duration);
+
+           // Обновляем прогресс задачи "Мастер автокликера"
+          updateTaskProgress("autoclickerMaster", 1);
+
+  
           updateProfilePanel();
           document.getElementById("autoclickBtn").disabled = true;
 
           // Обновляем прогресс задачи "Мастер автокликера"
-      updateTaskProgress("autoclickerMaster", 1);
+         // updateTaskProgress("autoclickerMaster", 1);
           
-          startAutoclicker(60000);
+         // startAutoclicker(60000);
           submitScore();
         } else {
           showMessage("Not enough tokens for autoclicker.");
