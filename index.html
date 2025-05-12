@@ -1047,7 +1047,7 @@ function toggleShop() {
   btn.innerHTML = isCurrentlyOpen ? "Shop ▼" : "Shop ▲";
 }
     
-    function startAutoclicker(duration) {
+    /*!function startAutoclicker(duration) {
       if (autoclickActive) {
         stopAutoclicker();
       }
@@ -1072,7 +1072,43 @@ function toggleShop() {
       }
 
       setTimeout(() => stopAutoclicker(), duration);
-    }
+    }!*/
+
+
+    function startAutoclicker(duration) {
+  if (autoclickActive) {
+    // Если автокликер уже активен, добавляем новую длительность к оставшемуся времени
+    const remainingTime = Math.max(0, autoclickEndTime - Date.now());
+    autoclickEndTime = Date.now() + remainingTime + duration;
+    clearInterval(autoclickInterval); // Останавливаем старый интервал
+  } else {
+    // Если автокликер не активен, устанавливаем новое время
+    autoclickActive = true;
+    autoclickEndTime = Date.now() + duration;
+  }
+
+  // Запускаем новый интервал
+  autoclickInterval = setInterval(() => clickToken(), 1000);
+  autoclickerUses++;
+  checkAchievements();
+
+  updateProfilePanel();
+  submitScore();
+
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: true,
+      autoclickEndTime: autoclickEndTime,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error saving autoclicker state:", error);
+    });
+  }
+
+  // Устанавливаем таймер для остановки автокликера
+  setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
+}
+    
 
     function stopAutoclicker() {
       clearInterval(autoclickInterval);
