@@ -732,7 +732,7 @@
 
 
 
-  function renderTasks() {
+/*!!!!  function renderTasks() {
   if (isRenderingTasks) return;
   isRenderingTasks = true;
 
@@ -793,8 +793,72 @@
     showMessage("Failed to load tasks.");
     isRenderingTasks = false;
   });
+}!!!!*/
+
+function renderTasks() {
+  if (isRenderingTasks) return;
+  isRenderingTasks = true;
+
+  const list = document.getElementById("tasksList");
+  list.innerHTML = "";
+
+  if (!user) {
+    isRenderingTasks = false;
+    return;
+  }
+
+  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
+    const tasksData = snapshot.val() || {};
+    const today = new Date().toDateString();
+    
+    // Определяем начало текущей недели (понедельник)
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
+
+    dailyTasks.forEach(task => {
+      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false, startTime: 0 };
+
+      // Для недельных задач используем startOfWeek, для дневных — today
+      const resetKey = task.period === "weekly" ? startOfWeek : today;
+      if (taskData.lastReset !== resetKey) {
+        taskData = { progress: 0, lastReset: resetKey, completions: 0, completed: false, startTime: 0 };
+        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
+      }
+
+      const div = document.createElement("div");
+      if (taskData.completed || taskData.completions >= 1) {
+        div.innerHTML = `${task.description}: Completed for ${task.period === "weekly" ? "this week" : "today"}!`;
+      } else {
+        // Для задачи "Thrifty Player" отображаем время в формате MM:SS
+        if (task.id === "thriftyPlayer") {
+          const progressSeconds = Math.min(taskData.progress, task.goal);
+          const goalSeconds = task.goal;
+          const progressFormatted = formatTime(progressSeconds);
+          const goalFormatted = formatTime(goalSeconds);
+          div.innerHTML = `${task.description}: ${progressFormatted} / ${goalFormatted} (Reward: ${task.reward} tokens)`;
+        } else {
+          div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward})`;
+        }
+      }
+      list.appendChild(div);
+    });
+
+    const validTaskIds = dailyTasks.map(task => task.id);
+    for (const taskId in tasksData) {
+      if (!validTaskIds.includes(taskId)) {
+        db.ref(`tasks/${user.uid}/${taskId}`).remove();
+      }
+    }
+
+    isRenderingTasks = false;
+  }).catch(error => {
+    console.error("Error rendering tasks:", error);
+    showMessage("Failed to load tasks.");
+    isRenderingTasks = false;
+  });
 }
 
+    
 // Вспомогательная функция для форматирования времени в MM:SS
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
