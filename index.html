@@ -1685,7 +1685,7 @@ function buyAutoclicker(minutes) {
     if (thriftyPlayerTimer) {
       clearInterval(thriftyPlayerTimer);
       thriftyPlayerTimer = null;
-      db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0 });
+      db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, srartTine 0 });
     }
     score -= cost;
     updateCounterDisplay();
