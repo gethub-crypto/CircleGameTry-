@@ -1374,11 +1374,11 @@ function loadPlayerData(uid) {
           updateCounterDisplay();
           showMessage("Autoclicker activated for 1 minute!");
           autoclickCooldown = true;
-          autoclickActive = true;
+       //   autoclickActive = true;
           const duration = 60000;
           //autoclickEndTime = Date.now() + 60000;
           // Запускаем автокликер с учетом суммирования времени
-           startAutoclicker(duration);
+           startAutoclicker(duration, false);
 
            // Обновляем прогресс задачи "Мастер автокликера"
           updateTaskProgress("autoclickerMaster", 1);
