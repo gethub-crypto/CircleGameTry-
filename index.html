@@ -1129,11 +1129,6 @@ function buyUpgrade(type) {
         submitScore();
       }
 
-      if (thriftyPlayerTimer) {
-        clearInterval(thriftyPlayerTimer);
-        thriftyPlayerTimer = null;
-      }
-
       auth.signOut().then(() => {
         user = null;
         score = 0;
