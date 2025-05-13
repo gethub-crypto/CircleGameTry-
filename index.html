@@ -359,6 +359,79 @@
       });
     }
 
+
+
+function startBonusTimer() {
+  if (bonusTimerInterval) clearInterval(bonusTimerInterval);
+
+  bonusTimerInterval = setInterval(() => {
+    if (!user) return;
+    db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
+      const data = snapshot.val() || { lastClaim: 0 };
+      const now = Date.now();
+      const timeSinceLastClaim = now - data.lastClaim;
+      const oneHour = 3600000; // 1 hour in milliseconds
+      const timeRemaining = Math.max(0, oneHour - timeSinceLastClaim);
+
+      if (timeRemaining <= 0) {
+        document.getElementById("claimBonusBtn").disabled = false;
+        document.getElementById("bonusTimer").innerText = "Claim now!";
+        clearInterval(bonusTimerInterval);
+      } else {
+        document.getElementById("claimBonusBtn").disabled = true;
+        const hours = Math.floor(timeRemaining / 3600000);
+        const minutes = Math.floor((timeRemaining % 3600000) / 60000);
+        const seconds = Math.floor((timeRemaining % 60000) / 1000);
+        document.getElementById("bonusTimer").innerText = `Next in: ${hours.toString().padStart(2, '0')}:${minutes
+          .toString()
+          .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
+    }).catch(error => {
+      console.error("Error fetching bonus timer:", error);
+      showMessage("Failed to load bonus timer.");
+    });
+  }, 1000);
+}
+
+function claimHourlyBonus() {
+  if (!user) {
+    showMessage("Please sign in to claim the bonus.");
+    return;
+  }
+
+  db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
+    const data = snapshot.val() || { lastClaim: 0 };
+    const now = Date.now();
+    const timeSinceLastClaim = now - data.lastClaim;
+    const oneHour = 3600000;
+
+    if (timeSinceLastClaim >= oneHour || !data.lastClaim) {
+      const reward = Math.floor(Math.random() * (200 - 10 + 1)) + 10; // Random 10-200 tokens
+      score += reward;
+      updateCounterDisplay();
+      submitScore();
+      showMessage(`Claimed ${reward} tokens from Hourly Bonus!`);
+
+      db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now }).then(() => {
+        document.getElementById("claimBonusBtn").disabled = true;
+        startBonusTimer();
+      }).catch(error => {
+        console.error("Error saving bonus claim:", error);
+        showMessage("Failed to save bonus claim.");
+      });
+    } else {
+      showMessage("Bonus not ready yet!");
+    }
+  }).catch(error => {
+    console.error("Error checking bonus eligibility:", error);
+    showMessage("Failed to check bonus eligibility.");
+  });
+}
+
+
+
+    
+
     function closeAllPanels() {
       console.log("Closing all panels...");
       const shop = document.getElementById("shop");
