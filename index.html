@@ -174,10 +174,10 @@
       </div>
       <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
 
-   <!--   <div style="margin-top: 20px;">
+      <div style="margin-top: 20px;">
         <p>Autoclicker (Cost: 200)</p>
         <button class="click-button" id="autoclickBtn" onclick="buyUpgrade('autoclick')">Buy</button>
-      </div> -->
+      </div>
 
       <h2>⚡ Autoclickers</h2>
       <div id="autoclickerShop" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
@@ -262,7 +262,13 @@
         goal: 5000,
         reward: "Click Power +1 for 5 min"
       },
-     
+     /* {
+        id: "thriftyPlayer",
+        description: "Don't spend tokens for 5 minutes after login",
+        goal: 300, // 300 секунд (5 минут)
+        reward: 150,
+        period: "daily"
+      },*/
       {
         id: "autoclickerMaster",
         description: "Activate autoclicker 5 times in a week",
@@ -286,8 +292,8 @@
     let tempBoostTimeout = null;
     let originalClickPower = null;
     let isRenderingTasks = false;
-  //  let thriftyPlayerTimer = null;
-  //  let thriftyPlayerStartTime = 0;
+    let thriftyPlayerTimer = null;
+    let thriftyPlayerStartTime = 0;
 
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
@@ -886,7 +892,7 @@
             }
             const remainingTime = autoclickEndTime - Date.now();
             startAutoclicker(remainingTime);
-            document.getElementById("autoclickerShop").disabled = true;
+            document.getElementById("autoclickBtn").disabled = true;
           } else if (autoclickActive) {
             autoclickActive = false;
             autoclickEndTime = 0;
@@ -912,7 +918,7 @@
         }
 
         // Запускаем таймер для задачи "Thrifty Player"
-       const today = new Date().toDateString();
+        const today = new Date().toDateString();
         db.ref(`tasks/${uid}/thriftyPlayer`).once("value").then(snapshot => {
           const taskData = snapshot.val() || { progress: 0, lastReset: "", completions: 0, completed: false, startTime: 0 };
           if (taskData.lastReset !== today && !taskData.completed) {
@@ -990,11 +996,11 @@
         }
 
         if (score >= cost) {
-         /* if (thriftyPlayerTimer) {
+          if (thriftyPlayerTimer) {
             clearInterval(thriftyPlayerTimer);
             thriftyPlayerTimer = null;
             db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
-          }*/
+          }
           score -= cost;
           clickPower++;
           updateCounterDisplay();
@@ -1006,7 +1012,7 @@
         } else {
           showMessage("Not enough tokens for upgrade.");
         }
-     /* } else if (type === "autoclick") {
+      } else if (type === "autoclick") {
         if (autoclickCooldown) {
           showMessage("Autoclicker on cooldown.");
           return;
@@ -1030,7 +1036,7 @@
           submitScore();
         } else {
           showMessage("Not enough tokens for autoclicker.");
-        }*/
+        }
       }
     }
 
