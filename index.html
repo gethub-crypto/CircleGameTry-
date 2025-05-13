@@ -834,7 +834,7 @@
       showMessage("Autoclicker deactivated.");
 
       autoclickCooldown = false;
-      document.getElementById("autoclickBtn").disabled = false;
+    //  document.getElementById("autoclickBtn").disabled = false;
       showMessage("Autoclicker available again.");
 
       if (user) {
@@ -978,7 +978,7 @@
       });
     }
 
-    function buyUpgrade(type) {
+   /*! function buyUpgrade(type) {
       const cost = getClickPowerUpgradeCost();
       if (type === "clickPower") {
         if (clickPower >= 8) {
@@ -1038,8 +1038,46 @@
           showMessage("Not enough tokens for autoclicker.");
         }
       }
+    }!*/
+
+
+    
+function buyUpgrade(type) {
+  const cost = getClickPowerUpgradeCost();
+  if (type === "clickPower") {
+    if (clickPower >= 8) {
+      showMessage("Click Power is at maximum!");
+      return;
     }
 
+    const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
+    if (clickPower >= 3 && currentLevel < clickPower + 1) {
+      showMessage(`Reach player level ${clickPower + 1} to upgrade Click Power further!`);
+      const buyButton = document.querySelector("button[onclick=\"buyUpgrade('clickPower')\"]");
+      buyButton.style.animation = "shake 0.3s";
+      setTimeout(() => buyButton.style.animation = "", 300);
+      return;
+    }
+
+    if (score >= cost) {
+      if (thriftyPlayerTimer) {
+        clearInterval(thriftyPlayerTimer);
+        thriftyPlayerTimer = null;
+        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
+      }
+      score -= cost;
+      clickPower++;
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      updateClickPowerCostText();
+      submitScore();
+      showMessage("Click Power upgraded!");
+    } else {
+      showMessage("Not enough tokens for upgrade.");
+    }
+  }
+}
     function buyAutoclicker(minutes) {
       if (autoclickCooldown) {
         showMessage("Autoclicker on cooldown.");
