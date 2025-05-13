@@ -996,11 +996,11 @@
         }
 
         if (score >= cost) {
-          if (thriftyPlayerTimer) {
+         /* if (thriftyPlayerTimer) {
             clearInterval(thriftyPlayerTimer);
             thriftyPlayerTimer = null;
             db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
-          }
+          }*/
           score -= cost;
           clickPower++;
           updateCounterDisplay();
@@ -1012,7 +1012,7 @@
         } else {
           showMessage("Not enough tokens for upgrade.");
         }
-      } else if (type === "autoclick") {
+     /* } else if (type === "autoclick") {
         if (autoclickCooldown) {
           showMessage("Autoclicker on cooldown.");
           return;
@@ -1036,7 +1036,7 @@
           submitScore();
         } else {
           showMessage("Not enough tokens for autoclicker.");
-        }
+        }*/
       }
     }
 
