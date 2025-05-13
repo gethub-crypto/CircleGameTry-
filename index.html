@@ -259,13 +259,7 @@
         goal: 5000,
         reward: "Click Power +1 for 5 min"
       },
-     /* {
-        id: "thriftyPlayer",
-        description: "Don't spend tokens for 5 minutes after login",
-        goal: 300, // 300 секунд (5 минут)
-        reward: 150,
-        period: "daily"
-      },*/
+     
       {
         id: "autoclickerMaster",
         description: "Activate autoclicker 5 times in a week",
@@ -831,7 +825,7 @@
       showMessage("Autoclicker deactivated.");
 
       autoclickCooldown = false;
-    //  document.getElementById("autoclickBtn").disabled = false;
+    
       showMessage("Autoclicker available again.");
 
       if (user) {
@@ -1057,11 +1051,7 @@ function buyUpgrade(type) {
     }
 
     if (score >= cost) {
-      if (thriftyPlayerTimer) {
-        clearInterval(thriftyPlayerTimer);
-        thriftyPlayerTimer = null;
-        db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
-      }
+  
       score -= cost;
       clickPower++;
       updateCounterDisplay();
