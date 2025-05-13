@@ -908,7 +908,7 @@
         }
 
         // Запускаем таймер для задачи "Thrifty Player"
-        const today = new Date().toDateString();
+      /*  const today = new Date().toDateString();
         db.ref(`tasks/${uid}/thriftyPlayer`).once("value").then(snapshot => {
           const taskData = snapshot.val() || { progress: 0, lastReset: "", completions: 0, completed: false, startTime: 0 };
           if (taskData.lastReset !== today && !taskData.completed) {
@@ -936,7 +936,7 @@
       }).catch(error => {
         console.error("Ошибка загрузки данных игрока:", error);
         showMessage("Не удалось загрузить данные.");
-      });
+      });*/
 
       db.ref("achievements/" + uid).once("value").then(snapshot => {
         const data = snapshot.val();
