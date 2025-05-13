@@ -1097,7 +1097,7 @@ function claimHourlyBonus() {
       });
     }
 
-    auth.onAuthStateChanged(currentUser => {
+  /*!  auth.onAuthStateChanged(currentUser => {
       if (currentUser) {
         user = currentUser;
         document.getElementById("authSection").style.display = "none";
@@ -1106,7 +1106,23 @@ function claimHourlyBonus() {
         checkDailyReward();
         renderTasks();
       }
-    });
+    });!*/
+
+    auth.onAuthStateChanged(currentUser => {
+  if (currentUser) {
+    user = currentUser;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    loadPlayerData(user.uid);
+    checkDailyReward();
+    renderTasks();
+    startBonusTimer(); // Initialize bonus timer on login
+  } else {
+    if (bonusTimerInterval) clearInterval(bonusTimerInterval);
+    document.getElementById("claimBonusBtn").disabled = true;
+    document.getElementById("bonusTimer").innerText = "Sign in to claim";
+  }
+});
 
     db.ref("leaderboard").on("value", snapshot => {
       const data = [];
