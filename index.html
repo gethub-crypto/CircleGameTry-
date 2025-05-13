@@ -131,7 +131,6 @@
     <div><strong>Player:</strong> <span id="profileName">Anonymous</span></div>
     <div><strong>Level:</strong> <span id="playerLevel">1</span> / 10</div>
     <div><strong>Click Power:</strong> <span id="profileClickPower">1</span></div>
-    <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
     <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
     <div><button class="click-button" onclick="signOut()">Sign Out</button></div>
   </div>
@@ -153,6 +152,7 @@
     <div id="dailyReward" style="display: none; margin-top: 20px;">
       <h2>Daily Reward</h2>
       <p id="streakText">Login streak: 0 days</p>
+      <p id="rewardText  style="display: none;"></p>
       <button class="click-button" onclick="claimDailyReward()">Claim Reward</button>
     </div>
 
@@ -173,11 +173,6 @@
         <div class="progress-bar" id="clickPowerBar"></div>
       </div>
       <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
-
-      <div style="margin-top: 20px;">
-        <p>Autoclicker (Cost: 200)</p>
-        <button class="click-button" id="autoclickBtn" onclick="buyUpgrade('autoclick')">Buy</button>
-      </div>
 
       <h2>⚡ Autoclickers</h2>
       <div id="autoclickerShop" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
@@ -262,13 +257,6 @@
         goal: 5000,
         reward: "Click Power +1 for 5 min"
       },
-     /* {
-        id: "thriftyPlayer",
-        description: "Don't spend tokens for 5 minutes after login",
-        goal: 300, // 300 секунд (5 минут)
-        reward: 150,
-        period: "daily"
-      },*/
       {
         id: "autoclickerMaster",
         description: "Activate autoclicker 5 times in a week",
@@ -292,36 +280,15 @@
     let tempBoostTimeout = null;
     let originalClickPower = null;
     let isRenderingTasks = false;
-    let thriftyPlayerTimer = null;
-    let thriftyPlayerStartTime = 0;
 
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
-
-      if (autoclickActive) {
-        const remaining = Math.max(0, autoclickEndTime - Date.now());
-        const seconds = Math.floor(remaining / 1000) % 60;
-        const minutes = Math.floor(remaining / 60000);
-        document.getElementById("profileAutoclick").innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-      } else {
-        document.getElementById("profileAutoclick").innerText = "Inactive";
-      }
-
-      let level = 1;
-      for (let i = 0; i < levelUpRequirements.length; i++) {
-        if (score >= levelUpRequirements[i]) {
-          level = i + 2;
-        } else {
-          break;
-        }
-      }
-
-      document.getElementById("playerLevel").innerText = level;
+      document.getElementById("playerLevel").innerText = currentLevel;
       document.getElementById("profileTokens").innerText = score;
       document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
 
       const levelMessageElement = document.getElementById("levelMessage");
-      if (level === 10) {
+      if (currentLevel === 10) {
         levelMessageElement.innerText = "Maximum level reached!";
         levelMessageElement.classList.add("show");
       } else {
@@ -382,7 +349,7 @@
       } else {
         console.error("Element #achievementsPanel not found");
       }
-      const achievementsBtn = document.querySelector("button[onclick='toggleAchievements()']");
+      const achievementsBtn = document.querySelector("button[onclick='toggleAchievements()']chamber);
       if (achievementsBtn) {
         achievementsBtn.innerHTML = "🏆 Achievements ▼";
         console.log("Achievements button text updated");
@@ -459,7 +426,6 @@
       const actualBoost = boosted - originalClickPower;
       showMessage(`Temporary boost: Click Power +${actualBoost} на ${duration / 1000} сек`);
 
-      // Сохраняем состояние буста в Firebase
       if (user) {
         const boostEndTime = Date.now() + duration;
         db.ref("leaderboard/" + user.uid).update({
@@ -480,7 +446,6 @@
         updateProfilePanel();
         submitScore();
 
-        // Очищаем состояние буста в Firebase
         if (user) {
           db.ref("leaderboard/" + user.uid).update({
             tempBoostActive: false,
@@ -576,17 +541,15 @@
         const tasksData = snapshot.val() || {};
         const today = new Date().toDateString();
         
-        // Определяем начало текущей недели (понедельник)
         const now = new Date();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
 
         dailyTasks.forEach(task => {
-          let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false, startTime: 0 };
+          let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
 
-          // Для недельных задач используем startOfWeek, для дневных — today
           const resetKey = task.period === "weekly" ? startOfWeek : today;
           if (taskData.lastReset !== resetKey) {
-            taskData = { progress: 0, lastReset: resetKey, completions: 0, completed: false, startTime: 0 };
+            taskData = { progress: 0, lastReset: resetKey, completions: 0, completed: false };
             db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
           }
 
@@ -594,16 +557,7 @@
           if (taskData.completed || taskData.completions >= 1) {
             div.innerHTML = `${task.description}: Completed for ${task.period === "weekly" ? "this week" : "today"}!`;
           } else {
-            // Для задачи "Thrifty Player" отображаем время в формате MM:SS
-            if (task.id === "thriftyPlayer") {
-              const progressSeconds = Math.min(taskData.progress, task.goal);
-              const goalSeconds = task.goal;
-              const progressFormatted = formatTime(progressSeconds);
-              const goalFormatted = formatTime(goalSeconds);
-              div.innerHTML = `${task.description}: ${progressFormatted} / ${goalFormatted} (Reward: ${task.reward} tokens)`;
-            } else {
-              div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward})`;
-            }
+            div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward})`;
           }
           list.appendChild(div);
         });
@@ -621,13 +575,6 @@
         showMessage("Failed to load tasks.");
         isRenderingTasks = false;
       });
-    }
-
-    // Вспомогательная функция для форматирования времени в MM:SS
-    function formatTime(seconds) {
-      const minutes = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${minutes}:${secs.toString().padStart(2, '0')}`;
     }
 
     function toggleTasks() {
@@ -648,20 +595,18 @@
       if (!user) return;
       const now = new Date();
       const today = now.toDateString();
-      // Начало текущей недели
       const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
       
       const task = dailyTasks.find(t => t.id === taskId);
       const resetKey = task?.period === "weekly" ? startOfWeek : today;
 
       db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
-        taskData = taskData || { progress: 0, lastReset: resetKey, completions: 0, completed: false, startTime: 0 };
+        taskData = taskData || { progress: 0, lastReset: resetKey, completions: 0, completed: false };
         if (taskData.lastReset !== resetKey) {
           taskData.progress = 0;
           taskData.lastReset = resetKey;
           taskData.completions = 0;
           taskData.completed = false;
-          taskData.startTime = 0;
         }
         if (taskData.completed || taskData.completions >= 1) {
           return taskData;
@@ -705,22 +650,12 @@
               showMessage(`Task "${task.description}" completed! ${task.reward}`);
               startAutoclicker(300000);
               submitScore();
-            } else if (task.id === "thriftyPlayer") {
-              score += task.reward;
-              showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-              updateCounterDisplay();
-              submitScore();
-              if (thriftyPlayerTimer) {
-                clearInterval(thriftyPlayerTimer);
-                thriftyPlayerTimer = null;
-              }
             }
             db.ref(`tasks/${user.uid}/${taskId}`).set({
               progress: 0,
               lastReset: taskData.lastReset,
               completions: completions,
-              completed: true,
-              startTime: 0
+              completed: true
             });
           }
           renderTasks();
@@ -737,6 +672,21 @@
       updateCounterDisplay();
       updateProfilePanel();
       animateCounter();
+
+      // Обновление уровня игрока
+      let newLevel = 1;
+      for (let i = 0; i < levelUpRequirements.length; i++) {
+        if (score >= levelUpRequirements[i]) {
+          newLevel = i + 2;
+        } else {
+          break;
+        }
+      }
+      if (newLevel !== currentLevel) {
+        currentLevel = newLevel;
+        updateProfilePanel();
+        updateClickPowerCostText();
+      }
     }
 
     function animateCounter() {
@@ -766,7 +716,6 @@
         saveAchievements();
       }
 
-      const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
       if (!achievements.level5 && currentLevel >= 5) {
         achievements.level5 = true;
         boostClickPowerTemporarily(2, 120000);
@@ -834,7 +783,6 @@
       showMessage("Autoclicker deactivated.");
 
       autoclickCooldown = false;
-      document.getElementById("autoclickBtn").disabled = false;
       showMessage("Autoclicker available again.");
 
       if (user) {
@@ -858,7 +806,6 @@
           autoclickEndTime = data.autoclickEndTime || 0;
           const lastUpdate = data.lastUpdate || 0;
 
-          // Обрабатываем временный буст
           const tempBoostActive = data.tempBoostActive || false;
           const tempBoostEndTime = data.tempBoostEndTime || 0;
           const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
@@ -881,7 +828,6 @@
             });
           }
 
-          // Обрабатываем автокликер
           if (autoclickActive && autoclickEndTime > Date.now()) {
             const elapsedTime = Date.now() - lastUpdate;
             const secondsPassed = Math.floor(elapsedTime / 1000);
@@ -892,7 +838,6 @@
             }
             const remainingTime = autoclickEndTime - Date.now();
             startAutoclicker(remainingTime);
-            document.getElementById("autoclickBtn").disabled = true;
           } else if (autoclickActive) {
             autoclickActive = false;
             autoclickEndTime = 0;
@@ -903,6 +848,16 @@
             stopAutoclicker();
           }
 
+          // Устанавливаем текущий уровень на основе score
+          currentLevel = 1;
+          for (let i = 0; i < levelUpRequirements.length; i++) {
+            if (score >= levelUpRequirements[i]) {
+              currentLevel = i + 2;
+            } else {
+              break;
+            }
+          }
+
           updateCounterDisplay();
           updateClickPowerBar();
           updateProfilePanel();
@@ -910,39 +865,11 @@
           updateClickPowerCostText();
         }
 
-        // Обновляем lastUpdate
         if (user) {
           db.ref("leaderboard/" + uid).update({
             lastUpdate: Date.now()
           });
         }
-
-        // Запускаем таймер для задачи "Thrifty Player"
-        const today = new Date().toDateString();
-        db.ref(`tasks/${uid}/thriftyPlayer`).once("value").then(snapshot => {
-          const taskData = snapshot.val() || { progress: 0, lastReset: "", completions: 0, completed: false, startTime: 0 };
-          if (taskData.lastReset !== today && !taskData.completed) {
-            if (taskData.startTime && Date.now() - taskData.startTime < 300000) {
-              thriftyPlayerStartTime = taskData.startTime;
-              const elapsedSeconds = Math.floor((Date.now() - thriftyPlayerStartTime) / 1000);
-              updateTaskProgress("thriftyPlayer", elapsedSeconds - taskData.progress);
-            } else {
-              thriftyPlayerStartTime = Date.now();
-              db.ref(`tasks/${uid}/thriftyPlayer`).update({ startTime: thriftyPlayerStartTime, progress: 0 });
-            }
-
-            if (thriftyPlayerTimer) clearInterval(thriftyPlayerTimer);
-            thriftyPlayerTimer = setInterval(() => {
-              const elapsedSeconds = Math.floor((Date.now() - thriftyPlayerStartTime) / 1000);
-              updateTaskProgress("thriftyPlayer", elapsedSeconds - taskData.progress);
-              taskData.progress = elapsedSeconds;
-              db.ref(`tasks/${uid}/thriftyPlayer`).update({
-                progress: elapsedSeconds,
-                startTime: thriftyPlayerStartTime
-              });
-            }, 1000);
-          }
-        });
       }).catch(error => {
         console.error("Ошибка загрузки данных игрока:", error);
         showMessage("Не удалось загрузить данные.");
@@ -996,11 +923,6 @@
         }
 
         if (score >= cost) {
-          if (thriftyPlayerTimer) {
-            clearInterval(thriftyPlayerTimer);
-            thriftyPlayerTimer = null;
-            db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
-          }
           score -= cost;
           clickPower++;
           updateCounterDisplay();
@@ -1011,31 +933,6 @@
           showMessage("Click Power upgraded!");
         } else {
           showMessage("Not enough tokens for upgrade.");
-        }
-      } else if (type === "autoclick") {
-        if (autoclickCooldown) {
-          showMessage("Autoclicker on cooldown.");
-          return;
-        }
-        if (score >= 200) {
-          if (thriftyPlayerTimer) {
-            clearInterval(thriftyPlayerTimer);
-            thriftyPlayerTimer = null;
-            db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
-          }
-          score -= 200;
-          updateCounterDisplay();
-          showMessage("Autoclicker activated for 1 minute!");
-          autoclickCooldown = true;
-          autoclickActive = true;
-          const duration = 60000;
-          startAutoclicker(duration);
-          updateTaskProgress("autoclickerMaster", 1);
-          updateProfilePanel();
-          document.getElementById("autoclickBtn").disabled = true;
-          submitScore();
-        } else {
-          showMessage("Not enough tokens for autoclicker.");
         }
       }
     }
@@ -1054,11 +951,6 @@
 
       const cost = prices[minutes];
       if (score >= cost) {
-        if (thriftyPlayerTimer) {
-          clearInterval(thriftyPlayerTimer);
-          thriftyPlayerTimer = null;
-          db.ref(`tasks/${user.uid}/thriftyPlayer`).update({ progress: 0, startTime: 0 });
-        }
         score -= cost;
         updateCounterDisplay();
         showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
@@ -1103,11 +995,6 @@
     function signOut() {
       if (user) {
         submitScore();
-      }
-
-      if (thriftyPlayerTimer) {
-        clearInterval(thriftyPlayerTimer);
-        thriftyPlayerTimer = null;
       }
 
       auth.signOut().then(() => {
