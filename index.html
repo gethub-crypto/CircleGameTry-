@@ -150,6 +150,13 @@
   </div>
 
   <div id="gameSection" style="display:none;">
+    <div id="hourlyBonus" style="position: absolute; top: 20px; right: 20px;">
+    <div class="bonus-card">
+      <h3>Hourly Bonus</h3>
+      <p id="bonusTimer">Next in: 01:00:00</p>
+      <button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button>
+    </div>
+  </div>
     <div id="dailyReward" style="display: none; margin-top: 20px;">
       <h2>Daily Reward</h2>
       <p id="streakText">Login streak: 0 days</p>
