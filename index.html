@@ -283,7 +283,8 @@
     let tempBoostTimeout = null;
     let originalClickPower = null;
     let isRenderingTasks = false;
-  ///  let thriftyPlayerTimer = null;   let thriftyPlayerStartTime = 0;
+    let thriftyPlayerTimer = null;
+    let thriftyPlayerStartTime = 0;
 
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
@@ -882,7 +883,7 @@
             }
             const remainingTime = autoclickEndTime - Date.now();
             startAutoclicker(remainingTime);
-        //    document.getElementById("autoclickBtn").disabled = true;
+            document.getElementById("autoclickBtn").disabled = true;
           } else if (autoclickActive) {
             autoclickActive = false;
             autoclickEndTime = 0;
@@ -901,7 +902,7 @@
         }
 
         // Обновляем lastUpdate
-       if (user) {
+        if (user) {
           db.ref("leaderboard/" + uid).update({
             lastUpdate: Date.now()
           });
@@ -1127,6 +1128,11 @@ function buyUpgrade(type) {
     function signOut() {
       if (user) {
         submitScore();
+      }
+
+      if (thriftyPlayerTimer) {
+        clearInterval(thriftyPlayerTimer);
+        thriftyPlayerTimer = null;
       }
 
       auth.signOut().then(() => {
