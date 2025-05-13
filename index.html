@@ -262,13 +262,7 @@
         goal: 5000,
         reward: "Click Power +1 for 5 min"
       },
-     /* {
-        id: "thriftyPlayer",
-        description: "Don't spend tokens for 5 minutes after login",
-        goal: 300, // 300 секунд (5 минут)
-        reward: 150,
-        period: "daily"
-      },*/
+     
       {
         id: "autoclickerMaster",
         description: "Activate autoclicker 5 times in a week",
@@ -292,8 +286,8 @@
     let tempBoostTimeout = null;
     let originalClickPower = null;
     let isRenderingTasks = false;
-    let thriftyPlayerTimer = null;
-    let thriftyPlayerStartTime = 0;
+  //  let thriftyPlayerTimer = null;
+  //  let thriftyPlayerStartTime = 0;
 
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
