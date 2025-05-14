@@ -874,7 +874,7 @@
 
     // Проверка достижений
     function checkAchievements() {
-      if (!achievements.superClicker && totalClicks >= 10000) {
+      if (!achievements.superClicker && totalClicks >= 10) {
         achievements.superClicker = true;
         boostClickPowerTemporarily(2, 120000);
         showMessage("Secret achievement: Super Clicker! Click Power +2 for 2 minutes!");
