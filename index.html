@@ -337,6 +337,7 @@
     let tempBoostTimeout = null;
     let tempBoostEndTime = 0;
     let originalClickPower = null;
+    let isBoostApplied = false; // Флаг для отслеживания применения буста
     let isRenderingTasks = false;
     let bonusTimerInterval = null;
 
@@ -584,12 +585,20 @@
     function boostClickPowerTemporarily(amount, duration) {
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
-      originalClickPower = clickPower;
-      const boosted = Math.min(clickPower + amount, 8);
-      clickPower = boosted;
+      // Сохраняем исходное значение clickPower только если буст ещё не применён
+      if (!isBoostApplied) {
+        originalClickPower = clickPower;
+        isBoostApplied = true;
+      }
 
-      const actualBoost = boosted - originalClickPower;
-      showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} seconds`);
+      // Увеличиваем clickPower только если буст ещё не применён или истёк
+      if (!tempBoostTimeout || clickPower === originalClickPower) {
+        const boosted = Math.min(clickPower + amount, 8);
+        clickPower = boosted;
+
+        const actualBoost = boosted - originalClickPower;
+        showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} seconds`);
+      }
 
       if (user) {
         const boostEndTime = Date.now() + duration;
@@ -606,20 +615,23 @@
       }
 
       tempBoostTimeout = setTimeout(() => {
-        clickPower = originalClickPower;
-        showMessage(`Boost ended: Click power restored`);
+        clickPower = originalClickPower; // Возвращаем исходное значение
+        showMessage(`Boost ended: Click power restored to ${clickPower}`);
         updateClickPowerBar();
         updateProfilePanel();
         submitScore();
 
         tempBoostTimeout = null;
         tempBoostEndTime = 0;
+        isBoostApplied = false; // Сбрасываем флаг
+
         if (user) {
           db.ref("leaderboard/" + user.uid).update({
             tempBoostActive: false,
             tempBoostEndTime: 0,
             tempBoostOriginalClickPower: 0,
             tempBoostAmount: 0,
+            clickPower: clickPower,
             lastUpdate: Date.now()
           }).catch(error => {
             console.error("Ошибка очистки состояния буста:", error);
@@ -862,7 +874,7 @@
 
     // Проверка достижений
     function checkAchievements() {
-      if (!achievements.superClicker && totalClicks >= 10) {
+      if (!achievements.superClicker && totalClicks >= 10000) {
         achievements.superClicker = true;
         boostClickPowerTemporarily(2, 120000);
         showMessage("Secret achievement: Super Clicker! Click Power +2 for 2 minutes!");
@@ -992,12 +1004,16 @@
           const tempBoostAmount = data.tempBoostAmount || 0;
 
           if (tempBoostActive && tempBoostEndTime > Date.now()) {
+            // Восстанавливаем состояние буста
+            originalClickPower = tempBoostOriginalClickPower;
+            isBoostApplied = true; // Указываем, что буст уже применён
             clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
             const remainingDuration = tempBoostEndTime - Date.now();
-            originalClickPower = tempBoostOriginalClickPower;
             boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
           } else if (tempBoostActive) {
+            // Если буст истёк, сбрасываем состояние
             clickPower = tempBoostOriginalClickPower;
+            isBoostApplied = false;
             db.ref("leaderboard/" + uid).update({
               tempBoostActive: false,
               tempBoostEndTime: 0,
