@@ -876,7 +876,7 @@ function claimHourlyBonus() {
       btn.innerHTML = isCurrentlyOpen ? "Shop ▼" : "Shop ▲";
     }
 
-    function startAutoclicker(duration) {
+  /*!  function startAutoclicker(duration) {
       if (autoclickActive) {
         const remainingTime = Math.max(0, autoclickEndTime - Date.now());
         autoclickEndTime = Date.now() + remainingTime + duration;
@@ -904,7 +904,55 @@ function claimHourlyBonus() {
       }
 
       setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
+    }!*/
+
+    function startAutoclicker(duration, extendTime = false) {
+  if (autoclickActive) {
+    const remainingTime = Math.max(0, autoclickEndTime - Date.now());
+    if (remainingTime <= 0) {
+      // Если время истекло, сбрасываем автокликер
+      stopAutoclicker();
+    } else if (extendTime) {
+      // Добавляем новое время для награды за задание
+      autoclickEndTime = Date.now() + remainingTime + duration;
+      clearInterval(autoclickInterval);
+      autoclickInterval = setInterval(() => clickToken(), 1000);
+      setTimeout(() => stopAutoclicker(), remainingTime + duration);
+    } else {
+      // Заменяем текущий автокликер новым временем (покупка или восстановление)
+      autoclickEndTime = Date.now() + duration;
+      clearInterval(autoclickInterval);
+      autoclickInterval = setInterval(() => clickToken(), 1000);
+      setTimeout(() => stopAutoclicker(), duration);
     }
+  } else {
+    // Запускаем новый автокликер
+    autoclickActive = true;
+    autoclickEndTime = Date.now() + duration;
+    autoclickInterval = setInterval(() => clickToken(), 1000);
+    setTimeout(() => stopAutoclicker(), duration);
+  }
+
+  // Увеличиваем счётчик использований только при новой активации (не при восстановлении)
+  if (extendTime || duration !== (autoclickEndTime - Date.now())) {
+    autoclickerUses++;
+    checkAchievements();
+    updateTaskProgress("autoclickerMaster", 1); // Учитываем активацию для задания
+  }
+
+  updateProfilePanel();
+  submitScore();
+
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: true,
+      autoclickEndTime: autoclickEndTime,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error saving autoclicker state:", error);
+    });
+  }
+}
 
     function stopAutoclicker() {
       clearInterval(autoclickInterval);
