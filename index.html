@@ -954,7 +954,7 @@ function claimHourlyBonus() {
   }
 }
 
-    function stopAutoclicker() {
+  /*!  function stopAutoclicker() {
       clearInterval(autoclickInterval);
       autoclickActive = false;
       autoclickEndTime = 0;
@@ -977,7 +977,28 @@ function claimHourlyBonus() {
           console.error("Error updating autoclicker state:", error);
         });
       }
-    }
+    }!*/
+
+    function stopAutoclicker() {
+  clearInterval(autoclickInterval);
+  autoclickActive = false;
+  autoclickEndTime = 0;
+  autoclickInterval = null;
+  autoclickCooldown = false;
+  updateProfilePanel();
+  submitScore();
+  showMessage("Autoclicker deactivated.");
+
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: false,
+      autoclickEndTime: 0,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error updating autoclicker state:", error);
+    });
+  }
+}
 
     function loadPlayerData(uid) {
       db.ref("leaderboard/" + uid).once("value").then(snapshot => {
