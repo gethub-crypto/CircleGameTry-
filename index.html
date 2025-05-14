@@ -333,7 +333,7 @@
     let isRenderingTasks = false;
     let bonusTimerInterval = null;
 
-    function updateProfilePanel() {
+    /*!function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
       if (autoclickActive) {
@@ -365,7 +365,58 @@
       } else {
         levelMessageElement.classList.remove("show");
       }
+      
+    }!*/
+
+
+    function updateProfilePanel() {
+  document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
+
+  // Обновление автокликера
+  if (autoclickActive) {
+    const remaining = Math.max(0, autoclickEndTime - Date.now());
+    const seconds = Math.floor(remaining / 1000) % 60;
+    const minutes = Math.floor(remaining / 60000);
+    document.getElementById("profileAutoclick").innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+  } else {
+    document.getElementById("profileAutoclick").innerText = "Inactive";
+  }
+
+  // Обновление буста
+  const boostElement = document.getElementById("profileBoost");
+  if (tempBoostTimeout && originalClickPower !== null) {
+    const remaining = Math.max(0, (tempBoostEndTime || 0) - Date.now());
+    const seconds = Math.floor(remaining / 1000) % 60;
+    const minutes = Math.floor(remaining / 60000);
+    boostElement.innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+    boostElement.classList.remove("inactive");
+  } else {
+    boostElement.innerText = "Inactive";
+    boostElement.classList.add("inactive");
+  }
+
+  let level = 1;
+  for (let i = 0; i < levelUpRequirements.length; i++) {
+    if (score >= levelUpRequirements[i]) {
+      level = i + 2;
+    } else {
+      break;
     }
+  }
+
+  document.getElementById("playerLevel").innerText = level;
+  document.getElementById("profileTokens").innerText = score;
+  document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
+
+  const levelMessageElement = document.getElementById("levelMessage");
+  if (level === 10) {
+    levelMessageElement.innerText = "Maximum level reached!";
+    levelMessageElement.classList.add("show");
+  } else {
+    levelMessageElement.classList.remove("show");
+  }
+}
+    
 
     function checkDailyReward() {
       if (!user) return;
