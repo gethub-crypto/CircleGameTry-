@@ -908,7 +908,7 @@ function checkTaskCompletion(taskId) {
     }
 
     function checkAchievements() {
-      if (!achievements.superClicker && totalClicks >= 10) {
+      if (!achievements.superClicker && totalClicks >= 10000) {
         achievements.superClicker = true;
         boostClickPowerTemporarily(2, 120000);
         showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
