@@ -584,8 +584,8 @@
     function boostClickPowerTemporarily(amount, duration) {
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
-      // Если буст уже активен, не увеличиваем clickPower повторно
-      if (!tempBoostTimeout) {
+      // Устанавливаем originalClickPower только при первом вызове буста
+      if (!tempBoostEndTime) {
         originalClickPower = clickPower; // Сохраняем исходное значение
         const boosted = Math.min(clickPower + amount, 8);
         clickPower = boosted;
@@ -602,6 +602,7 @@
           tempBoostEndTime: boostEndTime,
           tempBoostOriginalClickPower: originalClickPower,
           tempBoostAmount: amount,
+          clickPower: clickPower, // Сохраняем текущее значение clickPower
           lastUpdate: Date.now()
         }).catch(error => {
           console.error("Ошибка сохранения состояния буста:", error);
@@ -986,7 +987,7 @@
         const data = snapshot.val();
         if (data) {
           score = data.score || 0;
-          clickPower = data.clickPower || 1;
+          clickPower = data.clickPower || 1; // Загружаем текущее значение clickPower
           autoclickActive = data.autoclickActive || false;
           autoclickEndTime = data.autoclickEndTime || 0;
           const lastUpdate = data.lastUpdate || 0;
@@ -999,9 +1000,9 @@
           if (tempBoostActive && tempBoostEndTime > Date.now()) {
             // Восстанавливаем состояние буста
             originalClickPower = tempBoostOriginalClickPower;
-            clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8); // Восстанавливаем clickPower из сохранённых данных
+            clickPower = data.clickPower || Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8); // Используем сохранённое значение clickPower
             const remainingDuration = tempBoostEndTime - Date.now();
-            // Вызываем boostClickPowerTemporarily только для установки таймера, не меняя clickPower
+            // Устанавливаем таймер буста, не меняя clickPower
             boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
           } else if (tempBoostActive) {
             // Если буст истёк, сбрасываем состояние
