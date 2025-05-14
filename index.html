@@ -333,7 +333,7 @@
     let isRenderingTasks = false;
     let bonusTimerInterval = null;
 
-    function updateProfilePanel() {
+  /*!  function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
       if (autoclickActive) {
@@ -386,7 +386,54 @@
           document.getElementById("streakText").innerText = `Login streak: ${streak} days`;
         }
       });
+    }!*/
+
+    function updateProfilePanel() {
+  document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
+
+  // Update boost status
+  if (tempBoostTimeout && originalClickPower !== null) {
+    const remaining = Math.max(0, autoclickEndTime - Date.now()); // Используем autoclickEndTime для буста
+    const seconds = Math.floor(remaining / 1000) % 60;
+    const minutes = Math.floor(remaining / 60000);
+    const boostAmount = clickPower - originalClickPower;
+    document.getElementById("profileBoost").innerText = `+${boostAmount} (${minutes}:${seconds.toString().padStart(2, '0')})`;
+  } else {
+    document.getElementById("profileBoost").innerText = "Inactive";
+  }
+
+  // Update autoclicker status
+  if (autoclickActive) {
+    const remaining = Math.max(0, autoclickEndTime - Date.now());
+    const seconds = Math.floor(remaining / 1000) % 60;
+    const minutes = Math.floor(remaining / 60000);
+    document.getElementById("profileAutoclick").innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+  } else {
+    document.getElementById("profileAutoclick").innerText = "Inactive";
+  }
+
+  // Update player level
+  let level = 1;
+  for (let i = 0; i < levelUpRequirements.length; i++) {
+    if (score >= levelUpRequirements[i]) {
+      level = i + 2;
+    } else {
+      break;
     }
+  }
+
+  document.getElementById("playerLevel").innerText = level;
+  document.getElementById("profileTokens").innerText = score;
+  document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
+
+  const levelMessageElement = document.getElementById("levelMessage");
+  if (level === 10) {
+    levelMessageElement.innerText = "Maximum level reached!";
+    levelMessageElement.classList.add("show");
+  } else {
+    levelMessageElement.classList.remove("show");
+  }
+}
 
     function claimDailyReward() {
       db.ref("dailyRewards/" + user.uid).once("value").then(snapshot => {
