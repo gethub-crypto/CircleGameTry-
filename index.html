@@ -123,50 +123,49 @@
       75% { transform: translateX(-5px); }
       100% { transform: translateX(0); }
     }
+
+
+
+
     .bonus-card {
-      background: #1a1a1a;
-      padding: 15px;
-      border-radius: 12px;
-      width: 180px;
-      box-shadow: 0 0 10px #00c3ff;
-      text-align: center;
-    }
-    .bonus-card h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      color: #00ffa6;
-    }
-    .bonus-card p {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: #fff;
-    }
-    #claimBonusBtn:disabled {
-      background: #555;
-      cursor: not-allowed;
-    }
-    @media (max-width: 768px) {
-      #hourlyBonus {
-        top: 10px;
-        right: 10px;
-      }
-      .bonus-card {
-        width: 140px;
-        padding: 10px;
-      }
-      .bonus-card h3 {
-        font-size: 16px;
-      }
-      .bonus-card p {
-        font-size: 12px;
-      }
-    }
-    #profileBoost {
-      color: #00ffa6;
-    }
-    #profileBoost.inactive {
-      color: #888;
-    }
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 12px;
+  width: 180px;
+  box-shadow: 0 0 10px #00c3ff;
+  text-align: center;
+}
+.bonus-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #00ffa6;
+}
+.bonus-card p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #fff;
+}
+#claimBonusBtn:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+@media (max-width: 768px) {
+  #hourlyBonus {
+    top: 10px;
+    right: 10px;
+  }
+  .bonus-card {
+    width: 140px;
+    padding: 10px;
+  }
+  .bonus-card h3 {
+    font-size: 16px;
+  }
+  .bonus-card p {
+    font-size: 12px;
+  }
+}
+                   
   </style>
 </head>
 
@@ -177,7 +176,6 @@
     <div><strong>Click Power:</strong> <span id="profileClickPower">1</span></div>
     <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
     <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
-    <div><strong>Click Power Boost:</strong> <span id="profileBoost">Inactive</span></div>
     <div><button class="click-button" onclick="signOut()">Sign Out</button></div>
   </div>
 
@@ -196,12 +194,12 @@
 
   <div id="gameSection" style="display:none;">
     <div id="hourlyBonus" style="position: absolute; top: 20px; right: 20px;">
-      <div class="bonus-card">
-        <h3>Hourly Bonus</h3>
-        <p id="bonusTimer">Next in: 01:00:00</p>
-        <button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button>
-      </div>
+    <div class="bonus-card">
+      <h3>Hourly Bonus</h3>
+      <p id="bonusTimer">Next in: 01:00:00</p>
+      <button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button>
     </div>
+  </div>
     <div id="dailyReward" style="display: none; margin-top: 20px;">
       <h2>Daily Reward</h2>
       <p id="streakText">Login streak: 0 days</p>
@@ -271,7 +269,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
   <script>
-    // Инициализация Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDVgvBf_C6dIMtZ4MISwR5YRCBi8_JXinQ",
       authDomain: "cryptoclickertry.firebaseapp.com",
@@ -287,25 +284,22 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // Список достижений
     const allAchievements = {
       superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
-      tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2 min)" },
-      level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+2 Click Power (2 min)" },
+      tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2min)" },
+      level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
     };
 
-    // Требования для повышения уровня
     const levelUpRequirements = [
       50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000
     ];
 
-    // Ежедневные задачи
     const dailyTasks = [
       {
         id: "clickMarathon",
         description: "Make 100 clicks",
         goal: 100,
-        reward: "50 Tokens"
+        reward: 50
       },
       {
         id: "levelUp",
@@ -322,7 +316,6 @@
       }
     ];
 
-    // Глобальные переменные
     let user = null;
     let score = 0;
     let clickPower = 1;
@@ -335,12 +328,10 @@
     let autoclickerUses = 0;
     let achievements = {};
     let tempBoostTimeout = null;
-    let tempBoostEndTime = 0;
     let originalClickPower = null;
     let isRenderingTasks = false;
     let bonusTimerInterval = null;
 
-    // Обновление панели профиля
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
@@ -351,18 +342,6 @@
         document.getElementById("profileAutoclick").innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
       } else {
         document.getElementById("profileAutoclick").innerText = "Inactive";
-      }
-
-      const boostElement = document.getElementById("profileBoost");
-      if (tempBoostTimeout && originalClickPower !== null) {
-        const remaining = Math.max(0, (tempBoostEndTime || 0) - Date.now());
-        const seconds = Math.floor(remaining / 1000) % 60;
-        const minutes = Math.floor(remaining / 60000);
-        boostElement.innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-        boostElement.classList.remove("inactive");
-      } else {
-        boostElement.innerText = "Inactive";
-        boostElement.classList.add("inactive");
       }
 
       let level = 1;
@@ -387,7 +366,6 @@
       }
     }
 
-    // Проверка ежедневной награды
     function checkDailyReward() {
       if (!user) return;
       const today = new Date().toDateString();
@@ -409,7 +387,6 @@
       });
     }
 
-    // Получение ежедневной награды
     function claimDailyReward() {
       db.ref("dailyRewards/" + user.uid).once("value").then(snapshot => {
         const data = snapshot.val();
@@ -425,128 +402,130 @@
       });
     }
 
-    // Запуск таймера почасового бонуса
-    function startBonusTimer() {
-      if (bonusTimerInterval) clearInterval(bonusTimerInterval);
 
-      bonusTimerInterval = setInterval(() => {
-        if (!user) return;
-        db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
-          const data = snapshot.val() || { lastClaim: 0 };
-          const now = Date.now();
-          const timeSinceLastClaim = now - data.lastClaim;
-          const oneHour = 3600000;
-          const timeRemaining = Math.max(0, oneHour - timeSinceLastClaim);
 
-          if (timeRemaining <= 0) {
-            document.getElementById("claimBonusBtn").disabled = false;
-            document.getElementById("bonusTimer").innerText = "Claim now!";
-            clearInterval(bonusTimerInterval);
-          } else {
-            document.getElementById("claimBonusBtn").disabled = true;
-            const hours = Math.floor(timeRemaining / 3600000);
-            const minutes = Math.floor((timeRemaining % 3600000) / 60000);
-            const seconds = Math.floor((timeRemaining % 60000) / 1000);
-            document.getElementById("bonusTimer").innerText = `Next in: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-          }
-        }).catch(error => {
-          console.error("Ошибка загрузки таймера бонуса:", error);
-          showMessage("Failed to load bonus timer.");
-        });
-      }, 1000);
-    }
+function startBonusTimer() {
+  if (bonusTimerInterval) clearInterval(bonusTimerInterval);
 
-    // Получение почасового бонуса
-    function claimHourlyBonus() {
-      if (!user) {
-        showMessage("Please sign in to claim the bonus.");
-        return;
+  bonusTimerInterval = setInterval(() => {
+    if (!user) return;
+    db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
+      const data = snapshot.val() || { lastClaim: 0 };
+      const now = Date.now();
+      const timeSinceLastClaim = now - data.lastClaim;
+      const oneHour = 3600000; // 1 hour in milliseconds
+      const timeRemaining = Math.max(0, oneHour - timeSinceLastClaim);
+
+      if (timeRemaining <= 0) {
+        document.getElementById("claimBonusBtn").disabled = false;
+        document.getElementById("bonusTimer").innerText = "Claim now!";
+        clearInterval(bonusTimerInterval);
+      } else {
+        document.getElementById("claimBonusBtn").disabled = true;
+        const hours = Math.floor(timeRemaining / 3600000);
+        const minutes = Math.floor((timeRemaining % 3600000) / 60000);
+        const seconds = Math.floor((timeRemaining % 60000) / 1000);
+        document.getElementById("bonusTimer").innerText = `Next in: ${hours.toString().padStart(2, '0')}:${minutes
+          .toString()
+          .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       }
+    }).catch(error => {
+      console.error("Error fetching bonus timer:", error);
+      showMessage("Failed to load bonus timer.");
+    });
+  }, 1000);
+}
 
-      db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
-        const data = snapshot.val() || { lastClaim: 0 };
-        const now = Date.now();
-        const timeSinceLastClaim = now - data.lastClaim;
-        const oneHour = 3600000;
+function claimHourlyBonus() {
+  if (!user) {
+    showMessage("Please sign in to claim the bonus.");
+    return;
+  }
 
-        if (timeSinceLastClaim >= oneHour || !data.lastClaim) {
-          const reward = Math.floor(Math.random() * (200 - 10 + 1)) + 10;
-          score += reward;
-          updateCounterDisplay();
-          submitScore();
-          showMessage(`Claimed ${reward} tokens from hourly bonus!`);
+  db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
+    const data = snapshot.val() || { lastClaim: 0 };
+    const now = Date.now();
+    const timeSinceLastClaim = now - data.lastClaim;
+    const oneHour = 3600000;
 
-          db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now }).then(() => {
-            document.getElementById("claimBonusBtn").disabled = true;
-            startBonusTimer();
-          }).catch(error => {
-            console.error("Ошибка сохранения бонуса:", error);
-            showMessage("Failed to save bonus.");
-          });
-        } else {
-          showMessage("Bonus not ready yet!");
-        }
+    if (timeSinceLastClaim >= oneHour || !data.lastClaim) {
+      const reward = Math.floor(Math.random() * (200 - 10 + 1)) + 10; // Random 10-200 tokens
+      score += reward;
+      updateCounterDisplay();
+      submitScore();
+      showMessage(`Claimed ${reward} tokens from Hourly Bonus!`);
+
+      db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now }).then(() => {
+        document.getElementById("claimBonusBtn").disabled = true;
+        startBonusTimer();
       }).catch(error => {
-        console.error("Ошибка проверки бонуса:", error);
-        showMessage("Failed to check bonus.");
+        console.error("Error saving bonus claim:", error);
+        showMessage("Failed to save bonus claim.");
       });
+    } else {
+      showMessage("Bonus not ready yet!");
     }
+  }).catch(error => {
+    console.error("Error checking bonus eligibility:", error);
+    showMessage("Failed to check bonus eligibility.");
+  });
+}
 
-    // Закрытие всех панелей
+
+
+    
+
     function closeAllPanels() {
-      console.log("Закрытие всех панелей...");
+      console.log("Closing all panels...");
       const shop = document.getElementById("shop");
       if (shop) {
         shop.style.display = "none";
-        console.log("Панель магазина закрыта");
+        console.log("Shop panel closed");
       } else {
-        console.error("Элемент #shop не найден");
+        console.error("Element #shop not found");
       }
 
       const achievementsPanel = document.getElementById("achievementsPanel");
       if (achievementsPanel) {
         achievementsPanel.classList.remove("open");
-        console.log("Панель достижений закрыта");
+        console.log("Achievements panel closed");
       } else {
-        console.error("Элемент #achievementsPanel не найден");
+        console.error("Element #achievementsPanel not found");
       }
       const achievementsBtn = document.querySelector("button[onclick='toggleAchievements()']");
       if (achievementsBtn) {
         achievementsBtn.innerHTML = "🏆 Achievements ▼";
-        console.log("Текст кнопки достижений обновлён");
+        console.log("Achievements button text updated");
       } else {
-        console.error("Кнопка toggleAchievements не найдена");
+        console.error("Button for toggleAchievements not found");
       }
 
       const tasksPanel = document.getElementById("tasksPanel");
       if (tasksPanel) {
         tasksPanel.classList.remove("open");
-        console.log("Панель задач закрыта");
+        console.log("Tasks panel closed");
       } else {
-        console.error("Элемент #tasksPanel не найден");
+        console.error("Element #tasksPanel not found");
       }
       const tasksBtn = document.querySelector("button[onclick='toggleTasks()']");
       if (tasksBtn) {
         tasksBtn.innerHTML = "📋 Tasks ▼";
-        console.log("Текст кнопки задач обновлён");
+        console.log("Tasks button text updated");
       } else {
-        console.error("Кнопка toggleTasks не найдена");
+        console.error("Button for toggleTasks not found");
       }
     }
 
-    // Установка силы клика
     function setClickPower(newPower) {
       clickPower = Math.min(newPower, 8);
       updateClickPowerBar();
       updateProfilePanel();
     }
 
-    // Получение стоимости улучшения силы клика
     function getClickPowerUpgradeCost() {
       return Math.floor(500 * Math.pow(6, clickPower - 1));
     }
 
-    // Обновление текста стоимости улучшения
     function updateClickPowerCostText() {
       const costText = document.getElementById('clickPowerCostText');
       const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
@@ -558,7 +537,7 @@
           if (buyButton) {
             buyButton.style.background = "linear-gradient(135deg, #00ffa6, #00c3ff)";
             buyButton.style.cursor = "pointer";
-            buyButton.title = "Maximum click power reached";
+            buyButton.title = "Maximum Click Power reached";
           }
         } else if (clickPower >= 3 && currentLevel < clickPower + 1) {
           const cost = getClickPowerUpgradeCost();
@@ -580,29 +559,24 @@
       }
     }
 
-    // Временный буст силы клика
     function boostClickPowerTemporarily(amount, duration) {
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
-      // Устанавливаем originalClickPower только при первом вызове буста
-      if (!tempBoostEndTime) {
-        originalClickPower = clickPower; // Сохраняем исходное значение
-        const boosted = Math.min(clickPower + amount, 8);
-        clickPower = boosted;
+      originalClickPower = clickPower;
+      const boosted = Math.min(clickPower + amount, 8);
+      clickPower = boosted;
 
-        const actualBoost = boosted - originalClickPower;
-        showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} seconds`);
-      }
+      const actualBoost = boosted - originalClickPower;
+      showMessage(`Temporary boost: Click Power +${actualBoost} на ${duration / 1000} сек`);
 
+      // Сохраняем состояние буста в Firebase
       if (user) {
         const boostEndTime = Date.now() + duration;
-        tempBoostEndTime = boostEndTime;
         db.ref("leaderboard/" + user.uid).update({
           tempBoostActive: true,
           tempBoostEndTime: boostEndTime,
           tempBoostOriginalClickPower: originalClickPower,
           tempBoostAmount: amount,
-          clickPower: clickPower, // Сохраняем текущее значение clickPower
           lastUpdate: Date.now()
         }).catch(error => {
           console.error("Ошибка сохранения состояния буста:", error);
@@ -610,62 +584,55 @@
       }
 
       tempBoostTimeout = setTimeout(() => {
-        clickPower = originalClickPower; // Возвращаем исходное значение
-        showMessage(`Boost ended: Click power restored to ${clickPower}`);
+        clickPower = originalClickPower;
+        showMessage(`Буст закончился: Сила клика восстановлена`);
         updateClickPowerBar();
         updateProfilePanel();
         submitScore();
 
-        tempBoostTimeout = null;
-        tempBoostEndTime = 0;
-
+        // Очищаем состояние буста в Firebase
         if (user) {
           db.ref("leaderboard/" + user.uid).update({
             tempBoostActive: false,
             tempBoostEndTime: 0,
             tempBoostOriginalClickPower: 0,
             tempBoostAmount: 0,
-            clickPower: clickPower,
             lastUpdate: Date.now()
           }).catch(error => {
             console.error("Ошибка очистки состояния буста:", error);
           });
         }
       }, duration);
-
-      updateProfilePanel();
     }
 
-    // Переключение панели достижений
     function toggleAchievements() {
-      console.log("Вызов toggleAchievements...");
+      console.log("Calling toggleAchievements...");
       const panel = document.getElementById("achievementsPanel");
       if (!panel) {
-        console.error("Элемент #achievementsPanel не найден в toggleAchievements");
+        console.error("Element #achievementsPanel not found in toggleAchievements");
         return;
       }
       const btn = document.querySelector("button[onclick='toggleAchievements()']");
       if (!btn) {
-        console.error("Кнопка toggleAchievements не найдена");
+        console.error("Button for toggleAchievements not found");
         return;
       }
       const isCurrentlyOpen = panel.classList.contains("open");
-      console.log("Панель достижений открыта:", isCurrentlyOpen);
+      console.log("Achievements panel is currently open:", isCurrentlyOpen);
 
       if (isCurrentlyOpen) {
         panel.classList.remove("open");
         btn.innerHTML = "🏆 Achievements ▼";
-        console.log("Закрытие панели достижений");
+        console.log("Closing achievements panel");
       } else {
         closeAllPanels();
         panel.classList.add("open");
         btn.innerHTML = "🏆 Achievements ▲";
-        console.log("Открытие панели достижений");
+        console.log("Opening achievements panel");
         renderAchievements();
       }
     }
 
-    // Отрисовка достижений
     function renderAchievements() {
       const list = document.getElementById('achievementsList');
       list.innerHTML = '';
@@ -686,7 +653,6 @@
       }
     }
 
-    // Обновление полоски силы клика
     function updateClickPowerBar() {
       document.getElementById("clickPowerDisplay").innerText = clickPower;
       const progress = Math.min((clickPower / 8) * 100, 100);
@@ -694,19 +660,16 @@
       updateClickPowerCostText();
     }
 
-    // Обновление отображения счёта
     function updateCounterDisplay() {
       document.getElementById("counter").innerText = `Tokens: ${score}`;
     }
 
-    // Показ сообщения
     function showMessage(msg) {
       const el = document.getElementById("message");
       el.innerText = msg;
       setTimeout(() => el.innerText = '', 3000);
     }
 
-    // Отрисовка задач
     function renderTasks() {
       if (isRenderingTasks) return;
       isRenderingTasks = true;
@@ -722,11 +685,15 @@
       db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
         const tasksData = snapshot.val() || {};
         const today = new Date().toDateString();
+        
+        // Определяем начало текущей недели (понедельник)
         const now = new Date();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
 
         dailyTasks.forEach(task => {
           let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+
+          // Для недельных задач используем startOfWeek, для дневных — today
           const resetKey = task.period === "weekly" ? startOfWeek : today;
           if (taskData.lastReset !== resetKey) {
             taskData = { progress: 0, lastReset: resetKey, completions: 0, completed: false };
@@ -751,13 +718,12 @@
 
         isRenderingTasks = false;
       }).catch(error => {
-        console.error("Ошибка отображения задач:", error);
+        console.error("Error rendering tasks:", error);
         showMessage("Failed to load tasks.");
         isRenderingTasks = false;
       });
     }
 
-    // Переключение панели задач
     function toggleTasks() {
       const panel = document.getElementById("tasksPanel");
       const btn = document.querySelector("button[onclick='toggleTasks()']");
@@ -772,12 +738,13 @@
       }
     }
 
-    // Обновление прогресса задачи
     function updateTaskProgress(taskId, increment) {
       if (!user) return;
       const now = new Date();
       const today = now.toDateString();
+      // Начало текущей недели
       const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
+      
       const task = dailyTasks.find(t => t.id === taskId);
       const resetKey = task?.period === "weekly" ? startOfWeek : today;
 
@@ -805,8 +772,7 @@
       });
     }
 
-    // Проверка выполнения задачи
-    function checkTaskCompletion(taskId) {
+ /*!   function checkTaskCompletion(taskId) {
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
         const taskData = snapshot.val();
         const task = dailyTasks.find(t => t.id === taskId);
@@ -819,8 +785,8 @@
           const completions = (taskData.completions || 0) + 1;
           if (completions <= 1) {
             if (task.id === "clickMarathon") {
-              score += parseInt(task.reward);
-              showMessage(`Task "${task.description}" completed! +${task.reward}`);
+              score += task.reward;
+              showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
               updateCounterDisplay();
               submitScore();
             } else if (task.id === "levelUp") {
@@ -830,7 +796,7 @@
               submitScore();
             } else if (task.id === "autoclickerMaster") {
               showMessage(`Task "${task.description}" completed! ${task.reward}`);
-              startAutoclicker(300000, true);
+              startAutoclicker(300000);
               submitScore();
             }
             db.ref(`tasks/${user.uid}/${taskId}`).set({
@@ -844,8 +810,84 @@
         }
       });
     }
+function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
 
-    // Обработка клика по токену
+    if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
+      return;
+    }
+
+    if (taskData && taskData.progress >= task.goal) {
+      const completions = (taskData.completions || 0) + 1;
+      if (completions <= 1) {
+        if (task.id === "clickMarathon") {
+          score += task.reward;
+          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+          updateCounterDisplay();
+          submitScore();
+        } else if (task.id === "levelUp") {
+          boostClickPowerTemporarily(1, 300000);
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          updateClickPowerBar();
+          submitScore();
+        } else if (task.id === "autoclickerMaster") {
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          startAutoclicker(300000, true); // Передаём extendTime = true для добавления времени
+          submitScore();
+        }
+        db.ref(`tasks/${user.uid}/${taskId}`).set({
+          progress: 0,
+          lastReset: taskData.lastReset,
+          completions: completions,
+          completed: true
+        });
+      }
+      renderTasks();
+    }
+  });
+}!*/
+
+function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+
+    if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
+      return;
+    }
+
+    if (taskData && taskData.progress >= task.goal) {
+      const completions = (taskData.completions || 0) + 1;
+      if (completions <= 1) {
+        if (task.id === "clickMarathon") {
+          score += task.reward;
+          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+          updateCounterDisplay();
+          submitScore();
+        } else if (task.id === "levelUp") {
+          boostClickPowerTemporarily(1, 300000);
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          updateClickPowerBar();
+          submitScore();
+        } else if (task.id === "autoclickerMaster") {
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          startAutoclicker(300000, true); // Передаём extendTime = true для добавления времени
+          submitScore();
+        }
+        db.ref(`tasks/${user.uid}/${taskId}`).set({
+          progress: 0,
+          lastReset: taskData.lastReset,
+          completions: completions,
+          completed: true
+        });
+      }
+      renderTasks();
+    }
+  });
+}
+    
     function clickToken() {
       score += clickPower;
       totalClicks++;
@@ -857,7 +899,6 @@
       animateCounter();
     }
 
-    // Анимация счёта
     function animateCounter() {
       const counter = document.getElementById('counter');
       counter.classList.add('bounce');
@@ -866,12 +907,11 @@
       }, 200);
     }
 
-    // Проверка достижений
     function checkAchievements() {
       if (!achievements.superClicker && totalClicks >= 10) {
         achievements.superClicker = true;
         boostClickPowerTemporarily(2, 120000);
-        showMessage("Secret achievement: Super Clicker! Click Power +2 for 2 minutes!");
+        showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
         updateClickPowerBar();
         renderAchievements();
         saveAchievements();
@@ -880,7 +920,7 @@
       if (!achievements.tokenHoarder && score >= 1000000) {
         achievements.tokenHoarder = true;
         boostClickPowerTemporarily(2, 120000);
-        showMessage("Secret achievement: Token Hoarder! Click Power +2 for 2 minutes!");
+        showMessage("Secret Achievement Unlocked: Token Hoarder! Click Power +2 for 2 minutes!");
         updateClickPowerBar();
         renderAchievements();
         saveAchievements();
@@ -890,20 +930,18 @@
       if (!achievements.level5 && currentLevel >= 5) {
         achievements.level5 = true;
         boostClickPowerTemporarily(2, 120000);
-        showMessage("Secret achievement: Level 5 Reached! Click Power +2 for 2 minutes!");
+        showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +2 for 2 minutes!");
         updateClickPowerBar();
         renderAchievements();
         saveAchievements();
       }
     }
 
-    // Сохранение достижений
     function saveAchievements() {
       if (!user) return;
       db.ref("achievements/" + user.uid).set(achievements);
     }
 
-    // Переключение магазина
     function toggleShop() {
       const shop = document.getElementById("shop");
       const btn = document.getElementById("shopBtn");
@@ -915,35 +953,19 @@
       btn.innerHTML = isCurrentlyOpen ? "Shop ▼" : "Shop ▲";
     }
 
-    // Запуск автокликера
-    function startAutoclicker(duration, extendTime = false) {
+  /*!  function startAutoclicker(duration) {
       if (autoclickActive) {
         const remainingTime = Math.max(0, autoclickEndTime - Date.now());
-        if (remainingTime <= 0) {
-          stopAutoclicker();
-        } else if (extendTime) {
-          autoclickEndTime = Date.now() + remainingTime + duration;
-          clearInterval(autoclickInterval);
-          autoclickInterval = setInterval(() => clickToken(), 1000);
-          setTimeout(() => stopAutoclicker(), remainingTime + duration);
-        } else {
-          autoclickEndTime = Date.now() + duration;
-          clearInterval(autoclickInterval);
-          autoclickInterval = setInterval(() => clickToken(), 1000);
-          setTimeout(() => stopAutoclicker(), duration);
-        }
+        autoclickEndTime = Date.now() + remainingTime + duration;
+        clearInterval(autoclickInterval);
       } else {
         autoclickActive = true;
         autoclickEndTime = Date.now() + duration;
-        autoclickInterval = setInterval(() => clickToken(), 1000);
-        setTimeout(() => stopAutoclicker(), duration);
       }
 
-      if (extendTime || duration !== (autoclickEndTime - Date.now())) {
-        autoclickerUses++;
-        checkAchievements();
-        updateTaskProgress("autoclickerMaster", 1);
-      }
+      autoclickInterval = setInterval(() => clickToken(), 1000);
+      autoclickerUses++;
+      checkAchievements();
 
       updateProfilePanel();
       submitScore();
@@ -954,21 +976,74 @@
           autoclickEndTime: autoclickEndTime,
           lastUpdate: Date.now()
         }).catch(error => {
-          console.error("Ошибка сохранения состояния автокликера:", error);
+          console.error("Error saving autoclicker state:", error);
         });
       }
-    }
 
-    // Остановка автокликера
-    function stopAutoclicker() {
+      setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
+    }!*/
+
+    function startAutoclicker(duration, extendTime = false) {
+  if (autoclickActive) {
+    const remainingTime = Math.max(0, autoclickEndTime - Date.now());
+    if (remainingTime <= 0) {
+      // Если время истекло, сбрасываем автокликер
+      stopAutoclicker();
+    } else if (extendTime) {
+      // Добавляем новое время для награды за задание
+      autoclickEndTime = Date.now() + remainingTime + duration;
+      clearInterval(autoclickInterval);
+      autoclickInterval = setInterval(() => clickToken(), 1000);
+      setTimeout(() => stopAutoclicker(), remainingTime + duration);
+    } else {
+      // Заменяем текущий автокликер новым временем (покупка или восстановление)
+      autoclickEndTime = Date.now() + duration;
+      clearInterval(autoclickInterval);
+      autoclickInterval = setInterval(() => clickToken(), 1000);
+      setTimeout(() => stopAutoclicker(), duration);
+    }
+  } else {
+    // Запускаем новый автокликер
+    autoclickActive = true;
+    autoclickEndTime = Date.now() + duration;
+    autoclickInterval = setInterval(() => clickToken(), 1000);
+    setTimeout(() => stopAutoclicker(), duration);
+  }
+
+  // Увеличиваем счётчик использований только при новой активации (не при восстановлении)
+  if (extendTime || duration !== (autoclickEndTime - Date.now())) {
+    autoclickerUses++;
+    checkAchievements();
+    updateTaskProgress("autoclickerMaster", 1); // Учитываем активацию для задания
+  }
+
+  updateProfilePanel();
+  submitScore();
+
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: true,
+      autoclickEndTime: autoclickEndTime,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error saving autoclicker state:", error);
+    });
+  }
+}
+
+  /*!  function stopAutoclicker() {
       clearInterval(autoclickInterval);
       autoclickActive = false;
       autoclickEndTime = 0;
       autoclickInterval = null;
-      autoclickCooldown = false;
+
       updateProfilePanel();
       submitScore();
       showMessage("Autoclicker deactivated.");
+
+      autoclickCooldown = false;
+    
+      showMessage("Autoclicker available again.");
 
       if (user) {
         db.ref("leaderboard/" + user.uid).update({
@@ -976,36 +1051,54 @@
           autoclickEndTime: 0,
           lastUpdate: Date.now()
         }).catch(error => {
-          console.error("Ошибка обновления состояния автокликера:", error);
+          console.error("Error updating autoclicker state:", error);
         });
       }
-    }
+    }!*/
 
-    // Загрузка данных игрока
-    function loadPlayerData(uid) {
+    function stopAutoclicker() {
+  clearInterval(autoclickInterval);
+  autoclickActive = false;
+  autoclickEndTime = 0;
+  autoclickInterval = null;
+  autoclickCooldown = false;
+  updateProfilePanel();
+  submitScore();
+  showMessage("Autoclicker deactivated.");
+
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: false,
+      autoclickEndTime: 0,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error updating autoclicker state:", error);
+    });
+  }
+}
+
+   /*! function loadPlayerData(uid) {
       db.ref("leaderboard/" + uid).once("value").then(snapshot => {
         const data = snapshot.val();
         if (data) {
           score = data.score || 0;
-          clickPower = data.clickPower || 1; // Загружаем текущее значение clickPower
+          clickPower = data.clickPower || 1;
           autoclickActive = data.autoclickActive || false;
           autoclickEndTime = data.autoclickEndTime || 0;
           const lastUpdate = data.lastUpdate || 0;
 
+          // Обрабатываем временный буст
           const tempBoostActive = data.tempBoostActive || false;
           const tempBoostEndTime = data.tempBoostEndTime || 0;
           const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
           const tempBoostAmount = data.tempBoostAmount || 0;
 
           if (tempBoostActive && tempBoostEndTime > Date.now()) {
-            // Восстанавливаем состояние буста
-            originalClickPower = tempBoostOriginalClickPower;
-            clickPower = data.clickPower || Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8); // Используем сохранённое значение clickPower
+            clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
             const remainingDuration = tempBoostEndTime - Date.now();
-            // Устанавливаем таймер буста, не меняя clickPower
+            originalClickPower = tempBoostOriginalClickPower;
             boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
           } else if (tempBoostActive) {
-            // Если буст истёк, сбрасываем состояние
             clickPower = tempBoostOriginalClickPower;
             db.ref("leaderboard/" + uid).update({
               tempBoostActive: false,
@@ -1017,6 +1110,7 @@
             });
           }
 
+          // Обрабатываем автокликер
           if (autoclickActive && autoclickEndTime > Date.now()) {
             const elapsedTime = Date.now() - lastUpdate;
             const secondsPassed = Math.floor(elapsedTime / 1000);
@@ -1026,14 +1120,14 @@
               showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
             }
             const remainingTime = autoclickEndTime - Date.now();
-            startAutoclicker(remainingTime, false);
+            startAutoclicker(remainingTime);
+            document.getElementById("autoclickBtn").disabled = true;
           } else if (autoclickActive) {
             autoclickActive = false;
             autoclickEndTime = 0;
             db.ref("leaderboard/" + uid).update({
               autoclickActive: false,
-              autoclickEndTime: 0,
-              lastUpdate: Date.now()
+              autoclickEndTime: 0
             });
             stopAutoclicker();
           }
@@ -1045,6 +1139,7 @@
           updateClickPowerCostText();
         }
 
+        // Обновляем lastUpdate
         if (user) {
           db.ref("leaderboard/" + uid).update({
             lastUpdate: Date.now()
@@ -1052,7 +1147,7 @@
         }
       }).catch(error => {
         console.error("Ошибка загрузки данных игрока:", error);
-        showMessage("Failed to load data.");
+        showMessage("Не удалось загрузить данные.");
       });
 
       db.ref("achievements/" + uid).once("value").then(snapshot => {
@@ -1062,9 +1157,90 @@
           renderAchievements();
         }
       });
+    }!*/
+
+    function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickActive = data.autoclickActive || false;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      const lastUpdate = data.lastUpdate || 0;
+
+      // Обрабатываем временный буст
+      const tempBoostActive = data.tempBoostActive || false;
+      const tempBoostEndTime = data.tempBoostEndTime || 0;
+      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
+      const tempBoostAmount = data.tempBoostAmount || 0;
+
+      if (tempBoostActive && tempBoostEndTime > Date.now()) {
+        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
+        const remainingDuration = tempBoostEndTime - Date.now();
+        originalClickPower = tempBoostOriginalClickPower;
+        boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
+      } else if (tempBoostActive) {
+        clickPower = tempBoostOriginalClickPower;
+        db.ref("leaderboard/" + uid).update({
+          tempBoostActive: false,
+          tempBoostEndTime: 0,
+          tempBoostOriginalClickPower: 0,
+          tempBoostAmount: 0,
+          clickPower: clickPower,
+          lastUpdate: Date.now()
+        });
+      }
+
+      // Обрабатываем автокликер
+      if (autoclickActive && autoclickEndTime > Date.now()) {
+        const elapsedTime = Date.now() - lastUpdate;
+        const secondsPassed = Math.floor(elapsedTime / 1000);
+        const tokensEarned = secondsPassed * clickPower;
+        if (tokensEarned > 0) {
+          score += tokensEarned;
+          showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
+        }
+        const remainingTime = autoclickEndTime - Date.now();
+        startAutoclicker(remainingTime, false); // Передаём extendTime = false для восстановления
+      } else if (autoclickActive) {
+        autoclickActive = false;
+        autoclickEndTime = 0;
+        db.ref("leaderboard/" + uid).update({
+          autoclickActive: false,
+          autoclickEndTime: 0,
+          lastUpdate: Date.now()
+        });
+        stopAutoclicker();
+      }
+
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      renderAchievements();
+      updateClickPowerCostText();
     }
 
-    // Сохранение счёта
+    // Обновляем lastUpdate
+    if (user) {
+      db.ref("leaderboard/" + uid).update({
+        lastUpdate: Date.now()
+      });
+    }
+  }).catch(error => {
+    console.error("Ошибка загрузки данных игрока:", error);
+    showMessage("Не удалось загрузить данные.");
+  });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      achievements = data;
+      renderAchievements();
+    }
+  });
+}
+
     function submitScore() {
       if (!user) return;
       const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
@@ -1076,28 +1252,27 @@
         autoclickActive: autoclickActive,
         autoclickEndTime: autoclickEndTime,
         tempBoostActive: !!tempBoostTimeout,
-        tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0,
+        tempBoostEndTime: tempBoostTimeout ? autoclickEndTime : 0,
         tempBoostOriginalClickPower: originalClickPower || clickPower,
         tempBoostAmount: clickPower - (originalClickPower || clickPower),
         lastUpdate: Date.now()
       }).catch(error => {
         console.error("Ошибка сохранения счёта:", error);
-        showMessage("Failed to save progress.");
+        showMessage("Не удалось сохранить прогресс.");
       });
     }
 
-    // Покупка улучшения
     function buyUpgrade(type) {
       const cost = getClickPowerUpgradeCost();
       if (type === "clickPower") {
         if (clickPower >= 8) {
-          showMessage("Click power at maximum!");
+          showMessage("Click Power is at maximum!");
           return;
         }
 
         const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
         if (clickPower >= 3 && currentLevel < clickPower + 1) {
-          showMessage(`Reach level ${clickPower + 1} to upgrade click power further!`);
+          showMessage(`Reach player level ${clickPower + 1} to upgrade Click Power further!`);
           const buyButton = document.querySelector("button[onclick=\"buyUpgrade('clickPower')\"]");
           buyButton.style.animation = "shake 0.3s";
           setTimeout(() => buyButton.style.animation = "", 300);
@@ -1112,17 +1287,16 @@
           updateProfilePanel();
           updateClickPowerCostText();
           submitScore();
-          showMessage("Click power upgraded!");
+          showMessage("Click Power upgraded!");
         } else {
-          showMessage("Not enough tokens to upgrade.");
+          showMessage("Not enough tokens for upgrade.");
         }
       }
     }
 
-    // Покупка автокликера
-    function buyAutoclicker(minutes) {
+  /*!  function buyAutoclicker(minutes) {
       if (autoclickCooldown) {
-        showMessage("Autoclicker is on cooldown.");
+        showMessage("Autoclicker on cooldown.");
         return;
       }
 
@@ -1138,8 +1312,9 @@
         updateCounterDisplay();
         showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
         autoclickCooldown = true;
+        autoclickActive = true;
         const duration = minutes * 60000;
-        startAutoclicker(duration, false);
+        startAutoclicker(duration);
         updateTaskProgress("autoclickerMaster", 1);
 
         if (user) {
@@ -1149,7 +1324,7 @@
             score: score,
             lastUpdate: Date.now()
           }).catch(error => {
-            console.error("Ошибка сохранения покупки автокликера:", error);
+            console.error("Error saving autoclicker purchase:", error);
           });
         }
 
@@ -1158,9 +1333,49 @@
       } else {
         showMessage("Not enough tokens for autoclicker.");
       }
+    }!*/
+
+function buyAutoclicker(minutes) {
+  if (autoclickCooldown) {
+    showMessage("Autoclicker on cooldown.");
+    return;
+  }
+
+  const prices = {
+    1: 200,
+    5: 800,
+    10: 1400
+  };
+
+  const cost = prices[minutes];
+  if (score >= cost) {
+    score -= cost;
+    updateCounterDisplay();
+    showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
+    autoclickCooldown = true;
+    const duration = minutes * 60000;
+    startAutoclicker(duration, false); // Передаём extendTime = false для замены времени
+    updateTaskProgress("autoclickerMaster", 1);
+
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        autoclickActive: true,
+        autoclickEndTime: autoclickEndTime,
+        score: score,
+        lastUpdate: Date.now()
+      }).catch(error => {
+        console.error("Error saving autoclicker purchase:", error);
+      });
     }
 
-    // Вход через Google
+    updateProfilePanel();
+    submitScore();
+  } else {
+    showMessage("Not enough tokens for autoclicker.");
+  }
+}
+    
+
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).then(result => {
@@ -1170,12 +1385,11 @@
         loadPlayerData(user.uid);
         submitScore();
       }).catch(error => {
-        showMessage("Error signing in with Google.");
+        showMessage("Google sign-in failed.");
         console.error(error);
       });
     }
 
-    // Выход из аккаунта
     function signOut() {
       if (user) {
         submitScore();
@@ -1195,8 +1409,7 @@
       });
     }
 
-    // Обработка изменения состояния авторизации
-    auth.onAuthStateChanged(currentUser => {
+  /*!  auth.onAuthStateChanged(currentUser => {
       if (currentUser) {
         user = currentUser;
         document.getElementById("authSection").style.display = "none";
@@ -1204,15 +1417,25 @@
         loadPlayerData(user.uid);
         checkDailyReward();
         renderTasks();
-        startBonusTimer();
-      } else {
-        if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-        document.getElementById("claimBonusBtn").disabled = true;
-        document.getElementById("bonusTimer").innerText = "Sign in to claim";
       }
-    });
+    });!*/
 
-    // Обновление таблицы лидеров
+    auth.onAuthStateChanged(currentUser => {
+  if (currentUser) {
+    user = currentUser;
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    loadPlayerData(user.uid);
+    checkDailyReward();
+    renderTasks();
+    startBonusTimer(); // Initialize bonus timer on login
+  } else {
+    if (bonusTimerInterval) clearInterval(bonusTimerInterval);
+    document.getElementById("claimBonusBtn").disabled = true;
+    document.getElementById("bonusTimer").innerText = "Sign in to claim";
+  }
+});
+
     db.ref("leaderboard").on("value", snapshot => {
       const data = [];
       snapshot.forEach(child => {
@@ -1240,11 +1463,10 @@
         leaderboard.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
       });
     }, error => {
-      console.error("Ошибка загрузки таблицы лидеров:", error);
+      console.error("Error loading leaderboard:", error);
       showMessage("Failed to load leaderboard.");
     });
 
-    // Периодическое обновление профиля и сохранение счёта
     setInterval(() => {
       if (user) {
         updateProfilePanel();
@@ -1252,17 +1474,10 @@
       }
     }, 1000);
 
-    // Мотивационные фразы
     const motivationalPhrases = [
-      "Click — earn tokens.",
-      "Sign in — save your progress.",
-      "Your crypto journey starts here.",
-      "No account — no profit!",
-      "Log in and turn clicks into income!",
-      "The first tokens are always the most valuable.",
-      "Top farmers are waiting for you!",
-      "Level up — earn even more tokens!",
-      "Crypto wealth starts with a single click.",
+      "Click — earn tokens.", "Sign in — save your progress.", "Your crypto journey starts here.",
+      "No account — no profit!", "Log in and turn clicks into income!", "The first tokens are always the most valuable.",
+      "Top farmers are waiting for you!", "Level up — earn even more tokens!", "Crypto wealth starts with a single click.",
       "Skip signing in — miss the rewards!"
     ];
 
