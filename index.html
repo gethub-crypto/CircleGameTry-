@@ -174,7 +174,6 @@
     <div><strong>Player:</strong> <span id="profileName">Anonymous</span></div>
     <div><strong>Level:</strong> <span id="playerLevel">1</span> / 10</div>
     <div><strong>Click Power:</strong> <span id="profileClickPower">1</span></div>
-      <div><strong>Boost:</strong> <span id="profileBoost">Inactive</span></div> <!-- Новый элемент -->
     <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
     <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
     <div><button class="click-button" onclick="signOut()">Sign Out</button></div>
@@ -332,9 +331,8 @@
     let originalClickPower = null;
     let isRenderingTasks = false;
     let bonusTimerInterval = null;
-    let tempBoostEndTime = 0; // Добавляем в начало скрипта рядом с другими переменными
 
-    /*!function updateProfilePanel() {
+    function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
       if (autoclickActive) {
@@ -366,58 +364,7 @@
       } else {
         levelMessageElement.classList.remove("show");
       }
-      
-    }!*/
-
-
-    function updateProfilePanel() {
-  document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
-
-  // Обновление автокликера
-  if (autoclickActive) {
-    const remaining = Math.max(0, autoclickEndTime - Date.now());
-    const seconds = Math.floor(remaining / 1000) % 60;
-    const minutes = Math.floor(remaining / 60000);
-    document.getElementById("profileAutoclick").innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-  } else {
-    document.getElementById("profileAutoclick").innerText = "Inactive";
-  }
-
-  // Обновление буста
-  const boostElement = document.getElementById("profileBoost");
-  if (tempBoostTimeout && originalClickPower !== null) {
-    const remaining = Math.max(0, (tempBoostEndTime || 0) - Date.now());
-    const seconds = Math.floor(remaining / 1000) % 60;
-    const minutes = Math.floor(remaining / 60000);
-    boostElement.innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-    boostElement.classList.remove("inactive");
-  } else {
-    boostElement.innerText = "Inactive";
-    boostElement.classList.add("inactive");
-  }
-
-  let level = 1;
-  for (let i = 0; i < levelUpRequirements.length; i++) {
-    if (score >= levelUpRequirements[i]) {
-      level = i + 2;
-    } else {
-      break;
     }
-  }
-
-  document.getElementById("playerLevel").innerText = level;
-  document.getElementById("profileTokens").innerText = score;
-  document.getElementById("profileName").innerText = user?.displayName || "Anonymous";
-
-  const levelMessageElement = document.getElementById("levelMessage");
-  if (level === 10) {
-    levelMessageElement.innerText = "Maximum level reached!";
-    levelMessageElement.classList.add("show");
-  } else {
-    levelMessageElement.classList.remove("show");
-  }
-}
-    
 
     function checkDailyReward() {
       if (!user) return;
@@ -612,7 +559,7 @@ function claimHourlyBonus() {
       }
     }
 
-  /*!  function boostClickPowerTemporarily(amount, duration) {
+    function boostClickPowerTemporarily(amount, duration) {
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
       originalClickPower = clickPower;
@@ -634,60 +581,7 @@ function claimHourlyBonus() {
         }).catch(error => {
           console.error("Ошибка сохранения состояния буста:", error);
         });
-      }!*/
-
-
-function boostClickPowerTemporarily(amount, duration) {
-  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
-
-  originalClickPower = clickPower;
-  const boosted = Math.min(clickPower + amount, 8);
-  clickPower = boosted;
-
-  const actualBoost = boosted - originalClickPower;
-  showMessage(`Temporary boost: Click Power +${actualBoost} на ${duration / 1000} сек`);
-
-  // Сохраняем состояние буста в Firebase
-  if (user) {
-    const boostEndTime = Date.now() + duration;
-    tempBoostEndTime = boostEndTime; // Сохраняем время окончания буста
-    db.ref("leaderboard/" + user.uid).update({
-      tempBoostActive: true,
-      tempBoostEndTime: boostEndTime,
-      tempBoostOriginalClickPower: originalClickPower,
-      tempBoostAmount: amount,
-      lastUpdate: Date.now()
-    }).catch(error => {
-      console.error("Ошибка сохранения состояния буста:", error);
-    });
-  }
-
-  tempBoostTimeout = setTimeout(() => {
-    clickPower = originalClickPower;
-    showMessage(`Буст закончился: Сила клика восстановлена`);
-    updateClickPowerBar();
-    updateProfilePanel();
-    submitScore();
-
-    // Очищаем состояние буста
-    tempBoostTimeout = null;
-    tempBoostEndTime = 0;
-    if (user) {
-      db.ref("leaderboard/" + user.uid).update({
-        tempBoostActive: false,
-        tempBoostEndTime: 0,
-        tempBoostOriginalClickPower: 0,
-        tempBoostAmount: 0,
-        lastUpdate: Date.now()
-      }).catch(error => {
-        console.error("Ошибка очистки состояния буста:", error);
-      });
-    }
-  }, duration);
-
-  updateProfilePanel(); // Обновляем панель сразу после активации буста
-}
-    
+      }
 
       tempBoostTimeout = setTimeout(() => {
         clickPower = originalClickPower;
@@ -1265,7 +1159,7 @@ function checkTaskCompletion(taskId) {
       });
     }!*/
 
-    /*!function loadPlayerData(uid) {
+    function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -1335,90 +1229,6 @@ function checkTaskCompletion(taskId) {
     }
   }).catch(error => {
     console.error("Ошибка загрузки данных игрока:", error);
-    showMessage("Не удалось загрузить данные.");
-  });
-
-  db.ref("achievements/" + uid).once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      achievements = data;
-      renderAchievements();
-    }
-  });
-}!*/
-
-
-
-    function loadPlayerData(uid) {
-  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      score = data.score || 0;
-      clickPower = data.clickPower || 1;
-      autoclickActive = data.autoclickActive || false;
-      autoclickEndTime = data.autoclickEndTime || 0;
-      const lastUpdate = data.lastUpdate || 0;
-
-      // Обрабатываем временный буст
-      const tempBoostActive = data.tempBoostActive || false;
-      const tempBoostEndTime = data.tempBoostEndTime || 0;
-      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
-      const tempBoostAmount = data.tempBoostAmount || 0;
-
-      if (tempBoostActive && tempBoostEndTime > Date.now()) {
-        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
-        const remainingDuration = tempBoostEndTime - Date.now();
-        originalClickPower = tempBoostOriginalClickPower;
-        boostClickPowerTemporarily(tempBoostAmount, remainingDuration); // Восстанавливаем буст
-      } else if (tempBoostActive) {
-        clickPower = tempBoostOriginalClickPower;
-        db.ref("leaderboard/" + uid).update({
-          tempBoostActive: false,
-          tempBoostEndTime: 0,
-          tempBoostOriginalClickPower: 0,
-          tempBoostAmount: 0,
-          clickPower: clickPower,
-          lastUpdate: Date.now()
-        });
-      }
-
-      // Обрабатываем автокликер
-      if (autoclickActive && autoclickEndTime > Date.now()) {
-        const elapsedTime = Date.now() - lastUpdate;
-        const secondsPassed = Math.floor(elapsedTime / 1000);
-        const tokensEarned = secondsPassed * clickPower;
-        if (tokensEarned > 0) {
-          score += tokensEarned;
-          showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
-        }
-        const remainingTime = autoclickEndTime - Date.now();
-        startAutoclicker(remainingTime, false); // Передаём extendTime = false для восстановления
-      } else if (autoclickActive) {
-        autoclickActive = false;
-        autoclickEndTime = 0;
-        db.ref("leaderboard/" + uid).update({
-          autoclickActive: false,
-          autoclickEndTime: 0,
-          lastUpdate: Date.now()
-        });
-        stopAutoclicker();
-      }
-
-      updateCounterDisplay();
-      updateClickPowerBar();
-      updateProfilePanel();
-      renderAchievements();
-      updateClickPowerCostText();
-    }
-
-    // Обновляем lastUpdate
-    if (user) {
-      db.ref("leaderboard/" + uid).update({
-        lastUpdate: Date.now()
-      });
-    }
-  }).catch(error => {
-    console.error("Ошибка загрузки данных игрока:", error  error);
     showMessage("Не удалось загрузить данные.");
   });
 
