@@ -1135,7 +1135,7 @@ function claimHourlyBonus() {
       }
     }
 
-    function buyAutoclicker(minutes) {
+  /*!  function buyAutoclicker(minutes) {
       if (autoclickCooldown) {
         showMessage("Autoclicker on cooldown.");
         return;
@@ -1174,7 +1174,48 @@ function claimHourlyBonus() {
       } else {
         showMessage("Not enough tokens for autoclicker.");
       }
+    }!*/
+
+function buyAutoclicker(minutes) {
+  if (autoclickCooldown) {
+    showMessage("Autoclicker on cooldown.");
+    return;
+  }
+
+  const prices = {
+    1: 200,
+    5: 800,
+    10: 1400
+  };
+
+  const cost = prices[minutes];
+  if (score >= cost) {
+    score -= cost;
+    updateCounterDisplay();
+    showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
+    autoclickCooldown = true;
+    const duration = minutes * 60000;
+    startAutoclicker(duration, false); // Передаём extendTime = false для замены времени
+    updateTaskProgress("autoclickerMaster", 1);
+
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        autoclickActive: true,
+        autoclickEndTime: autoclickEndTime,
+        score: score,
+        lastUpdate: Date.now()
+      }).catch(error => {
+        console.error("Error saving autoclicker purchase:", error);
+      });
     }
+
+    updateProfilePanel();
+    submitScore();
+  } else {
+    showMessage("Not enough tokens for autoclicker.");
+  }
+}
+    
 
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
