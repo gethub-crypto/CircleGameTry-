@@ -559,7 +559,7 @@ function claimHourlyBonus() {
       }
     }
 
-    function boostClickPowerTemporarily(amount, duration) {
+   /*! function boostClickPowerTemporarily(amount, duration) {
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
 
       originalClickPower = clickPower;
@@ -603,7 +603,66 @@ function claimHourlyBonus() {
           });
         }
       }, duration);
+    }!*/
+
+    function boostClickPowerTemporarily(amount, duration, isRestoring = false) {
+  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+
+  if (!isRestoring) {
+    // Применяем буст только если это не восстановление
+    originalClickPower = clickPower;
+    const boosted = Math.min(clickPower + amount, 8);
+    clickPower = boosted;
+
+    const actualBoost = boosted - originalClickPower;
+    showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} sec`);
+  } else {
+    // При восстановлении просто сохраняем текущее состояние
+    showMessage(`Restored boost: Click Power +${amount} for ${duration / 1000} sec`);
+  }
+
+  // Сохраняем состояние буста в Firebase
+  if (user) {
+    const boostEndTime = Date.now() + duration;
+    db.ref("leaderboard/" + user.uid).update({
+      tempBoostActive: true,
+      tempBoostEndTime: boostEndTime,
+      tempBoostOriginalClickPower: originalClickPower,
+      tempBoostAmount: amount,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error saving boost state:", error);
+    });
+  }
+
+  // Запускаем таймер буста
+  tempBoostTimeout = setTimeout(() => {
+    clickPower = originalClickPower;
+    originalClickPower = null;
+    showMessage(`Boost ended: Click Power restored`);
+    updateClickPowerBar();
+    updateProfilePanel();
+    submitScore();
+
+    // Очищаем состояние буста в Firebase
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        tempBoostActive: false,
+        tempBoostEndTime: 0,
+        tempBoostOriginalClickPower: 0,
+        tempBoostAmount: 0,
+        clickPower: clickPower,
+        lastUpdate: Date.now()
+      }).catch(error => {
+        console.error("Error clearing boost state:", error);
+      });
     }
+    tempBoostTimeout = null;
+  }, duration);
+
+  updateClickPowerBar();
+  updateProfilePanel();
+}
 
     function toggleAchievements() {
       console.log("Calling toggleAchievements...");
