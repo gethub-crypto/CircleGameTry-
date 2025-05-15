@@ -1388,7 +1388,7 @@ function checkTaskCompletion(taskId) {
   });
 }
 
- /*!   function submitScore() {
+    function submitScore() {
       if (!user) return;
       const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
       db.ref("leaderboard/" + user.uid).set({
@@ -1407,29 +1407,10 @@ function checkTaskCompletion(taskId) {
         console.error("Ошибка сохранения счёта:", error);
         showMessage("Не удалось сохранить прогресс.");
       });
-    }!*/
+    }
 
     
-function submitScore() {
-  if (!user) return;
-  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
-  db.ref("leaderboard/" + user.uid).set({
-    id: user.uid,
-    name: userName,
-    score: score,
-    clickPower: clickPower,
-    autoclickActive: autoclickActive,
-    autoclickEndTime: autoclickEndTime,
-    tempBoostActive: !!tempBoostTimeout,
-    tempBoostEndTime: tempBoostTimeout ? (Date.now() + (autoclickEndTime - Date.now())) : 0,
-    tempBoostOriginalClickPower: originalClickPower || clickPower,
-    tempBoostAmount: tempBoostTimeout ? (clickPower - (originalClickPower || clickPower)) : 0,
-    lastUpdate: Date.now()
-  }).catch(error => {
-    console.error("Error saving score:", error);
-    showMessage("Failed to save progress.");
-  });
-}
+
     function buyUpgrade(type) {
       const cost = getClickPowerUpgradeCost();
       if (type === "clickPower") {
