@@ -123,44 +123,6 @@
       75% { transform: translateX(-5px); }
       100% { transform: translateX(0); }
     }
-    .bonus-card {
-      background: #1a1a1a;
-      padding: 15px;
-      border-radius: 12px;
-      width: 180px;
-      box-shadow: 0 0 10px #00c3ff;
-      text-align: center;
-    }
-    .bonus-card h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      color: #00ffa6;
-    }
-    .bonus-card p {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: #fff;
-    }
-    #claimBonusBtn:disabled {
-      background: #555;
-      cursor: not-allowed;
-    }
-    @media (max-width: 768px) {
-      #hourlyBonus {
-        top: 10px;
-        right: 10px;
-      }
-      .bonus-card {
-        width: 140px;
-        padding: 10px;
-      }
-      .bonus-card h3 {
-        font-size: 16px;
-      }
-      .bonus-card p {
-        font-size: 12px;
-      }
-    }
   </style>
 </head>
 
@@ -188,13 +150,6 @@
   </div>
 
   <div id="gameSection" style="display:none;">
-    <div id="hourlyBonus" style="position: absolute; top: 20px; right: 20px;">
-      <div class="bonus-card">
-        <h3>Hourly Bonus</h3>
-        <p id="bonusTimer">Next in: 01:00:00</p>
-        <button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button>
-      </div>
-    </div>
     <div id="dailyReward" style="display: none; margin-top: 20px;">
       <h2>Daily Reward</h2>
       <p id="streakText">Login streak: 0 days</p>
@@ -282,7 +237,7 @@
     const allAchievements = {
       superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
       tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2min)" },
-      level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+2 Click Power (2 min)" },
+      level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
     };
 
     const levelUpRequirements = [
@@ -325,7 +280,6 @@
     let tempBoostTimeout = null;
     let originalClickPower = null;
     let isRenderingTasks = false;
-    let bonusTimerInterval = null;
 
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
@@ -394,73 +348,6 @@
         submitScore();
         showMessage(`Claimed ${reward} tokens for ${streak}-day streak!`);
         document.getElementById("dailyReward").style.display = "none";
-      });
-    }
-
-    function startBonusTimer() {
-      if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-
-      bonusTimerInterval = setInterval(() => {
-        if (!user) return;
-        db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
-          const data = snapshot.val() || { lastClaim: 0 };
-          const now = Date.now();
-          const timeSinceLastClaim = now - data.lastClaim;
-          const oneHour = 3600000;
-          const timeRemaining = Math.max(0, oneHour - timeSinceLastClaim);
-
-          if (timeRemaining <= 0) {
-            document.getElementById("claimBonusBtn").disabled = false;
-            document.getElementById("bonusTimer").innerText = "Claim now!";
-            clearInterval(bonusTimerInterval);
-          } else {
-            document.getElementById("claimBonusBtn").disabled = true;
-            const hours = Math.floor(timeRemaining / 3600000);
-            const minutes = Math.floor((timeRemaining % 3600000) / 60000);
-            const seconds = Math.floor((timeRemaining % 60000) / 1000);
-            document.getElementById("bonusTimer").innerText = `Next in: ${hours.toString().padStart(2, '0')}:${minutes
-              .toString()
-              .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-          }
-        }).catch(error => {
-          console.error("Error fetching bonus timer:", error);
-          showMessage("Failed to load bonus timer.");
-        });
-      }, 1000);
-    }
-
-    function claimHourlyBonus() {
-      if (!user) {
-        showMessage("Please sign in to claim the bonus.");
-        return;
-      }
-
-      db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
-        const data = snapshot.val() || { lastClaim: 0 };
-        const now = Date.now();
-        const timeSinceLastClaim = now - data.lastClaim;
-        const oneHour = 3600000;
-
-        if (timeSinceLastClaim >= oneHour || !data.lastClaim) {
-          const reward = Math.floor(Math.random() * (200 - 10 + 1)) + 10;
-          score += reward;
-          updateCounterDisplay();
-          submitScore();
-          showMessage(`Claimed ${reward} tokens from Hourly Bonus!`);
-
-          db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now }).then(() => {
-            document.getElementById("claimBonusBtn").disabled = true;
-            startBonusTimer();
-          }).catch(error => {
-            console.error("Error saving bonus claim:", error);
-            showMessage("Failed to save bonus claim.");
-          });
-        } else {
-          showMessage("Bonus not ready yet!");
-        }
-      }).catch(error => {
-        console.error("Error checking bonus eligibility:", error);
-        showMessage("Failed to check bonus eligibility.");
       });
     }
 
@@ -558,6 +445,7 @@
       const actualBoost = boosted - originalClickPower;
       showMessage(`Temporary boost: Click Power +${actualBoost} на ${duration / 1000} сек`);
 
+      // Сохраняем состояние буста в Firebase
       if (user) {
         const boostEndTime = Date.now() + duration;
         db.ref("leaderboard/" + user.uid).update({
@@ -578,6 +466,7 @@
         updateProfilePanel();
         submitScore();
 
+        // Очищаем состояние буста в Firebase
         if (user) {
           db.ref("leaderboard/" + user.uid).update({
             tempBoostActive: false,
@@ -589,7 +478,6 @@
             console.error("Ошибка очистки состояния буста:", error);
           });
         }
-        tempBoostTimeout = null;
       }, duration);
     }
 
@@ -673,11 +561,15 @@
       db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
         const tasksData = snapshot.val() || {};
         const today = new Date().toDateString();
+        
+        // Определяем начало текущей недели (понедельник)
         const now = new Date();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
 
         dailyTasks.forEach(task => {
           let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+
+          // Для недельных задач используем startOfWeek, для дневных — today
           const resetKey = task.period === "weekly" ? startOfWeek : today;
           if (taskData.lastReset !== resetKey) {
             taskData = { progress: 0, lastReset: resetKey, completions: 0, completed: false };
@@ -726,6 +618,7 @@
       if (!user) return;
       const now = new Date();
       const today = now.toDateString();
+      // Начало текущей недели
       const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
       
       const task = dailyTasks.find(t => t.id === taskId);
@@ -779,7 +672,7 @@
               submitScore();
             } else if (task.id === "autoclickerMaster") {
               showMessage(`Task "${task.description}" completed! ${task.reward}`);
-              startAutoclicker(300000, true);
+              startAutoclicker(300000);
               submitScore();
             }
             db.ref(`tasks/${user.uid}/${taskId}`).set({
@@ -816,24 +709,18 @@
     function checkAchievements() {
       if (!achievements.superClicker && totalClicks >= 10000) {
         achievements.superClicker = true;
-        if (!achievements.superClickerBoostApplied) {
-          boostClickPowerTemporarily(2, 120000);
-          achievements.superClickerBoostApplied = true;
-          showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
-          updateClickPowerBar();
-        }
+        boostClickPowerTemporarily(2, 120000);
+        showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
+        updateClickPowerBar();
         renderAchievements();
         saveAchievements();
       }
 
       if (!achievements.tokenHoarder && score >= 1000000) {
         achievements.tokenHoarder = true;
-        if (!achievements.tokenHoarderBoostApplied) {
-          boostClickPowerTemporarily(2, 120000);
-          achievements.tokenHoarderBoostApplied = true;
-          showMessage("Secret Achievement Unlocked: Token Hoarder! Click Power +2 for 2 minutes!");
-          updateClickPowerBar();
-        }
+        boostClickPowerTemporarily(2, 120000);
+        showMessage("Secret Achievement Unlocked: Token Hoarder! Click Power +2 for 2 minutes!");
+        updateClickPowerBar();
         renderAchievements();
         saveAchievements();
       }
@@ -841,12 +728,9 @@
       const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
       if (!achievements.level5 && currentLevel >= 5) {
         achievements.level5 = true;
-        if (!achievements.level5BoostApplied) {
-          boostClickPowerTemporarily(2, 120000);
-          achievements.level5BoostApplied = true;
-          showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +2 for 2 minutes!");
-          updateClickPowerBar();
-        }
+        boostClickPowerTemporarily(2, 120000);
+        showMessage("Secret Achievement Unlocked: Level 5 Reached! Click Power +2 for 2 minutes!");
+        updateClickPowerBar();
         renderAchievements();
         saveAchievements();
       }
@@ -854,16 +738,7 @@
 
     function saveAchievements() {
       if (!user) return;
-      db.ref("achievements/" + user.uid).set({
-        superClicker: achievements.superClicker || false,
-        superClickerBoostApplied: achievements.superClickerBoostApplied || false,
-        tokenHoarder: achievements.tokenHoarder || false,
-        tokenHoarderBoostApplied: achievements.tokenHoarderBoostApplied || false,
-        level5: achievements.level5 || false,
-        level5BoostApplied: achievements.level5BoostApplied || false
-      }).catch(error => {
-        console.error("Ошибка сохранения достижений:", error);
-      });
+      db.ref("achievements/" + user.uid).set(achievements);
     }
 
     function toggleShop() {
@@ -877,34 +752,19 @@
       btn.innerHTML = isCurrentlyOpen ? "Shop ▼" : "Shop ▲";
     }
 
-    function startAutoclicker(duration, extendTime = false) {
+    function startAutoclicker(duration) {
       if (autoclickActive) {
         const remainingTime = Math.max(0, autoclickEndTime - Date.now());
-        if (remainingTime <= 0) {
-          stopAutoclicker();
-        } else if (extendTime) {
-          autoclickEndTime = Date.now() + remainingTime + duration;
-          clearInterval(autoclickInterval);
-          autoclickInterval = setInterval(() => clickToken(), 1000);
-          setTimeout(() => stopAutoclicker(), remainingTime + duration);
-        } else {
-          autoclickEndTime = Date.now() + duration;
-          clearInterval(autoclickInterval);
-          autoclickInterval = setInterval(() => clickToken(), 1000);
-          setTimeout(() => stopAutoclicker(), duration);
-        }
+        autoclickEndTime = Date.now() + remainingTime + duration;
+        clearInterval(autoclickInterval);
       } else {
         autoclickActive = true;
         autoclickEndTime = Date.now() + duration;
-        autoclickInterval = setInterval(() => clickToken(), 1000);
-        setTimeout(() => stopAutoclicker(), duration);
       }
 
-      if (extendTime || duration !== (autoclickEndTime - Date.now())) {
-        autoclickerUses++;
-        checkAchievements();
-        updateTaskProgress("autoclickerMaster", 1);
-      }
+      autoclickInterval = setInterval(() => clickToken(), 1000);
+      autoclickerUses++;
+      checkAchievements();
 
       updateProfilePanel();
       submitScore();
@@ -918,6 +778,8 @@
           console.error("Error saving autoclicker state:", error);
         });
       }
+
+      setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
     }
 
     function stopAutoclicker() {
@@ -925,10 +787,14 @@
       autoclickActive = false;
       autoclickEndTime = 0;
       autoclickInterval = null;
-      autoclickCooldown = false;
+
       updateProfilePanel();
       submitScore();
       showMessage("Autoclicker deactivated.");
+
+      autoclickCooldown = false;
+    
+      showMessage("Autoclicker available again.");
 
       if (user) {
         db.ref("leaderboard/" + user.uid).update({
@@ -951,6 +817,7 @@
           autoclickEndTime = data.autoclickEndTime || 0;
           const lastUpdate = data.lastUpdate || 0;
 
+          // Обрабатываем временный буст
           const tempBoostActive = data.tempBoostActive || false;
           const tempBoostEndTime = data.tempBoostEndTime || 0;
           const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
@@ -960,23 +827,7 @@
             clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
             const remainingDuration = tempBoostEndTime - Date.now();
             originalClickPower = tempBoostOriginalClickPower;
-            tempBoostTimeout = setTimeout(() => {
-              clickPower = originalClickPower;
-              showMessage(`Буст закончился: Сила клика восстановлена`);
-              updateClickPowerBar();
-              updateProfilePanel();
-              submitScore();
-              if (user) {
-                db.ref("leaderboard/" + user.uid).update({
-                  tempBoostActive: false,
-                  tempBoostEndTime: 0,
-                  tempBoostOriginalClickPower: 0,
-                  tempBoostAmount: 0,
-                  lastUpdate: Date.now()
-                });
-              }
-              tempBoostTimeout = null;
-            }, remainingDuration);
+            boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
           } else if (tempBoostActive) {
             clickPower = tempBoostOriginalClickPower;
             db.ref("leaderboard/" + uid).update({
@@ -989,6 +840,7 @@
             });
           }
 
+          // Обрабатываем автокликер
           if (autoclickActive && autoclickEndTime > Date.now()) {
             const elapsedTime = Date.now() - lastUpdate;
             const secondsPassed = Math.floor(elapsedTime / 1000);
@@ -998,15 +850,14 @@
               showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
             }
             const remainingTime = autoclickEndTime - Date.now();
-            startAutoclicker(remainingTime, false ranged attack
-            startAutoclicker(remainingTime, false);
+            startAutoclicker(remainingTime);
+            document.getElementById("autoclickBtn").disabled = true;
           } else if (autoclickActive) {
             autoclickActive = false;
             autoclickEndTime = 0;
             db.ref("leaderboard/" + uid).update({
               autoclickActive: false,
-              autoclickEndTime: 0,
-              lastUpdate: Date.now()
+              autoclickEndTime: 0
             });
             stopAutoclicker();
           }
@@ -1018,6 +869,7 @@
           updateClickPowerCostText();
         }
 
+        // Обновляем lastUpdate
         if (user) {
           db.ref("leaderboard/" + uid).update({
             lastUpdate: Date.now()
@@ -1029,17 +881,11 @@
       });
 
       db.ref("achievements/" + uid).once("value").then(snapshot => {
-        const data = snapshot.val() || {};
-        achievements = {
-          superClicker: data.superClicker || false,
-          superClickerBoostApplied: data.superClickerBoostApplied || false,
-          tokenHoarder: data.tokenHoarder || false,
-          tokenHoarderBoostApplied: data.tokenHoarderBoostApplied || false,
-          level5: data.level5 || false,
-          level5BoostApplied: data.level5BoostApplied || false
-        };
-        renderAchievements();
-        checkAchievements();
+        const data = snapshot.val();
+        if (data) {
+          achievements = data;
+          renderAchievements();
+        }
       });
     }
 
@@ -1114,8 +960,9 @@
         updateCounterDisplay();
         showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
         autoclickCooldown = true;
+        autoclickActive = true;
         const duration = minutes * 60000;
-        startAutoclicker(duration, false);
+        startAutoclicker(duration);
         updateTaskProgress("autoclickerMaster", 1);
 
         if (user) {
@@ -1177,11 +1024,6 @@
         loadPlayerData(user.uid);
         checkDailyReward();
         renderTasks();
-        startBonusTimer();
-      } else {
-        if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-        document.getElementById("claimBonusBtn").disabled = true;
-        document.getElementById("bonusTimer").innerText = "Sign in to claim";
       }
     });
 
