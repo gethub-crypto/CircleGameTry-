@@ -1061,6 +1061,54 @@ function checkTaskCompletion(taskId) {
   }
 }
 
+/*!!!function startAutoclicker(duration, extendTime = false) {
+  if (autoclickActive && !extendTime) {
+    const remainingTime = Math.max(0, autoclickEndTime - Date.now());
+    if (remainingTime <= 0) {
+      stopAutoclicker();
+    } else {
+      autoclickEndTime = Date.now() + duration;
+      clearInterval(autoclickInterval);
+      autoclickInterval = setInterval(() => clickToken(), 1000);
+      setTimeout(() => stopAutoclicker(), duration);
+    }
+  } else if (autoclickActive && extendTime) {
+    const remainingTime = Math.max(0, autoclickEndTime - Date.now());
+    autoclickEndTime = Date.now() + remainingTime + duration;
+    clearInterval(autoclickInterval);
+    autoclickInterval = setInterval(() => clickToken(), 1000);
+    setTimeout(() => stopAutoclicker(), remainingTime + duration);
+  } else {
+    autoclickActive = true;
+    autoclickEndTime = Date.now() + duration;
+    autoclickInterval = setInterval(() => clickToken(), 1000);
+    setTimeout(() => stopAutoclicker(), duration);
+  }
+
+  if (!extendTime && duration !== (autoclickEndTime - Date.now())) {
+    autoclickerUses++;
+    checkAchievements();
+    updateTaskProgress("autoclickerMaster", 1);
+  }
+
+  updateProfilePanel();
+  submitScore();
+
+  if (user) {
+    db.ref("leaderboard/" + user.uid).update({
+      autoclickActive: true,
+      autoclickEndTime: autoclickEndTime,
+      lastUpdate: Date.now()
+    }).catch(error => {
+      console.error("Error saving autoclicker state:", error);
+    });
+  }
+}!!!*/
+
+
+
+
+    
   /*!  function stopAutoclicker() {
       clearInterval(autoclickInterval);
       autoclickActive = false;
