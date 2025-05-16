@@ -606,7 +606,7 @@ function claimHourlyBonus() {
     }!*/
 
 
-   function boostClickPowerTemporarily(amount, duration) {
+ /*!!  function boostClickPowerTemporarily(amount, duration) {
   // Проверяем, активен ли буст
   if (tempBoostTimeout && Date.now() < (autoclickEndTime || 0)) {
     showMessage("Буст уже активен!");
@@ -658,10 +658,10 @@ function claimHourlyBonus() {
     }
     tempBoostTimeout = null;
   }, duration);
-}
+}!!*/
 
 
-    /*!!!  function boostClickPowerTemporarily(amount, duration) {
+      function boostClickPowerTemporarily(amount, duration) {
   if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
     showMessage("Буст уже активен!");
     return;
@@ -702,7 +702,7 @@ function claimHourlyBonus() {
   updateClickPowerBar();
   updateProfilePanel();
   submitScore();
-}!!!*/
+    }
 
 
 
@@ -1013,7 +1013,7 @@ function checkTaskCompletion(taskId) {
       setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
     }!*/
 
-    function startAutoclicker(duration, extendTime = false) {
+   /*!! function startAutoclicker(duration, extendTime = false) {
   if (autoclickActive) {
     const remainingTime = Math.max(0, autoclickEndTime - Date.now());
     if (remainingTime <= 0) {
@@ -1059,9 +1059,9 @@ function checkTaskCompletion(taskId) {
       console.error("Error saving autoclicker state:", error);
     });
   }
-}
+}!!*/
 
-/*!!!function startAutoclicker(duration, extendTime = false) {
+function startAutoclicker(duration, extendTime = false) {
   if (autoclickActive && !extendTime) {
     const remainingTime = Math.max(0, autoclickEndTime - Date.now());
     if (remainingTime <= 0) {
@@ -1103,7 +1103,7 @@ function checkTaskCompletion(taskId) {
       console.error("Error saving autoclicker state:", error);
     });
   }
-}!!!*/
+}
 
 
 
@@ -1319,7 +1319,7 @@ function checkTaskCompletion(taskId) {
   });
 }!!*/
 
-function loadPlayerData(uid) {
+/*!!!!function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -1422,10 +1422,10 @@ function loadPlayerData(uid) {
       renderAchievements();
     }
   });
-}
+}!!!!*/
 
 
-/*!!!function loadPlayerData(uid) {
+function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -1505,14 +1505,14 @@ function loadPlayerData(uid) {
       renderAchievements();
     }
   });
-}!!!*/
+}
 
 
 
     
   
 
-    function submitScore() {
+   /*! function submitScore() {
       if (!user) return;
       const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
       db.ref("leaderboard/" + user.uid).set({
@@ -1531,7 +1531,7 @@ function loadPlayerData(uid) {
         console.error("Ошибка сохранения счёта:", error);
         showMessage("Не удалось сохранить прогресс.");
       });
-    }
+    }!*/
 
 
 
@@ -1557,7 +1557,7 @@ function loadPlayerData(uid) {
 }!!*/
 
 
-/*!!!function submitScore() {
+function submitScore() {
   if (!user) return;
   const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
   db.ref("leaderboard/" + user.uid).set({
@@ -1576,7 +1576,7 @@ function loadPlayerData(uid) {
     console.error("Ошибка сохранения счёта:", error);
     showMessage("Не удалось сохранить прогресс.");
   });
-}!!!*/
+}
     
 
     
