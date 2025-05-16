@@ -1423,6 +1423,93 @@ function loadPlayerData(uid) {
     }
   });
 }
+
+
+/*!!!function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickActive = data.autoclickActive || false;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      const lastUpdate = data.lastUpdate || 0;
+
+      // Обрабатываем временный буст
+      const tempBoostActive = data.tempBoostActive || false;
+      const tempBoostEndTime = data.tempBoostEndTime || 0;
+      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
+      const tempBoostAmount = data.tempBoostAmount || 0;
+
+      if (tempBoostActive && tempBoostEndTime > Date.now()) {
+        originalClickPower = tempBoostOriginalClickPower;
+        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
+        const remainingDuration = tempBoostEndTime - Date.now();
+        boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
+      } else if (tempBoostActive) {
+        clickPower = tempBoostOriginalClickPower;
+        db.ref("leaderboard/" + uid).update({
+          tempBoostActive: false,
+          tempBoostEndTime: 0,
+          tempBoostOriginalClickPower: 0,
+          tempBoostAmount: 0,
+          clickPower: clickPower,
+          lastUpdate: Date.now()
+        });
+      }
+
+      // Обрабатываем автокликер
+      if (autoclickActive && autoclickEndTime > Date.now()) {
+        const elapsedTime = Date.now() - lastUpdate;
+        const secondsPassed = Math.floor(elapsedTime / 1000);
+        const tokensEarned = secondsPassed * clickPower;
+        if (tokensEarned > 0) {
+          score += tokensEarned;
+          showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
+        }
+        const remainingTime = autoclickEndTime - Date.now();
+        startAutoclicker(remainingTime, false);
+      } else if (autoclickActive) {
+        autoclickActive = false;
+        autoclickEndTime = 0;
+        db.ref("leaderboard/" + uid).update({
+          autoclickActive: false,
+          autoclickEndTime: 0,
+          lastUpdate: Date.now()
+        });
+        stopAutoclicker();
+      }
+
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      renderAchievements();
+      updateClickPowerCostText();
+    }
+
+    // Обновляем lastUpdate
+    if (user) {
+      db.ref("leaderboard/" + uid).update({
+        lastUpdate: Date.now()
+      });
+    }
+  }).catch(error => {
+    console.error("Ошибка загрузки данных игрока:", error);
+    showMessage("Не удалось загрузить данные.");
+  });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      achievements = data;
+      renderAchievements();
+    }
+  });
+}!!!*/
+
+
+
+    
   
 
     function submitScore() {
