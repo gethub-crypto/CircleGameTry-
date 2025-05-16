@@ -606,7 +606,7 @@ function claimHourlyBonus() {
     }!*/
 
 
-   function boostClickPowerTemporarily(amount, duration) {
+    function boostClickPowerTemporarily(amount, duration) {
   // Проверяем, активен ли буст
   if (tempBoostTimeout && Date.now() < (autoclickEndTime || 0)) {
     showMessage("Буст уже активен!");
@@ -660,53 +660,6 @@ function claimHourlyBonus() {
   }, duration);
 }
 
-
-    /*!!!  function boostClickPowerTemporarily(amount, duration) {
-  if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
-    showMessage("Буст уже активен!");
-    return;
-  }
-
-  originalClickPower = clickPower;
-  const boosted = Math.min(clickPower + amount, 8);
-  clickPower = boosted;
-  tempBoostEndTime = Date.now() + duration;
-
-  const actualBoost = boosted - originalClickPower;
-  showMessage(`Временный буст: Сила клика +${actualBoost} на ${duration / 1000} сек`);
-
-  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
-  tempBoostTimeout = setTimeout(() => {
-    clickPower = originalClickPower;
-    showMessage(`Буст закончился: Сила клика восстановлена`);
-    updateClickPowerBar();
-    updateProfilePanel();
-    tempBoostTimeout = null;
-    tempBoostEndTime = 0;
-    submitScore();
-
-    if (user) {
-      db.ref("leaderboard/" + user.uid).update({
-        tempBoostActive: false,
-        tempBoostEndTime: 0,
-        tempBoostOriginalClickPower: 0,
-        tempBoostAmount: 0,
-        lastUpdate: Date.now()
- Opinium Insights UK
-      }).catch(error => {
-        console.error("Ошибка очистки состояния буста:", error);
-      });
-    }
-  }, duration);
-
-  updateClickPowerBar();
-  updateProfilePanel();
-  submitScore();
-    }!!!*/
-
-
-
-    
 
 
     function toggleAchievements() {
@@ -876,8 +829,82 @@ function claimHourlyBonus() {
       });
     }
 
+ /*!   function checkTaskCompletion(taskId) {
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+        const taskData = snapshot.val();
+        const task = dailyTasks.find(t => t.id === taskId);
 
+        if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
+          return;
+        }
 
+        if (taskData && taskData.progress >= task.goal) {
+          const completions = (taskData.completions || 0) + 1;
+          if (completions <= 1) {
+            if (task.id === "clickMarathon") {
+              score += task.reward;
+              showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+              updateCounterDisplay();
+              submitScore();
+            } else if (task.id === "levelUp") {
+              boostClickPowerTemporarily(1, 300000);
+              showMessage(`Task "${task.description}" completed! ${task.reward}`);
+              updateClickPowerBar();
+              submitScore();
+            } else if (task.id === "autoclickerMaster") {
+              showMessage(`Task "${task.description}" completed! ${task.reward}`);
+              startAutoclicker(300000);
+              submitScore();
+            }
+            db.ref(`tasks/${user.uid}/${taskId}`).set({
+              progress: 0,
+              lastReset: taskData.lastReset,
+              completions: completions,
+              completed: true
+            });
+          }
+          renderTasks();
+        }
+      });
+    }
+function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+
+    if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
+      return;
+    }
+
+    if (taskData && taskData.progress >= task.goal) {
+      const completions = (taskData.completions || 0) + 1;
+      if (completions <= 1) {
+        if (task.id === "clickMarathon") {
+          score += task.reward;
+          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+          updateCounterDisplay();
+          submitScore();
+        } else if (task.id === "levelUp") {
+          boostClickPowerTemporarily(1, 300000);
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          updateClickPowerBar();
+          submitScore();
+        } else if (task.id === "autoclickerMaster") {
+          showMessage(`Task "${task.description}" completed! ${task.reward}`);
+          startAutoclicker(300000, true); // Передаём extendTime = true для добавления времени
+          submitScore();
+        }
+        db.ref(`tasks/${user.uid}/${taskId}`).set({
+          progress: 0,
+          lastReset: taskData.lastReset,
+          completions: completions,
+          completed: true
+        });
+      }
+      renderTasks();
+    }
+  });
+}!*/
 
 function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
@@ -1013,7 +1040,7 @@ function checkTaskCompletion(taskId) {
       setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
     }!*/
 
-   function startAutoclicker(duration, extendTime = false) {
+    function startAutoclicker(duration, extendTime = false) {
   if (autoclickActive) {
     const remainingTime = Math.max(0, autoclickEndTime - Date.now());
     if (remainingTime <= 0) {
@@ -1061,54 +1088,6 @@ function checkTaskCompletion(taskId) {
   }
 }
 
-/*!!!function startAutoclicker(duration, extendTime = false) {
-  if (autoclickActive && !extendTime) {
-    const remainingTime = Math.max(0, autoclickEndTime - Date.now());
-    if (remainingTime <= 0) {
-      stopAutoclicker();
-    } else {
-      autoclickEndTime = Date.now() + duration;
-      clearInterval(autoclickInterval);
-      autoclickInterval = setInterval(() => clickToken(), 1000);
-      setTimeout(() => stopAutoclicker(), duration);
-    }
-  } else if (autoclickActive && extendTime) {
-    const remainingTime = Math.max(0, autoclickEndTime - Date.now());
-    autoclickEndTime = Date.now() + remainingTime + duration;
-    clearInterval(autoclickInterval);
-    autoclickInterval = setInterval(() => clickToken(), 1000);
-    setTimeout(() => stopAutoclicker(), remainingTime + duration);
-  } else {
-    autoclickActive = true;
-    autoclickEndTime = Date.now() + duration;
-    autoclickInterval = setInterval(() => clickToken(), 1000);
-    setTimeout(() => stopAutoclicker(), duration);
-  }
-
-  if (!extendTime && duration !== (autoclickEndTime - Date.now())) {
-    autoclickerUses++;
-    checkAchievements();
-    updateTaskProgress("autoclickerMaster", 1);
-  }
-
-  updateProfilePanel();
-  submitScore();
-
-  if (user) {
-    db.ref("leaderboard/" + user.uid).update({
-      autoclickActive: true,
-      autoclickEndTime: autoclickEndTime,
-      lastUpdate: Date.now()
-    }).catch(error => {
-      console.error("Error saving autoclicker state:", error);
-    });
-  }
-}!!!*/
-
-
-
-
-    
   /*!  function stopAutoclicker() {
       clearInterval(autoclickInterval);
       autoclickActive = false;
@@ -1423,96 +1402,9 @@ function loadPlayerData(uid) {
     }
   });
 }
-
-
-/*!!!function loadPlayerData(uid) {
-  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      score = data.score || 0;
-      clickPower = data.clickPower || 1;
-      autoclickActive = data.autoclickActive || false;
-      autoclickEndTime = data.autoclickEndTime || 0;
-      const lastUpdate = data.lastUpdate || 0;
-
-      // Обрабатываем временный буст
-      const tempBoostActive = data.tempBoostActive || false;
-      const tempBoostEndTime = data.tempBoostEndTime || 0;
-      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
-      const tempBoostAmount = data.tempBoostAmount || 0;
-
-      if (tempBoostActive && tempBoostEndTime > Date.now()) {
-        originalClickPower = tempBoostOriginalClickPower;
-        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
-        const remainingDuration = tempBoostEndTime - Date.now();
-        boostClickPowerTemporarily(tempBoostAmount, remainingDuration);
-      } else if (tempBoostActive) {
-        clickPower = tempBoostOriginalClickPower;
-        db.ref("leaderboard/" + uid).update({
-          tempBoostActive: false,
-          tempBoostEndTime: 0,
-          tempBoostOriginalClickPower: 0,
-          tempBoostAmount: 0,
-          clickPower: clickPower,
-          lastUpdate: Date.now()
-        });
-      }
-
-      // Обрабатываем автокликер
-      if (autoclickActive && autoclickEndTime > Date.now()) {
-        const elapsedTime = Date.now() - lastUpdate;
-        const secondsPassed = Math.floor(elapsedTime / 1000);
-        const tokensEarned = secondsPassed * clickPower;
-        if (tokensEarned > 0) {
-          score += tokensEarned;
-          showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
-        }
-        const remainingTime = autoclickEndTime - Date.now();
-        startAutoclicker(remainingTime, false);
-      } else if (autoclickActive) {
-        autoclickActive = false;
-        autoclickEndTime = 0;
-        db.ref("leaderboard/" + uid).update({
-          autoclickActive: false,
-          autoclickEndTime: 0,
-          lastUpdate: Date.now()
-        });
-        stopAutoclicker();
-      }
-
-      updateCounterDisplay();
-      updateClickPowerBar();
-      updateProfilePanel();
-      renderAchievements();
-      updateClickPowerCostText();
-    }
-
-    // Обновляем lastUpdate
-    if (user) {
-      db.ref("leaderboard/" + uid).update({
-        lastUpdate: Date.now()
-      });
-    }
-  }).catch(error => {
-    console.error("Ошибка загрузки данных игрока:", error);
-    showMessage("Не удалось загрузить данные.");
-  });
-
-  db.ref("achievements/" + uid).once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      achievements = data;
-      renderAchievements();
-    }
-  });
-}!!!*/
-
-
-
-    
   
 
-   /*! function submitScore() {
+    function submitScore() {
       if (!user) return;
       const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
       db.ref("leaderboard/" + user.uid).set({
@@ -1531,11 +1423,11 @@ function loadPlayerData(uid) {
         console.error("Ошибка сохранения счёта:", error);
         showMessage("Не удалось сохранить прогресс.");
       });
-    }!*/
+    }
 
 
 
-  /*!! function submitScore() {
+ /*!!  function submitScore() {
   if (!user) return;
   const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
   db.ref("leaderboard/" + user.uid).set({
@@ -1554,52 +1446,8 @@ function loadPlayerData(uid) {
     console.error("Ошибка сохранения счёта:", error);
     showMessage("Не удалось сохранить прогресс.");
   });
-} boost !!*/
+}!!*/
 
-
-/*!!!function submitScore() {
-  if (!user) return;
-  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
-  db.ref("leaderboard/" + user.uid).set({
-    id: user.uid,
-    name: userName,
-    score: score,
-    clickPower: clickPower,
-    autoclickActive: autoclickActive,
-    autoclickEndTime: autoclickEndTime,
-    tempBoostActive: !!tempBoostTimeout,
-    tempBoostEndTime: tempBoostTimeout ? (Date.now() + (tempBoostEndTime - Date.now() || 0)) : 0,
-    tempBoostOriginalClickPower: originalClickPower || clickPower,
-    tempBoostAmount: clickPower - (originalClickPower || clickPower),
-    lastUpdate: Date.now()
-  }).catch(error => {
-    console.error("Ошибка сохранения счёта:", error);
-    showMessage("Не удалось сохранить прогресс.");
-  });
-} new!!!*/
-
-
-    
-function submitScore() {
-  if (!user) return;
-  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
-  db.ref("leaderboard/" + user.uid).set({
-    id: user.uid,
-    name: userName,
-    score: score,
-    clickPower: clickPower,
-    autoclickActive: autoclickActive,
-    autoclickEndTime: autoclickEndTime,
-    tempBoostActive: !!tempBoostTimeout,
-    tempBoostEndTime: tempBoostActive ? tempBoostEndTime : 0,
-    tempBoostOriginalClickPower: originalClickPower || clickPower,
-    tempBoostAmount: clickPower - (originalClickPower || clickPower),
-    lastUpdate: Date.now()
-  }).catch(error => {
-    console.error("Ошибка сохранения счёта:", error);
-    showMessage("Не удалось сохранить прогресс.");
-  });
-}
     
 
     function buyUpgrade(type) {
