@@ -606,7 +606,7 @@ function claimHourlyBonus() {
     }!*/
 
 
-   /*!! function boostClickPowerTemporarily(amount, duration) {
+   function boostClickPowerTemporarily(amount, duration) {
   // Проверяем, активен ли буст
   if (tempBoostTimeout && Date.now() < (autoclickEndTime || 0)) {
     showMessage("Буст уже активен!");
@@ -658,10 +658,10 @@ function claimHourlyBonus() {
     }
     tempBoostTimeout = null;
   }, duration);
-}!!*/
+}
 
 
-      function boostClickPowerTemporarily(amount, duration) {
+    /*!!!  function boostClickPowerTemporarily(amount, duration) {
   if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
     showMessage("Буст уже активен!");
     return;
@@ -702,7 +702,7 @@ function claimHourlyBonus() {
   updateClickPowerBar();
   updateProfilePanel();
   submitScore();
-}
+}!!!*/
 
 
 
@@ -876,82 +876,8 @@ function claimHourlyBonus() {
       });
     }
 
- /*!   function checkTaskCompletion(taskId) {
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-        const taskData = snapshot.val();
-        const task = dailyTasks.find(t => t.id === taskId);
 
-        if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
-          return;
-        }
 
-        if (taskData && taskData.progress >= task.goal) {
-          const completions = (taskData.completions || 0) + 1;
-          if (completions <= 1) {
-            if (task.id === "clickMarathon") {
-              score += task.reward;
-              showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-              updateCounterDisplay();
-              submitScore();
-            } else if (task.id === "levelUp") {
-              boostClickPowerTemporarily(1, 300000);
-              showMessage(`Task "${task.description}" completed! ${task.reward}`);
-              updateClickPowerBar();
-              submitScore();
-            } else if (task.id === "autoclickerMaster") {
-              showMessage(`Task "${task.description}" completed! ${task.reward}`);
-              startAutoclicker(300000);
-              submitScore();
-            }
-            db.ref(`tasks/${user.uid}/${taskId}`).set({
-              progress: 0,
-              lastReset: taskData.lastReset,
-              completions: completions,
-              completed: true
-            });
-          }
-          renderTasks();
-        }
-      });
-    }
-function checkTaskCompletion(taskId) {
-  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-    const taskData = snapshot.val();
-    const task = dailyTasks.find(t => t.id === taskId);
-
-    if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
-      return;
-    }
-
-    if (taskData && taskData.progress >= task.goal) {
-      const completions = (taskData.completions || 0) + 1;
-      if (completions <= 1) {
-        if (task.id === "clickMarathon") {
-          score += task.reward;
-          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-          updateCounterDisplay();
-          submitScore();
-        } else if (task.id === "levelUp") {
-          boostClickPowerTemporarily(1, 300000);
-          showMessage(`Task "${task.description}" completed! ${task.reward}`);
-          updateClickPowerBar();
-          submitScore();
-        } else if (task.id === "autoclickerMaster") {
-          showMessage(`Task "${task.description}" completed! ${task.reward}`);
-          startAutoclicker(300000, true); // Передаём extendTime = true для добавления времени
-          submitScore();
-        }
-        db.ref(`tasks/${user.uid}/${taskId}`).set({
-          progress: 0,
-          lastReset: taskData.lastReset,
-          completions: completions,
-          completed: true
-        });
-      }
-      renderTasks();
-    }
-  });
-}!*/
 
 function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
