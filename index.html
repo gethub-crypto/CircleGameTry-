@@ -1535,7 +1535,7 @@ function loadPlayerData(uid) {
 
 
 
-   function submitScore() {
+  /*!! function submitScore() {
   if (!user) return;
   const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
   db.ref("leaderboard/" + user.uid).set({
@@ -1554,7 +1554,7 @@ function loadPlayerData(uid) {
     console.error("Ошибка сохранения счёта:", error);
     showMessage("Не удалось сохранить прогресс.");
   });
-}
+} boost !!*/
 
 
 /*!!!function submitScore() {
@@ -1576,9 +1576,30 @@ function loadPlayerData(uid) {
     console.error("Ошибка сохранения счёта:", error);
     showMessage("Не удалось сохранить прогресс.");
   });
-}!!!*/
-    
+} new!!!*/
 
+
+    
+function submitScore() {
+  if (!user) return;
+  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
+  db.ref("leaderboard/" + user.uid).set({
+    id: user.uid,
+    name: userName,
+    score: score,
+    clickPower: clickPower,
+    autoclickActive: autoclickActive,
+    autoclickEndTime: autoclickEndTime,
+    tempBoostActive: !!tempBoostTimeout,
+    tempBoostEndTime: tempBoostActive ? tempBoostEndTime : 0,
+    tempBoostOriginalClickPower: originalClickPower || clickPower,
+    tempBoostAmount: clickPower - (originalClickPower || clickPower),
+    lastUpdate: Date.now()
+  }).catch(error => {
+    console.error("Ошибка сохранения счёта:", error);
+    showMessage("Не удалось сохранить прогресс.");
+  });
+}
     
 
     function buyUpgrade(type) {
