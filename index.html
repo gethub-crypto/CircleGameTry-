@@ -1416,6 +1416,7 @@ function loadPlayerData(uid) {
         autoclickEndTime: autoclickEndTime,
         tempBoostActive: !!tempBoostTimeout,
         tempBoostEndTime: tempBoostTimeout ? autoclickEndTime : 0,
+        tempBoostEndTime: tempBoostTimeout ? (Date.now() + (tempBoostEndTime || 0)) : 0,//boost get
         tempBoostOriginalClickPower: originalClickPower || clickPower,
         tempBoostAmount: clickPower - (originalClickPower || clickPower),
         lastUpdate: Date.now()
