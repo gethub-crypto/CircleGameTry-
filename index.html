@@ -606,7 +606,7 @@ function claimHourlyBonus() {
     }!*/
 
 
- /*!!  function boostClickPowerTemporarily(amount, duration) {
+   function boostClickPowerTemporarily(amount, duration) {
   // Проверяем, активен ли буст
   if (tempBoostTimeout && Date.now() < (autoclickEndTime || 0)) {
     showMessage("Буст уже активен!");
@@ -658,10 +658,10 @@ function claimHourlyBonus() {
     }
     tempBoostTimeout = null;
   }, duration);
-}!!*/
+}
 
 
-      function boostClickPowerTemporarily(amount, duration) {
+    /*!!!  function boostClickPowerTemporarily(amount, duration) {
   if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
     showMessage("Буст уже активен!");
     return;
@@ -702,7 +702,7 @@ function claimHourlyBonus() {
   updateClickPowerBar();
   updateProfilePanel();
   submitScore();
-    }
+    }!!!*/
 
 
 
