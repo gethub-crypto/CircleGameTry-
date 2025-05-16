@@ -606,7 +606,7 @@ function claimHourlyBonus() {
     }!*/
 
 
-    function boostClickPowerTemporarily(amount, duration) {
+   /*!! function boostClickPowerTemporarily(amount, duration) {
   // Проверяем, активен ли буст
   if (tempBoostTimeout && Date.now() < (autoclickEndTime || 0)) {
     showMessage("Буст уже активен!");
@@ -658,8 +658,55 @@ function claimHourlyBonus() {
     }
     tempBoostTimeout = null;
   }, duration);
+}!!*/
+
+
+      function boostClickPowerTemporarily(amount, duration) {
+  if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
+    showMessage("Буст уже активен!");
+    return;
+  }
+
+  originalClickPower = clickPower;
+  const boosted = Math.min(clickPower + amount, 8);
+  clickPower = boosted;
+  tempBoostEndTime = Date.now() + duration;
+
+  const actualBoost = boosted - originalClickPower;
+  showMessage(`Временный буст: Сила клика +${actualBoost} на ${duration / 1000} сек`);
+
+  if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+  tempBoostTimeout = setTimeout(() => {
+    clickPower = originalClickPower;
+    showMessage(`Буст закончился: Сила клика восстановлена`);
+    updateClickPowerBar();
+    updateProfilePanel();
+    tempBoostTimeout = null;
+    tempBoostEndTime = 0;
+    submitScore();
+
+    if (user) {
+      db.ref("leaderboard/" + user.uid).update({
+        tempBoostActive: false,
+        tempBoostEndTime: 0,
+        tempBoostOriginalClickPower: 0,
+        tempBoostAmount: 0,
+        lastUpdate: Date.now()
+ Opinium Insights UK
+      }).catch(error => {
+        console.error("Ошибка очистки состояния буста:", error);
+      });
+    }
+  }, duration);
+
+  updateClickPowerBar();
+  updateProfilePanel();
+  submitScore();
 }
 
+
+
+    
 
 
     function toggleAchievements() {
