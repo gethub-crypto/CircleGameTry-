@@ -1013,7 +1013,7 @@ function checkTaskCompletion(taskId) {
       setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
     }!*/
 
-   /*!! function startAutoclicker(duration, extendTime = false) {
+   function startAutoclicker(duration, extendTime = false) {
   if (autoclickActive) {
     const remainingTime = Math.max(0, autoclickEndTime - Date.now());
     if (remainingTime <= 0) {
@@ -1059,9 +1059,9 @@ function checkTaskCompletion(taskId) {
       console.error("Error saving autoclicker state:", error);
     });
   }
-}!!*/
+}
 
-function startAutoclicker(duration, extendTime = false) {
+/*!!!function startAutoclicker(duration, extendTime = false) {
   if (autoclickActive && !extendTime) {
     const remainingTime = Math.max(0, autoclickEndTime - Date.now());
     if (remainingTime <= 0) {
@@ -1103,7 +1103,7 @@ function startAutoclicker(duration, extendTime = false) {
       console.error("Error saving autoclicker state:", error);
     });
   }
-}
+}!!!*/
 
 
 
