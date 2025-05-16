@@ -301,12 +301,12 @@
         goal: 100,
         reward: 50
       },
-      {
+    /*!  {
         id: "levelUp",
         description: "Collect 5000 tokens",
         goal: 5000,
         reward: "Click Power +1 for 5 min"
-      },
+      },!*/
       {
         id: "autoclickerMaster",
         description: "Activate autoclicker 5 times in a week",
@@ -965,7 +965,7 @@ function checkTaskCompletion(taskId) {
     }
 
     function checkAchievements() {
-      if (!achievements.superClicker && totalClicks >= 10) {
+      if (!achievements.superClicker && totalClicks >= 10000) {
         achievements.superClicker = true;
         boostClickPowerTemporarily(2, 120000);
         showMessage("Secret Achievement Unlocked: Super Clicker! Click Power +2 for 2 minutes!");
