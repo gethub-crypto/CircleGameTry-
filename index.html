@@ -1502,7 +1502,7 @@ function clickToken() {
   });
 }!!*/
 
-function loadPlayerData(uid) {
+/*!!!function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -1605,7 +1605,132 @@ function loadPlayerData(uid) {
       renderAchievements();
     }
   });
+}*!!!/
+
+
+
+function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickActive = data.autoclickActive || false;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      const lastUpdate = data.lastUpdate || 0;
+
+      // Обрабатываем временный буст
+      const tempBoostActive = data.tempBoostActive || false;
+      const tempBoostEndTime = data.tempBoostEndTime || 0;
+      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
+      const tempBoostAmount = data.tempBoostAmount || 0;
+
+      if (tempBoostActive && tempBoostEndTime > Date.now()) {
+        originalClickPower = tempBoostOriginalClickPower;
+        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
+        const remainingDuration = tempBoostEndTime - Date.now();
+
+        if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+        tempBoostTimeout = setTimeout(() => {
+          clickPower = originalClickPower;
+          showMessage(`Буст закончился: Сила клика восстановлена`);
+          updateClickPowerBar();
+          updateProfilePanel();
+          submitScore();
+
+          db.ref("leaderboard/" + uid).update({
+            tempBoostActive: false,
+            tempBoostEndTime: 0,
+            tempBoostOriginalClickPower: 0,
+            tempBoostAmount: 0,
+            lastUpdate: Date.now()
+          }).catch(error => {
+            console.error("Ошибка очистки состояния буста:", error);
+          });
+          tempBoostTimeout = null;
+        }, remainingDuration);
+      } else if (tempBoostActive) {
+        clickPower = tempBoostOriginalClickPower;
+        db.ref("leaderboard/" + uid).update({
+          tempBoostActive: false,
+          tempBoostEndTime: 0,
+          tempBoostOriginalClickPower: 0,
+          tempBoostAmount: 0,
+          clickPower: clickPower,
+          lastUpdate: Date.now()
+        });
+      }
+
+      // Обрабатываем автокликер
+      if (autoclickActive && autoclickEndTime > Date.now()) {
+        const elapsedTime = Date.now() - lastUpdate;
+        const secondsPassed = Math.floor(elapsedTime / 1000);
+        const tokensEarned = secondsPassed * clickPower;
+        if (tokensEarned > 0) {
+          score += tokensEarned;
+          showMessage(`Автокликер заработал ${tokensEarned} токенов, пока вас не было!`);
+          // Обновляем прогресс задания "levelUp" токенами от автокликера
+          updateTaskProgress("levelUp", tokensEarned);
+        }
+        const remainingTime = autoclickEndTime - Date.now();
+        startAutoclicker(remainingTime, false);
+      } else if (autoclickActive) {
+        autoclickActive = false;
+        autoclickEndTime = 0;
+        db.ref("leaderboard/" + uid).update({
+          autoclickActive: false,
+          autoclickEndTime: 0,
+          lastUpdate: Date.now()
+        });
+        stopAutoclicker();
+      }
+
+      // Синхронизируем прогресс "levelUp" с текущим score
+      const today = new Date().toDateString();
+      db.ref(`tasks/${uid}/levelUp`).once("value").then(snapshot => {
+        const taskData = snapshot.val() || { progress: 0, lastReset: today, completions: 0, completed: false };
+        if (taskData.lastReset === today && !(taskData.completed || taskData.completions >= 1)) {
+          // Если задание активно, обновляем прогресс на основе score
+          const task = dailyTasks.find(t => t.id === "levelUp");
+          taskData.progress = Math.min(score, task.goal); // Ограничиваем прогресс целью
+          db.ref(`tasks/${uid}/levelUp`).set(taskData).then(() => {
+            if (taskData.progress >= task.goal) {
+              checkTaskCompletion("levelUp");
+            }
+          });
+        }
+      });
+
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      renderAchievements();
+      updateClickPowerCostText();
+    }
+
+    if (user) {
+      db.ref("leaderboard/" + uid).update({
+        lastUpdate: Date.now()
+      });
+    }
+  }).catch(error => {
+    console.error("Ошибка загрузки данных игрока:", error);
+    showMessage("Не удалось загрузить данные.");
+  });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      achievements = data;
+      renderAchievements();
+    }
+  });
 }
+
+
+
+
+    
   
 
     function submitScore() {
