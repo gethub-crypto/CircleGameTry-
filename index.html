@@ -301,12 +301,12 @@
         goal: 100,
         reward: 50
       },
-    /*!  {
+     {
         id: "levelUp",
         description: "Collect 5000 tokens",
         goal: 5000,
         reward: "Click Power +1 for 5 min"
-      },!*/
+      },
       {
         id: "autoclickerMaster",
         description: "Activate autoclicker 5 times in a week",
@@ -945,7 +945,7 @@ function checkTaskCompletion(taskId) {
   });
 }
     
-    function clickToken() {
+  /*!  function clickToken() {
       score += clickPower;
       totalClicks++;
       updateTaskProgress("clickMarathon", 1);
@@ -954,8 +954,30 @@ function checkTaskCompletion(taskId) {
       updateCounterDisplay();
       updateProfilePanel();
       animateCounter();
-    }
+    }!*/
 
+
+
+function clickToken() {
+  const previousScore = score; // Сохраняем значение score до клика
+  score += clickPower;
+  totalClicks++;
+  
+  // Обновляем прогресс для "clickMarathon" (по кликам)
+  updateTaskProgress("clickMarathon", 1);
+  
+  // Для "levelUp" считаем разницу в score, чтобы учесть только новые токены
+  const tokensEarned = score - previousScore;
+  updateTaskProgress("levelUp", tokensEarned);
+  
+  checkAchievements();
+  updateCounterDisplay();
+  updateProfilePanel();
+  animateCounter();
+}
+
+
+    
     function animateCounter() {
       const counter = document.getElementById('counter');
       counter.classList.add('bounce');
