@@ -727,7 +727,7 @@ function claimHourlyBonus() {
       setTimeout(() => el.innerText = '', 3000);
     }
 
-    function renderTasks() {
+  /*!  function renderTasks() {
       if (isRenderingTasks) return;
       isRenderingTasks = true;
 
@@ -779,8 +779,67 @@ function claimHourlyBonus() {
         showMessage("Failed to load tasks.");
         isRenderingTasks = false;
       });
+    }!*/
+
+function renderTasks() {
+  if (isRenderingTasks) return;
+  isRenderingTasks = true;
+
+  const list = document.getElementById("tasksList");
+  list.innerHTML = "";
+
+  if (!user) {
+    console.error("User not logged in, cannot render tasks");
+    isRenderingTasks = false;
+    return;
+  }
+
+  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
+    const tasksData = snapshot.val() || {};
+    const today = new Date().toDateString();
+    const startOfWeek = new Date(Date.now());
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + (startOfWeek.getDay() === 0 ? -6 : 1));
+    const startOfWeekStr = startOfWeek.toDateString();
+
+    dailyTasks.forEach(task => {
+      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+      const resetKey = task.period === "weekly" ? startOfWeekStr : today;
+
+      // Сбрасываем прогресс, если период обновился
+      if (taskData.lastReset !== resetKey) {
+        console.log(`Resetting task ${task.id} in renderTasks for new period: ${resetKey}`);
+        taskData = { progress: 0, lastReset: resetKey, completions: 0, completed: false };
+        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
+      }
+
+      const div = document.createElement("div");
+      if (taskData.completed || taskData.completions >= 1) {
+        div.innerHTML = `${task.description}: Завершено на ${task.period === "weekly" ? "эту неделю" : "сегодня"}!`;
+      } else {
+        // Для "levelUp" показываем прогресс, но не больше цели
+        const displayProgress = Math.min(taskData.progress, task.goal);
+        div.innerHTML = `${task.description}: ${displayProgress}/${task.goal} (Награда: ${task.reward})`;
+      }
+      list.appendChild(div);
+    });
+
+    // Удаляем устаревшие задания
+    const validTaskIds = dailyTasks.map(task => task.id);
+    for (const taskId in tasksData) {
+      if (!validTaskIds.includes(taskId)) {
+        db.ref(`tasks/${user.uid}/${taskId}`).remove();
+      }
     }
 
+    isRenderingTasks = false;
+  }).catch(error => {
+    console.error("Error rendering tasks:", error);
+    showMessage("Не удалось загрузить задания.");
+    isRenderingTasks = false;
+  });
+}
+
+    
     function toggleTasks() {
       const panel = document.getElementById("tasksPanel");
       const btn = document.querySelector("button[onclick='toggleTasks()']");
