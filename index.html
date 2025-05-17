@@ -1177,7 +1177,7 @@ function checkTaskCompletion(taskId) {
 
 
       
-    function clickToken() {
+   /*! function clickToken() {
       score += clickPower;
       totalClicks++;
       updateTaskProgress("clickMarathon", 1);
@@ -1186,7 +1186,21 @@ function checkTaskCompletion(taskId) {
       updateCounterDisplay();
       updateProfilePanel();
       animateCounter();
-    }
+    }!*/
+
+    function clickToken() {
+  score += clickPower;
+  totalClicks++;
+  updateTaskProgress("clickMarathon", 1);
+  updateTaskProgress("collectTokens", clickPower); // Обновляем прогресс для collectTokens
+  checkAchievements();
+  updateCounterDisplay();
+  updateProfilePanel();
+  animateCounter();
+}
+
+
+    
 
     function animateCounter() {
       const counter = document.getElementById('counter');
