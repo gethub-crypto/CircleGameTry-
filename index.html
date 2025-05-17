@@ -2007,12 +2007,29 @@ function buyAutoclicker(minutes) {
       showMessage("Failed to load leaderboard.");
     });
 
-    setInterval(() => {
+   /*! setInterval(() => {
       if (user) {
         updateProfilePanel();
         if (score > 0) submitScore();
       }
-    }, 1000);
+    }, 1000);!*/
+
+// Периодическая проверка незавершённых заданий каждые 5 секунд
+setInterval(() => {
+  if (!user) return;
+  dailyTasks.forEach(task => {
+    db.ref(`tasks/${user.uid}/${task.id}`).once("value").then(snapshot => {
+      const taskData = snapshot.val();
+      if (taskData && !(taskData.completed || (taskData.completions || 0) >= 1) && taskData.progress >= task.goal) {
+        console.log(`Periodic check: Task ${task.id} should be completed (progress: ${taskData.progress}/${task.goal})`);
+        checkTaskCompletion(task.id);
+      }
+    }).catch(error => {
+      console.error(`Error in periodic task check for ${task.id}:`, error);
+    });
+  });
+}, 5000);
+    
 
     const motivationalPhrases = [
       "Click — earn tokens.", "Sign in — save your progress.", "Your crypto journey starts here.",
