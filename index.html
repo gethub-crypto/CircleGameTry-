@@ -606,9 +606,9 @@ function claimHourlyBonus() {
     }!*/
 
 
-    /*!!function boostClickPowerTemporarily(amount, duration) {
+    function boostClickPowerTemporarily(amount, duration) {
   // Проверяем, активен ли буст
-  if (tempBoostTimeout && Date.now() < (autoclickEndTime || 0)) {
+  if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
     showMessage("Буст уже активен!");
     return; // Игнорируем новый вызов, если буст активен
   }
@@ -658,10 +658,10 @@ function claimHourlyBonus() {
     }
     tempBoostTimeout = null;
   }, duration);
-}!!*/
+}
 
 
-    function boostClickPowerTemporarily(amount, duration) {
+  /*!!!  function boostClickPowerTemporarily(amount, duration) {
   // Проверяем, активен ли буст
   if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
     showMessage("Буст уже активен!");
@@ -712,7 +712,7 @@ function claimHourlyBonus() {
     tempBoostTimeout = null;
     tempBoostEndTime = 0;
   }, duration);
-}
+}!!!*/
 
 
     function toggleAchievements() {
