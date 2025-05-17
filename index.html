@@ -301,12 +301,12 @@
         goal: 100,
         reward: 50
       },
-     {
+    /*!  {
         id: "levelUp",
         description: "Collect 5000 tokens",
         goal: 5000,
         reward: "Click Power +1 for 5 min"
-      },
+      },!*/
       {
         id: "autoclickerMaster",
         description: "Activate autoclicker 5 times in a week",
@@ -727,7 +727,7 @@ function claimHourlyBonus() {
       setTimeout(() => el.innerText = '', 3000);
     }
 
-  /*!  function renderTasks() {
+    function renderTasks() {
       if (isRenderingTasks) return;
       isRenderingTasks = true;
 
@@ -779,67 +779,8 @@ function claimHourlyBonus() {
         showMessage("Failed to load tasks.");
         isRenderingTasks = false;
       });
-    }!*/
-
-function renderTasks() {
-  if (isRenderingTasks) return;
-  isRenderingTasks = true;
-
-  const list = document.getElementById("tasksList");
-  list.innerHTML = "";
-
-  if (!user) {
-    console.error("User not logged in, cannot render tasks");
-    isRenderingTasks = false;
-    return;
-  }
-
-  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
-    const tasksData = snapshot.val() || {};
-    const today = new Date().toDateString();
-    const startOfWeek = new Date(Date.now());
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + (startOfWeek.getDay() === 0 ? -6 : 1));
-    const startOfWeekStr = startOfWeek.toDateString();
-
-    dailyTasks.forEach(task => {
-      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
-      const resetKey = task.period === "weekly" ? startOfWeekStr : today;
-
-      // Сбрасываем прогресс, если период обновился
-      if (taskData.lastReset !== resetKey) {
-        console.log(`Resetting task ${task.id} in renderTasks for new period: ${resetKey}`);
-        taskData = { progress: 0, lastReset: resetKey, completions: 0, completed: false };
-        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
-      }
-
-      const div = document.createElement("div");
-      if (taskData.completed || taskData.completions >= 1) {
-        div.innerHTML = `${task.description}: Завершено на ${task.period === "weekly" ? "эту неделю" : "сегодня"}!`;
-      } else {
-        // Для "levelUp" показываем прогресс, но не больше цели
-        const displayProgress = Math.min(taskData.progress, task.goal);
-        div.innerHTML = `${task.description}: ${displayProgress}/${task.goal} (Награда: ${task.reward})`;
-      }
-      list.appendChild(div);
-    });
-
-    // Удаляем устаревшие задания
-    const validTaskIds = dailyTasks.map(task => task.id);
-    for (const taskId in tasksData) {
-      if (!validTaskIds.includes(taskId)) {
-        db.ref(`tasks/${user.uid}/${taskId}`).remove();
-      }
     }
 
-    isRenderingTasks = false;
-  }).catch(error => {
-    console.error("Error rendering tasks:", error);
-    showMessage("Не удалось загрузить задания.");
-    isRenderingTasks = false;
-  });
-}
-
-    
     function toggleTasks() {
       const panel = document.getElementById("tasksPanel");
       const btn = document.querySelector("button[onclick='toggleTasks()']");
@@ -854,7 +795,7 @@ function renderTasks() {
       }
     }
 
-  /*!  function updateTaskProgress(taskId, increment) {
+    function updateTaskProgress(taskId, increment) {
       if (!user) return;
       const now = new Date();
       const today = now.toDateString();
@@ -886,61 +827,7 @@ function renderTasks() {
           renderTasks();
         });
       });
-    }!*/
-
-
-function updateTaskProgress(taskId, increment) {
-  if (!user) {
-    console.error("User not logged in, cannot update task progress");
-    return;
-  }
-  
-  const now = new Date();
-  const today = now.toDateString();
-  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
-  
-  const task = dailyTasks.find(t => t.id === taskId);
-  const resetKey = task?.period === "weekly" ? startOfWeek : today;
-
-  db.ref(`tasks/${user.uid}/${taskId}`).transaction(taskData => {
-    taskData = taskData || { progress: 0, lastReset: resetKey, completions: 0, completed: false };
-    
-    // Проверяем, нужно ли сбросить прогресс
-    if (taskData.lastReset !== resetKey) {
-      console.log(`Resetting task ${taskId} progress for new period: ${resetKey}`);
-      taskData.progress = 0;
-      taskData.lastReset = resetKey;
-      taskData.completions = 0;
-      taskData.completed = false;
     }
-    
-    // Если задание уже завершено, не увеличиваем прогресс
-    if (taskData.completed || taskData.completions >= 1) {
-      console.log(`Task ${taskId} already completed for this period`);
-      return taskData;
-    }
-    
-    taskData.progress = (taskData.progress || 0) + increment;
-    console.log(`Updated progress for task ${taskId}: ${taskData.progress}/${task.goal}`);
-    return taskData;
-  }).then(() => {
-    // После успешного обновления прогресса сразу проверяем завершение
-    db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-      const taskData = snapshot.val();
-      if (taskData && !(taskData.completed || taskData.completions >= 1)) {
-        checkTaskCompletion(taskId);
-      }
-      renderTasks();
-    }).catch(error => {
-      console.error(`Error fetching task data for ${taskId} after update:`, error);
-      showMessage("Ошибка при обновлении задания.");
-    });
-  }).catch(error => {
-    console.error(`Error updating task progress for ${taskId}:`, error);
-    showMessage("Не удалось обновить прогресс задания.");
-  });
-}
-  
 
  /*!   function checkTaskCompletion(taskId) {
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
@@ -1019,7 +906,7 @@ function checkTaskCompletion(taskId) {
   });
 }!*/
 
-/*!!function checkTaskCompletion(taskId) {
+function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -1056,78 +943,9 @@ function checkTaskCompletion(taskId) {
       renderTasks();
     }
   });
-}!!*/
-
-function checkTaskCompletion(taskId) {
-  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-    const taskData = snapshot.val();
-    const task = dailyTasks.find(t => t.id === taskId);
-    
-    if (!taskData || !task) {
-      console.error(`Task ${taskId} not found or invalid task data`);
-      return;
-    }
-    
-    console.log(`Checking task ${taskId}: Progress ${taskData.progress}/${task.goal}, Completed: ${taskData.completed}, Completions: ${taskData.completions}`);
-    
-    if (taskData.completed || (taskData.completions || 0) >= 1) {
-      console.log(`Task ${taskId} already completed or max completions reached`);
-      return;
-    }
-
-    if (taskData.progress >= task.goal) {
-      console.log(`Task ${taskId} goal reached! Completing task...`);
-      const completions = (taskData.completions || 0) + 1;
-      
-      if (completions <= 1) {
-        if (task.id === "clickMarathon") {
-          score += task.reward;
-          showMessage(`Задание "${task.description}" выполнено! +${task.reward} токенов`);
-          updateCounterDisplay();
-          submitScore();
-        } else if (task.id === "levelUp") {
-          // Для задания "levelUp" сбрасываем прогресс токенов за день
-          const dailyTokens = taskData.progress;
-          if (dailyTokens >= task.goal) {
-            boostClickPowerTemporarily(1, 300000);
-            showMessage(`Задание "${task.description}" выполнено! ${task.reward}`);
-            updateClickPowerBar();
-            submitScore();
-          } else {
-            console.warn(`Task ${taskId} progress (${dailyTokens}) does not meet goal (${task.goal})`);
-            return;
-          }
-        } else if (task.id === "autoclickerMaster") {
-          showMessage(`Задание "${task.description}" выполнено! ${task.reward}`);
-          startAutoclicker(300000, true);
-          submitScore();
-        }
-        
-        // Сбрасываем прогресс и помечаем задание как завершённое
-        db.ref(`tasks/${user.uid}/${taskId}`).set({
-          progress: 0,
-          lastReset: taskData.lastReset,
-          completions: completions,
-          completed: true
-        }).then(() => {
-          console.log(`Task ${taskId} successfully marked as completed`);
-          renderTasks();
-        }).catch(error => {
-          console.error(`Error marking task ${taskId} as completed:`, error);
-          showMessage("Не удалось завершить задание.");
-        });
-      }
-    } else {
-      console.log(`Task ${taskId} not yet completed: ${taskData.progress}/${task.goal}`);
-    }
-  }).catch(error => {
-    console.error(`Error checking task completion for ${taskId}:`, error);
-    showMessage("Ошибка при проверке задания.");
-  });
 }
     
-    
-  /*!  function clickToken() {
+    function clickToken() {
       score += clickPower;
       totalClicks++;
       updateTaskProgress("clickMarathon", 1);
@@ -1136,30 +954,8 @@ function checkTaskCompletion(taskId) {
       updateCounterDisplay();
       updateProfilePanel();
       animateCounter();
-    }!*/
+    }
 
-
-
-function clickToken() {
-  const previousScore = score; // Сохраняем значение score до клика
-  score += clickPower;
-  totalClicks++;
-  
-  // Обновляем прогресс для "clickMarathon" (по кликам)
-  updateTaskProgress("clickMarathon", 1);
-  
-  // Для "levelUp" считаем разницу в score, чтобы учесть только новые токены
-  const tokensEarned = score - previousScore;
-  updateTaskProgress("levelUp", tokensEarned);
-  
-  checkAchievements();
-  updateCounterDisplay();
-  updateProfilePanel();
-  animateCounter();
-}
-
-
-    
     function animateCounter() {
       const counter = document.getElementById('counter');
       counter.classList.add('bounce');
@@ -1606,131 +1402,6 @@ function loadPlayerData(uid) {
     }
   });
 }
-
-
-
-/*!!!!function loadPlayerData(uid) {
-  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      score = data.score || 0;
-      clickPower = data.clickPower || 1;
-      autoclickActive = data.autoclickActive || false;
-      autoclickEndTime = data.autoclickEndTime || 0;
-      const lastUpdate = data.lastUpdate || 0;
-
-      // Обрабатываем временный буст
-      const tempBoostActive = data.tempBoostActive || false;
-      const tempBoostEndTime = data.tempBoostEndTime || 0;
-      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
-      const tempBoostAmount = data.tempBoostAmount || 0;
-
-      if (tempBoostActive && tempBoostEndTime > Date.now()) {
-        originalClickPower = tempBoostOriginalClickPower;
-        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
-        const remainingDuration = tempBoostEndTime - Date.now();
-
-        if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
-        tempBoostTimeout = setTimeout(() => {
-          clickPower = originalClickPower;
-          showMessage(`Буст закончился: Сила клика восстановлена`);
-          updateClickPowerBar();
-          updateProfilePanel();
-          submitScore();
-
-          db.ref("leaderboard/" + uid).update({
-            tempBoostActive: false,
-            tempBoostEndTime: 0,
-            tempBoostOriginalClickPower: 0,
-            tempBoostAmount: 0,
-            lastUpdate: Date.now()
-          }).catch(error => {
-            console.error("Ошибка очистки состояния буста:", error);
-          });
-          tempBoostTimeout = null;
-        }, remainingDuration);
-      } else if (tempBoostActive) {
-        clickPower = tempBoostOriginalClickPower;
-        db.ref("leaderboard/" + uid).update({
-          tempBoostActive: false,
-          tempBoostEndTime: 0,
-          tempBoostOriginalClickPower: 0,
-          tempBoostAmount: 0,
-          clickPower: clickPower,
-          lastUpdate: Date.now()
-        });
-      }
-
-      // Обрабатываем автокликер
-      if (autoclickActive && autoclickEndTime > Date.now()) {
-        const elapsedTime = Date.now() - lastUpdate;
-        const secondsPassed = Math.floor(elapsedTime / 1000);
-        const tokensEarned = secondsPassed * clickPower;
-        if (tokensEarned > 0) {
-          score += tokensEarned;
-          showMessage(`Автокликер заработал ${tokensEarned} токенов, пока вас не было!`);
-          // Обновляем прогресс задания "levelUp" токенами от автокликера
-          updateTaskProgress("levelUp", tokensEarned);
-        }
-        const remainingTime = autoclickEndTime - Date.now();
-        startAutoclicker(remainingTime, false);
-      } else if (autoclickActive) {
-        autoclickActive = false;
-        autoclickEndTime = 0;
-        db.ref("leaderboard/" + uid).update({
-          autoclickActive: false,
-          autoclickEndTime: 0,
-          lastUpdate: Date.now()
-        });
-        stopAutoclicker();
-      }
-
-      // Синхронизируем прогресс "levelUp" с текущим score
-      const today = new Date().toDateString();
-      db.ref(`tasks/${uid}/levelUp`).once("value").then(snapshot => {
-        const taskData = snapshot.val() || { progress: 0, lastReset: today, completions: 0, completed: false };
-        if (taskData.lastReset === today && !(taskData.completed || taskData.completions >= 1)) {
-          // Если задание активно, обновляем прогресс на основе score
-          const task = dailyTasks.find(t => t.id === "levelUp");
-          taskData.progress = Math.min(score, task.goal); // Ограничиваем прогресс целью
-          db.ref(`tasks/${uid}/levelUp`).set(taskData).then(() => {
-            if (taskData.progress >= task.goal) {
-              checkTaskCompletion("levelUp");
-            }
-          });
-        }
-      });
-
-      updateCounterDisplay();
-      updateClickPowerBar();
-      updateProfilePanel();
-      renderAchievements();
-      updateClickPowerCostText();
-    }
-
-    if (user) {
-      db.ref("leaderboard/" + uid).update({
-        lastUpdate: Date.now()
-      });
-    }
-  }).catch(error => {
-    console.error("Ошибка загрузки данных игрока:", error);
-    showMessage("Не удалось загрузить данные.");
-  });
-
-  db.ref("achievements/" + uid).once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      achievements = data;
-      renderAchievements();
-    }
-  });
-}!!!!*/
-
-
-
-
-    
   
 
     function submitScore() {
@@ -2007,29 +1678,12 @@ function buyAutoclicker(minutes) {
       showMessage("Failed to load leaderboard.");
     });
 
-   /*! setInterval(() => {
+    setInterval(() => {
       if (user) {
         updateProfilePanel();
         if (score > 0) submitScore();
       }
-    }, 1000);!*/
-
-// Периодическая проверка незавершённых заданий каждые 5 секунд
-setInterval(() => {
-  if (!user) return;
-  dailyTasks.forEach(task => {
-    db.ref(`tasks/${user.uid}/${task.id}`).once("value").then(snapshot => {
-      const taskData = snapshot.val();
-      if (taskData && !(taskData.completed || (taskData.completions || 0) >= 1) && taskData.progress >= task.goal) {
-        console.log(`Periodic check: Task ${task.id} should be completed (progress: ${taskData.progress}/${task.goal})`);
-        checkTaskCompletion(task.id);
-      }
-    }).catch(error => {
-      console.error(`Error in periodic task check for ${task.id}:`, error);
-    });
-  });
-}, 5000);
-    
+    }, 1000);
 
     const motivationalPhrases = [
       "Click — earn tokens.", "Sign in — save your progress.", "Your crypto journey starts here.",
