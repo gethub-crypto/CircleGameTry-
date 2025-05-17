@@ -998,6 +998,75 @@ function checkTaskCompletion(taskId) {
     }
   });
 }
+
+function checkTaskCompletion(taskId) {
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+    
+    if (!taskData || !task) {
+      console.error(`Task ${taskId} not found or invalid task data`);
+      return;
+    }
+    
+    console.log(`Checking task ${taskId}: Progress ${taskData.progress}/${task.goal}, Completed: ${taskData.completed}, Completions: ${taskData.completions}`);
+    
+    if (taskData.completed || (taskData.completions || 0) >= 1) {
+      console.log(`Task ${taskId} already completed or max completions reached`);
+      return;
+    }
+
+    if (taskData.progress >= task.goal) {
+      console.log(`Task ${taskId} goal reached! Completing task...`);
+      const completions = (taskData.completions || 0) + 1;
+      
+      if (completions <= 1) {
+        if (task.id === "clickMarathon") {
+          score += task.reward;
+          showMessage(`Задание "${task.description}" выполнено! +${task.reward} токенов`);
+          updateCounterDisplay();
+          submitScore();
+        } else if (task.id === "levelUp") {
+          // Для задания "levelUp" сбрасываем прогресс токенов за день
+          const dailyTokens = taskData.progress;
+          if (dailyTokens >= task.goal) {
+            boostClickPowerTemporarily(1, 300000);
+            showMessage(`Задание "${task.description}" выполнено! ${task.reward}`);
+            updateClickPowerBar();
+            submitScore();
+          } else {
+            console.warn(`Task ${taskId} progress (${dailyTokens}) does not meet goal (${task.goal})`);
+            return;
+          }
+        } else if (task.id === "autoclickerMaster") {
+          showMessage(`Задание "${task.description}" выполнено! ${task.reward}`);
+          startAutoclicker(300000, true);
+          submitScore();
+        }
+        
+        // Сбрасываем прогресс и помечаем задание как завершённое
+        db.ref(`tasks/${user.uid}/${taskId}`).set({
+          progress: 0,
+          lastReset: taskData.lastReset,
+          completions: completions,
+          completed: true
+        }).then(() => {
+          console.log(`Task ${taskId} successfully marked as completed`);
+          renderTasks();
+        }).catch(error => {
+          console.error(`Error marking task ${taskId} as completed:`, error);
+          showMessage("Не удалось завершить задание.");
+        });
+      }
+    } else {
+      console.log(`Task ${taskId} not yet completed: ${taskData.progress}/${task.goal}`);
+    }
+  }).catch(error => {
+    console.error(`Error checking task completion for ${taskId}:`, error);
+    showMessage("Ошибка при проверке задания.");
+  });
+}
+    
     
   /*!  function clickToken() {
       score += clickPower;
