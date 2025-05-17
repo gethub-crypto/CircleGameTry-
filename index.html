@@ -960,7 +960,7 @@ function checkTaskCompletion(taskId) {
   });
 }!*/
 
-function checkTaskCompletion(taskId) {
+/*!!function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -997,7 +997,7 @@ function checkTaskCompletion(taskId) {
       renderTasks();
     }
   });
-}
+}!!*/
 
 function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
