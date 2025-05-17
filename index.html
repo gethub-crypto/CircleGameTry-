@@ -1502,7 +1502,7 @@ function clickToken() {
   });
 }!!*/
 
-/*!!!function loadPlayerData(uid) {
+function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -1605,11 +1605,11 @@ function clickToken() {
       renderAchievements();
     }
   });
-}!!!*/
+}
 
 
 
-function loadPlayerData(uid) {
+/*!!!!function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -1725,7 +1725,7 @@ function loadPlayerData(uid) {
       renderAchievements();
     }
   });
-}
+}!!!!*/
 
 
 
