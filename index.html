@@ -1663,6 +1663,7 @@ function loadPlayerData(uid) {
         if (tokensEarned > 0) {
           score += tokensEarned;
           showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
+          updateTaskProgress("collectTokens", tokensEarned); // Добавляем прогресс для collectTokens
         }
         const remainingTime = autoclickEndTime - Date.now();
         startAutoclicker(remainingTime, false); // Передаём extendTime = false для восстановления
