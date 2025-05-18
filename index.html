@@ -1104,7 +1104,7 @@ function claimHourlyBonus() {
   });
 }!!*/
     
-/*!!!function renderTasks() {
+function renderTasks() {
   if (isRenderingTasks) return;
   isRenderingTasks = true;
 
@@ -1174,10 +1174,10 @@ function claimHourlyBonus() {
     showMessage("Failed to load tasks.");
     isRenderingTasks = false;
   });
-}!!!*/
+}
 
 
-   function renderTasks() {
+  /*!!!! function renderTasks() {
   if (isRenderingTasks) return;
   isRenderingTasks = true;
 
@@ -1244,9 +1244,9 @@ function claimHourlyBonus() {
     showMessage("Failed to load tasks.");
     isRenderingTasks = false;
   });
-} 
+} !!!!*/
 
-/*!function completeTwitterTask(taskId) {
+!function completeTwitterTask(taskId) {
   if (!user) {
     showMessage("Please sign in to complete tasks.");
     return;
@@ -1282,10 +1282,33 @@ function claimHourlyBonus() {
     console.error("Error fetching task data:", error);
     showMessage("Failed to fetch task data.");
   });
-}!*/
+}
+
+   function openTwitterLink(url) {
+  console.log("Attempting to open Twitter link: " + url);
+  try {
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    if (newWindow) {
+      console.log("New window opened successfully.");
+      newWindow.focus();
+    } else {
+      console.error("Failed to open new window. Possible popup blocker.");
+      showMessage("Unable to open X link. Please disable popup blocker or visit https://x.com/CircleGameTry manually.");
+      setTimeout(() => {
+        window.location.href = url;
+      }, 1000);
+    }
+  } catch (error) {
+    console.error("Error opening Twitter link: ", error);
+    showMessage("Error opening X link. Redirecting to https://x.com/CircleGameTry...");
+    setTimeout(() => {
+      window.location.href = url;
+    }, 1000);
+  }
+}  
 
     
-function completeTwitterTask(taskId, url) {
+/*!!function completeTwitterTask(taskId, url) {
   if (!user) {
     showMessage("Please sign in to complete tasks.");
     return;
@@ -1335,7 +1358,7 @@ function completeTwitterTask(taskId, url) {
     // Открываем ссылку даже при ошибке с данными
     window.open(url, '_blank', 'noopener,noreferrer')?.focus();
   });
-}
+}!!*/
 
 
   
