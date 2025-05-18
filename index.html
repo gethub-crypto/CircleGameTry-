@@ -1152,6 +1152,44 @@ function renderTasks() {
   });
 }
 
+function completeTwitterTask(taskId) {
+  if (!user) {
+    showMessage("Please sign in to complete tasks.");
+    return;
+  }
+
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+
+    if (taskData && (taskData.completed || taskData.completions >= 1)) {
+      showMessage("Task already completed for today!");
+      return;
+    }
+
+    // Отмечаем задачу как выполненную
+    const completions = (taskData.completions || 0) + 1;
+    db.ref(`tasks/${user.uid}/${taskId}`).set({
+      progress: task.goal,
+      lastReset: taskData.lastReset || new Date().toDateString(),
+      completions: completions,
+      completed: true
+    }).then(() => {
+      score += task.reward;
+      showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
+      updateCounterDisplay();
+      submitScore();
+      renderTasks();
+    }).catch(error => {
+      console.error("Error completing task:", error);
+      showMessage("Failed to complete task.");
+    });
+  }).catch(error => {
+    console.error("Error fetching task data:", error);
+    showMessage("Failed to fetch task data.");
+  });
+}
+    
 
     
 
