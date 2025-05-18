@@ -1127,7 +1127,9 @@ function renderTasks() {
           div.innerHTML = `
             ${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} tokens)
             <br>
-            <a href="${task.link}" target="_blank" style="color: #00ffa6; text-decoration: none;">Go to X</a>
+           
+
+          <a href="${task.link}" target="_blank" rel="noopener noreferrer" style="color: #00ffa6; text-decoration: none; cursor: pointer;" onclick="openTwitterLink('${task.link}'); return false;">Go to X</a>
             <button class="click-button" onclick="completeTwitterTask('${task.id}')" style="margin-left: 10px;">Claim</button>
           `;
         } else {
