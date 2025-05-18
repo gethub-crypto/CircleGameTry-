@@ -2159,6 +2159,37 @@ function buyAutoclicker(minutes) {
         motiveElement.style.opacity = 1;
       }, 500);
     }, 3000);
+
+// Внутри вашего <script> тега
+window.onload = function() {
+    const referrer = document.referrer;
+    if (referrer) {
+        console.log("Пользователь перешёл с: " + referrer);
+        // Можно отобразить реферер в интерфейсе
+     //   showMessage("Перешёл с: " + referrer);
+        // Или сохранить в Firebase для аналитики
+        saveReferrer(referrer);
+    } else {
+        console.log("Реферер отсутствует (прямой вход или скрыт)");
+      //  showMessage("Реферер отсутствует");
+    }
+};
+
+// Функция для сохранения реферера в Firebase
+function saveReferrer(referrer) {
+    if (user) {
+        const now = new Date().toISOString();
+        db.ref("referrers/" + user.uid).push({
+            referrer: referrer,
+            timestamp: now
+        }).then(() => {
+            console.log("Реферер сохранён в Firebase");
+        }).catch(error => {
+            console.error("Ошибка сохранения реферера:", error);
+        });
+    }
+}
+    
   </script>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G76GTQQKG0"></script>
