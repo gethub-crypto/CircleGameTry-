@@ -1104,7 +1104,7 @@ function claimHourlyBonus() {
   });
 }!!*/
     
-function renderTasks() {
+/*!!!function renderTasks() {
   if (isRenderingTasks) return;
   isRenderingTasks = true;
 
@@ -1174,7 +1174,77 @@ function renderTasks() {
     showMessage("Failed to load tasks.");
     isRenderingTasks = false;
   });
-}
+}!!!*/
+
+
+   function renderTasks() {
+  if (isRenderingTasks) return;
+  isRenderingTasks = true;
+
+  const list = document.getElementById("tasksList");
+  list.innerHTML = "";
+
+  if (!user) {
+    isRenderingTasks = false;
+    return;
+  }
+
+  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
+    const tasksData = snapshot.val() || {};
+    const today = new Date().toDateString();
+    const startOfWeek = new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + (new Date().getDay() === 0 ? -6 : 1))).toDateString();
+
+    dailyTasks.forEach(task => {
+      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+
+      const resetKey = task.period === "weekly" ? startOfWeek : today;
+      if (taskData.lastReset !== resetKey) {
+        taskData = { 
+          progress: 0, 
+          lastReset: resetKey, 
+          completions: 0, 
+          completed: false,
+          ...(task.id === "collectTokens" && {
+            goal: task.goalOptions[Math.floor(Math.random() * task.goalOptions.length)],
+            reward: task.rewards[Math.floor(Math.random() * task.rewards.length)]
+          })
+        };
+        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
+      }
+
+      const div = document.createElement("div");
+      if (taskData.completed || taskData.completions >= 1) {
+        div.innerHTML = `${task.description}: Completed for ${task.period === "weekly" ? "this week" : "today"}!`;
+      } else {
+        if (task.id === "collectTokens") {
+          div.innerHTML = `${task.description}: ${taskData.progress}/${taskData.goal} (Reward: ${taskData.reward} tokens)`;
+        } else if (task.id === "subscribeTwitter") {
+          div.innerHTML = `
+            ${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} tokens)
+            <br>
+            <a href="#" onclick="completeTwitterTask('${task.id}', '${task.link}'); return false;" style="background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; padding: 8px 15px; border-radius: 8px; text-decoration: none; display: inline-block; margin: 5px; font-weight: bold; cursor: pointer;">Go to X</a>
+          `;
+        } else {
+          div.innerHTML = `${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward})`;
+        }
+      }
+      list.appendChild(div);
+    });
+
+    const validTaskIds = dailyTasks.map(task => task.id);
+    for (const taskId in tasksData) {
+      if (!validTaskIds.includes(taskId)) {
+        db.ref(`tasks/${user.uid}/${taskId}`).remove();
+      }
+    }
+
+    isRenderingTasks = false;
+  }).catch(error => {
+    console.error("Error rendering tasks:", error);
+    showMessage("Failed to load tasks.");
+    isRenderingTasks = false;
+  });
+} 
 
 function completeTwitterTask(taskId) {
   if (!user) {
@@ -1215,21 +1285,7 @@ function completeTwitterTask(taskId) {
 }
 
 
-  function openTwitterLink(url) {
-  console.log("Attempting to open Twitter link: " + url);
-  try {
-    const newWindow = window.open(url, '_blank');
-    if (newWindow) {
-      console.log("New window opened successfully.");
-    } else {
-      console.error("Failed to open new window. Possible popup blocker.");
-      showMessage("Failed to open X link. Please disable popup blocker or click the link manually.");
-    }
-  } catch (error) {
-    console.error("Error opening Twitter link: ", error);
-    showMessage("Error opening X link. Please try again or open manually.");
-  }
-}                   
+  
 
     
 
