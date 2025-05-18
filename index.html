@@ -370,6 +370,51 @@
     let miniGameClicks = 0;
     let miniGameTimer = null;
 
+function startMiniGame() {
+  if (score < 1000) {
+    showMessage("You need 1000 tokens to start the mini-game!");
+    return;
+  }
+  miniGameActive = true;
+  miniGameClicks = 0;
+  document.getElementById("miniGamePanel").style.display = "block";
+  document.getElementById("miniGameClicks").innerText = miniGameClicks;
+  let timeLeft = 10;
+  document.getElementById("miniGameTimer").innerText = timeLeft;
+  miniGameTimer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("miniGameTimer").innerText = timeLeft;
+    if (timeLeft <= 0) {
+      endMiniGame();
+    }
+  }, 1000);
+}
+
+function miniGameClick() {
+  if (miniGameActive) {
+    miniGameClicks++;
+    document.getElementById("miniGameClicks").innerText = miniGameClicks;
+    if (miniGameClicks >= 50) {
+      endMiniGame(true);
+    }
+  }
+}
+
+function endMiniGame(success = false) {
+  clearInterval(miniGameTimer);
+  miniGameActive = false;
+  document.getElementById("miniGamePanel").style.display = "none";
+  if (success) {
+    score += 500;
+    showMessage("Mini-game completed! +500 tokens!");
+    submitScore();
+  } else {
+    showMessage("Mini-game failed. Try again!");
+  }
+  updateCounterDisplay();
+  updateProfilePanel();
+}
+
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
