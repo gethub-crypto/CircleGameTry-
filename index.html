@@ -366,6 +366,10 @@
     let isRenderingTasks = false;
     let bonusTimerInterval = null;
 
+    let miniGameActive = false;
+    let miniGameClicks = 0;
+    let miniGameTimer = null;
+
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
