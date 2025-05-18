@@ -254,6 +254,14 @@
       <div id="tasksList"></div>
     </div>
 
+    <div id="miniGamePanel" style="display: none; margin-top: 20px;">
+  <h2>Mini-Game: Clicker Race!</h2>
+  <p>Click 50 times in 10 seconds!</p>
+  <p>Time Left: <span id="miniGameTimer">10</span> sec</p>
+  <p>Clicks: <span id="miniGameClicks">0</span>/50</p>
+  <button class="click-button" onclick="miniGameClick()">Click!</button>
+</div>
+
     <h2>Leaderboard</h2>
     <table>
       <thead><tr><th>#</th><th>Player</th><th>Tokens</th></tr></thead>
