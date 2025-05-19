@@ -2898,7 +2898,7 @@ function saveReferrer(referrer) {
   }
 };!*/
 
-window.onload = function() {
+/*!!window.onload = function() {
   const urlParams = new URLSearchParams(window.location.search);
   const referrerUid = urlParams.get('ref');
   if (referrerUid) {
@@ -2913,7 +2913,40 @@ window.onload = function() {
   } else {
     console.log('No referrer detected');
   }
+};!!*/ //chrome 
+
+
+window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  let referrerUid = urlParams.get('ref');
+
+  // Логируем начальное состояние URL
+  console.log('Initial URL params:', window.location.search);
+
+  // Если referrerUid есть, обрабатываем его
+  if (referrerUid) {
+    // Очищаем параметр ref из URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+    console.log('URL cleaned, new URL:', window.location.href);
+
+    // Проверяем, что URL действительно очищен
+    const newUrlParams = new URLSearchParams(window.location.search);
+    if (newUrlParams.get('ref')) {
+      console.error('Failed to clean ref from URL in Firefox');
+    }
+
+    // Обрабатываем реферера после авторизации
+    auth.onAuthStateChanged(currentUser => {
+      if (currentUser) {
+        user = currentUser;
+        saveReferrer(referrerUid);
+      }
+    });
+  } else {
+    console.log('No referrer detected');
+  }
 };
+    
     
 
 /*!function saveReferrer(referrerUid) {
