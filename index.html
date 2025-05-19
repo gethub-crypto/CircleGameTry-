@@ -1350,7 +1350,7 @@ function renderTasks() {
   });
 } !!!!*/
 
-!function completeTwitterTask(taskId) {
+function completeTwitterTask(taskId) {
   if (!user) {
     showMessage("Please sign in to complete tasks.");
     return;
@@ -1783,6 +1783,10 @@ function checkTaskCompletion(taskId) {
     }!*/
 
     function clickToken() {
+
+      if (isAnimating) return; // Пропускаем, если анимация уже идёт
+        isAnimating = true;
+      
   score += clickPower;
   totalClicks++;
   updateTaskProgress("clickMarathon", 1);
@@ -1795,7 +1799,12 @@ function checkTaskCompletion(taskId) {
 // Анимация частиц (опционально, требует библиотеки, например, particles.js)
   const button = document.getElementById("mainClickButton");
   button.classList.add("pulse");
-  setTimeout(() => button.classList.remove("pulse"), 200);
+ // setTimeout(() => button.classList.remove("pulse"), 200);
+setTimeout(() => {
+    button.classList.remove("pulse");
+    isAnimating = false; // Разрешаем следующую анимацию
+  }, 200);
+      
       
 }
 
