@@ -1039,6 +1039,14 @@ function claimHourlyBonus() {
       setTimeout(() => el.innerText = '', 3000);
     }
 
+function getWeekNumber() {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const pastDaysOfYear = (now - startOfYear) / 86400000;
+  return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+}
+
+  
     
     
 /*!function renderTasks() {
