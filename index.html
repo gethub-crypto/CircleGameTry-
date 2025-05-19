@@ -2419,7 +2419,7 @@ function loadPlayerData(uid) {
 }
 
 
-    function submitScore() {
+   /*!!! function submitScore() {
   if (!user) return;
   const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
   db.ref("leaderboard/" + user.uid).set({
@@ -2469,7 +2469,60 @@ function loadPlayerData(uid) {
     console.error('Error saving score:', error);
     showMessage('Failed to save progress.');
   });
+}!!!*/
+
+
+function submitScore() {
+  if (!user) return;
+  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
+  db.ref("leaderboard/" + user.uid).set({
+    id: user.uid,
+    name: userName,
+    score: score,
+    clickPower: clickPower,
+    autoclickActive: autoclickActive,
+    autoclickEndTime: autoclickEndTime,
+    tempBoostActive: !!tempBoostTimeout,
+    tempBoostEndTime: tempBoostTimeout ? autoclickEndTime : 0,
+    tempBoostOriginalClickPower: originalClickPower || clickPower,
+    tempBoostAmount: clickPower - (originalClickPower || clickPower),
+    referrer_uid: user.referrer_uid || null,
+    referral_bonus_claimed: user.referral_bonus_claimed || false,
+    lastUpdate: Date.now()
+  }).then(() => {
+    // Проверяем, есть ли реферер
+    if (user.referrer_uid) {
+      db.ref(`referrals/${user.referrer_uid}/${user.uid}`).update({
+        tokens_earned: score,
+        lastUpdate: Date.now()
+      }).then(() => {
+        // Проверяем, достиг ли пользователь 1000 токенов
+        if (score >= 1000) {
+          db.ref(`referrals/${user.referrer_uid}/${user.uid}`).once('value').then(ref清空Snapshot => {
+            const refData = refSnapshot.val();
+            if (refData && !refData.reward_claimed) {
+              // Начисляем 1000 токенов приглашающему
+              db.ref(`leaderboard/${user.referrer_uid}/score`).transaction(currentScore => {
+                return (currentScore || 0) + 1000;
+              }).then(() => {
+                showMessage('Referral reward: +1000 tokens!');
+                // Отмечаем награду как полученную
+                db.ref(`referrals/${user.referrer_uid}/${user.uid}`).update({
+                  reward_claimed: true
+                });
+              });
+            }
+          });
+        }
+      });
+    }
+  }).catch(error => {
+    console.error('Error saving score:', error);
+    showMessage('Failed to save progress.');
+  });
 }
+
+      
   
 
    /*! function submitScore() {
