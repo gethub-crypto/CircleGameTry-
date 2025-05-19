@@ -603,6 +603,21 @@ function endMiniGame(success = false) {
   updateProfilePanel();
 }
 
+function generateReferralLink() {
+  if (!user) return '';
+  const baseUrl = window.location.origin; // Например, https://your-game-domain.com
+  return `${baseUrl}/?ref=${user.uid}`;
+}
+
+function copyReferralLink() {
+  const referralLink = document.getElementById('referralLink');
+  referralLink.select();
+  document.execCommand('copy');
+  showMessage('Referral link copied!');
+}
+
+    
+
     function updateProfilePanel() {
       document.getElementById("profileClickPower").innerText = Math.min(clickPower, 8);
 
