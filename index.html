@@ -2680,6 +2680,43 @@ function saveReferrer(referrer) {
         });
     }
 }
+
+window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const referrerUid = urlParams.get('ref');
+  if (referrerUid) {
+    console.log(`Referral detected: ${referrerUid}`);
+    saveReferrer(referrerUid);
+  } else {
+    console.log('No referrer detected');
+  }
+};
+
+function saveReferrer(referrerUid) {
+  if (user) {
+    // Сохраняем реферера для пользователя
+    db.ref(`leaderboard/${user.uid}`).update({
+      referrer_uid: referrerUid,
+      lastUpdate: Date.now()
+    }).then(() => {
+      // Начисляем 50 токенов новому пользователю
+      score += 50;
+      showMessage('Referral bonus: +50 tokens!');
+      updateCounterDisplay();
+      submitScore();
+      // Регистрируем приглашение
+      db.ref(`referrals/${referrerUid}/${user.uid}`).set({
+        invited_at: Date.now(),
+        tokens_earned: 0,
+        reward_claimed: false
+      });
+    }).catch(error => {
+      console.error('Error saving referrer:', error);
+    });
+  }
+}
+
+
     
   </script>
 
