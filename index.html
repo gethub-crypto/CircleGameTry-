@@ -188,7 +188,7 @@
   cursor: not-allowed;
 }
 
-#mainButtonContainer {
+/*#mainButtonContainer {
   display: flex;
   justify-content: center;
   margin: 20px 0;
@@ -205,23 +205,65 @@
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 0 15px #00c3ff); /* Заменяем box-shadow */
-  transition: transform 0.2s ease, filter 0.2s ease;
+/* transition: transform 0.2s ease, filter 0.2s ease;
   outline: none; /* Убираем квадратный контур */
-}
+/*}
 
 .main-click-button:hover {
   filter: drop-shadow(0 0 25px #00ffa6); /* Тень при наведении */
-}
+/*}
 
 .main-click-button:active {
   transform: scale(0.9);
   filter: drop-shadow(0 0 10px #00c3ff); /* Уменьшаем тень при нажатии */
+/*}
+
+.main-click-button .icon {
+  font-size: 50px;
+}*/
+
+    
+#mainButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.main-click-button {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #00ffa6, #00c3ff);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px #00c3ff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none; /* Убираем квадратный контур */
+}
+
+.main-click-button:hover {
+  box-shadow: 0 0 25px #00ffa6;
+}
+
+.main-click-button:active {
+  transform: scale(0.9);
+  box-shadow: 0 0 10px #00c3ff; /* Уменьшаем тень при нажатии */
+}
+
+/* Стили для фокуса (для доступности) */
+.main-click-button:focus {
+  outline: none; /* Убираем стандартный контур */
+  box-shadow: 0 0 15px #00ffa6, 0 0 5px #00c3ff; /* Добавляем кастомную тень для фокуса */
 }
 
 .main-click-button .icon {
   font-size: 50px;
 }
 
+    
 
 .pulse {
   animation: pulse 0.2s ease;
