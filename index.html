@@ -1651,6 +1651,8 @@ function checkTaskCompletion(taskId) {
   totalClicks++;
   updateTaskProgress("clickMarathon", 1);
   updateTaskProgress("collectTokens", clickPower); // Обновляем прогресс для collectTokens
+  updateTaskProgress("collectBigTokens", clickPower);
+  updateTaskProgress("clickMasterWeekly", 1);    
   checkAchievements();
   updateCounterDisplay();
   updateProfilePanel();
