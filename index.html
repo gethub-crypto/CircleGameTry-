@@ -1739,6 +1739,12 @@ function checkTaskCompletion(taskId) {
   updateCounterDisplay();
   updateProfilePanel();
   animateCounter();
+
+// Анимация частиц (опционально, требует библиотеки, например, particles.js)
+  const button = document.getElementById("mainClickButton");
+  button.classList.add("pulse");
+  setTimeout(() => button.classList.remove("pulse"), 200);
+      
 }
 
 
