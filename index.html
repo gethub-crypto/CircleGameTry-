@@ -429,7 +429,7 @@
 ];!*/
 
 
-   const dailyTasks = [
+   /*!!const dailyTasks = [
   {
     id: "clickMarathon",
     description: "Make 100 clicks",
@@ -473,7 +473,56 @@
     reward: 500,
     period: "weekly"
   }
+];!!*/
+
+const dailyTasks = [
+  {
+    id: "clickMarathon",
+    description: "Make 100 clicks",
+    goal: 100,
+    reward: 50,
+    period: "daily"
+  },
+  {
+    id: "collectTokens",
+    description: "Collect tokens",
+    goalOptions: [1000, 3000, 5000],
+    rewards: [100, 350, 600],
+    period: "daily"
+  },
+  {
+    id: "subscribeTwitter",
+    description: "Follow @CircleGameTry on X",
+    goal: 1,
+    reward: 20,
+    period: "daily",
+    link: "https://x.com/CircleGameTry"
+  },
+  {
+    id: "clickMasterWeekly",
+    description: "Make 500 clicks in a week",
+    goal: 500,
+    reward: 500,
+    period: "weekly"
+  },
+  {
+    id: "autoclickerMaster",
+    description: "Activate autoclicker 5 times in a week",
+    goal: 5,
+    reward: "Free 5-minute autoclicker",
+    period: "weekly",
+    alternate: true // Флаг для чередования
+  },
+  {
+    id: "collectBigTokens",
+    description: "Collect tokens in a week",
+    goalOptions: [10000, 12000, 15000],
+    rewards: [1000, 1200, 1500],
+    period: "weekly",
+    alternate: true // Флаг для чередования
+  }
 ];
+    
     
 
     let user = null;
