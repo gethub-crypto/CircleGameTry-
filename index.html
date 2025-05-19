@@ -1531,7 +1531,7 @@ function completeTwitterTask(taskId) {
     }!*/
 
 
-    function updateTaskProgress(taskId, increment) {
+/*!!!    function updateTaskProgress(taskId, increment) {
   if (!user) return;
 
   const now = new Date();
@@ -1582,7 +1582,63 @@ function completeTwitterTask(taskId) {
     console.error("Error fetching task data:", error);
     showMessage("Failed to fetch task data.");
   });
-}
+}!!!*/
+
+     function updateTaskProgress(taskId, increment) {
+  if (!user) return;
+
+  // Проверяем, активно ли задание
+  const weekNumber = getWeekNumber();
+  const isEvenWeek = weekNumber % 2 === 0;
+  const task = dailyTasks.find(t => t.id === taskId);
+  if (task.alternate) {
+    if (task.id === "autoclickerMaster" && !isEvenWeek) return;
+    if (task.id === "collectBigTokens" && isEvenWeek) return;
+  }
+
+  const now = new Date();
+  const today = now.toDateString();
+  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
+  const resetKey = task?.period === "weekly" ? startOfWeek : today;
+
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    let taskData = snapshot.val() || { progress: 0, lastReset: resetKey, completions: 0, completed: false };
+
+    if (taskData.lastReset !== resetKey) {
+      taskData = {
+        progress: 0,
+        lastReset: resetKey,
+        completions: 0,
+        completed: false,
+        ...(task.goalOptions && {
+          goal: task.goalOptions[Math.floor(Math.random() * task.goalOptions.length)],
+          reward: task.rewards[Math.floor(Math.random() * task.rewards.length)]
+        })
+      };
+    }
+
+    if (taskData.completed || taskData.completions >= 1) {
+      return;
+    }
+
+    const newProgress = (taskData.progress || 0) + increment;
+    const goal = taskId === "collectTokens" || taskId === "collectBigTokens" ? taskData.goal : task.goal;
+    taskData.progress = Math.min(newProgress, goal);
+
+    db.ref(`tasks/${user.uid}/${taskId}`).set(taskData).then(() => {
+      if (!(taskData.completed || taskData.completions >= 1)) {
+        checkTaskCompletion(taskId);
+      }
+      renderTasks();
+    }).catch(error => {
+      console.error("Error updating task progress:", error);
+      showMessage("Failed to update task progress.");
+    });
+  }).catch(error => {
+    console.error("Error fetching task data:", error);
+    showMessage("Failed to fetch task data.");
+  });
+} 
 
 
 
