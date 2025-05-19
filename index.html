@@ -2664,7 +2664,7 @@ function buyAutoclicker(minutes) {
 }
     
 
-    function signInWithGoogle() {
+  /*!  function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).then(result => {
         user = result.user;
@@ -2676,7 +2676,28 @@ function buyAutoclicker(minutes) {
         showMessage("Google sign-in failed.");
         console.error(error);
       });
+    }!*/
+
+    function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result => {
+    user = result.user;
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('gameSection').style.display = 'block';
+    loadPlayerData(user.uid);
+    submitScore();
+    // Проверяем реферера из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerUid = urlParams.get('ref');
+    if (referrerUid) {
+      saveReferrer(referrerUid);
     }
+  }).catch(error => {
+    showMessage('Google sign-in failed.');
+    console.error(error);
+  });
+    }
+    
 
     function signOut() {
       if (user) {
