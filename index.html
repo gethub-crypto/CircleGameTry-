@@ -2843,7 +2843,7 @@ window.onload = function() {
   }
 };
 
-function saveReferrer(referrerUid) {
+/*!function saveReferrer(referrerUid) {
   if (user) {
     // Сохраняем реферера для пользователя
     db.ref(`leaderboard/${user.uid}`).update({
@@ -2865,6 +2865,57 @@ function saveReferrer(referrerUid) {
       console.error('Error saving referrer:', error);
     });
   }
+}!*/
+
+    function saveReferrer(referrerUid) {
+  if (!user || !referrerUid) return; // Пропускаем, если нет пользователя или реферера
+
+  // Проверяем, существует ли пользователь в leaderboard
+  db.ref(`leaderboard/${user.uid}`).once('value').then(snapshot => {
+    const userData = snapshot.val();
+
+    // Если пользователь уже существует и бонус начислен, выходим
+    if (userData && userData.referral_bonus_claimed) {
+      console.log('Referral bonus already claimed for this user.');
+      return;
+    }
+
+    // Проверяем, существует ли приглашающий
+    db.ref(`leaderboard/${referrerUid}`).once('value').then(referrerSnapshot => {
+      if (!referrerSnapshot.exists()) {
+        console.log('Invalid referrer UID:', referrerUid);
+        return;
+      }
+
+      // Начисляем 50 токенов новому пользователю
+      score += 50;
+      showMessage('Referral bonus: +50 tokens!');
+      updateCounterDisplay();
+
+      // Сохраняем данные реферала
+      db.ref(`leaderboard/${user.uid}`).update({
+        referrer_uid: referrerUid,
+        referral_bonus_claimed: true,
+        score: score,
+        lastUpdate: Date.now()
+      }).then(() => {
+        // Регистрируем приглашение
+        db.ref(`referrals/${referrerUid}/${user.uid}`).set({
+          invited_at: Date.now(),
+          tokens_earned: 0,
+          reward_claimed: false
+        });
+        submitScore();
+      }).catch(error => {
+        console.error('Error saving referrer:', error);
+        showMessage('Failed to process referral.');
+      });
+    }).catch(error => {
+      console.error('Error checking referrer:', error);
+    });
+  }).catch(error => {
+    console.error('Error checking user data:', error);
+  });
 }
 
 
