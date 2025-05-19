@@ -2832,7 +2832,7 @@ function saveReferrer(referrer) {
     }
 }
 
-window.onload = function() {
+/*!window.onload = function() {
   const urlParams = new URLSearchParams(window.location.search);
   const referrerUid = urlParams.get('ref');
   if (referrerUid) {
@@ -2841,7 +2841,25 @@ window.onload = function() {
   } else {
     console.log('No referrer detected');
   }
+};!*/
+
+window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const referrerUid = urlParams.get('ref');
+  if (referrerUid) {
+    console.log(`Referral detected: ${referrerUid}`);
+    // Сохраняем реферера только после авторизации
+    auth.onAuthStateChanged(currentUser => {
+      if (currentUser) {
+        user = currentUser;
+        saveReferrer(referrerUid);
+      }
+    });
+  } else {
+    console.log('No referrer detected');
+  }
 };
+    
 
 /*!function saveReferrer(referrerUid) {
   if (user) {
