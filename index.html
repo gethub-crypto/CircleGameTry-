@@ -2147,6 +2147,29 @@ function startAutoclicker(duration, extendTime = false) {
   }
 }
 
+function loadNotifications(uid) {
+  db.ref(`notifications/${uid}`).once('value').then(snapshot => {
+    const notifications = snapshot.val();
+    if (notifications) {
+      Object.values(notifications).forEach(notification => {
+        if (!notification.read) {
+          showMessage(notification.message);
+          // Отмечаем уведомление как прочитанное
+          db.ref(`notifications/${uid}/${notification.id}`).update({
+            read: true,
+            lastUpdate: Date.now()
+          }).catch(error => {
+            console.error('Error marking notification as read:', error);
+          });
+        }
+      });
+    }
+  }).catch(error => {
+    console.error('Error loading notifications:', error);
+  });
+}
+  
+
    /*! function loadPlayerData(uid) {
       db.ref("leaderboard/" + uid).once("value").then(snapshot => {
         const data = snapshot.val();
@@ -2911,6 +2934,7 @@ function buyAutoclicker(minutes) {
         document.getElementById("authSection").style.display = "none";
         document.getElementById("gameSection").style.display = "block";
         loadPlayerData(user.uid);
+        loadNotifications(user.uid); // Загружаем уведомления
         submitScore();
       }).catch(error => {
         showMessage("Google sign-in failed.");
