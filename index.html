@@ -2374,7 +2374,7 @@ function loadPlayerData(uid) {
 }
 
 
-    /*!!function submitScore() {
+    function submitScore() {
   if (!user) return;
   const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
   db.ref("leaderboard/" + user.uid).set({
@@ -2424,10 +2424,10 @@ function loadPlayerData(uid) {
     console.error('Error saving score:', error);
     showMessage('Failed to save progress.');
   });
-}!!*/
+}
   
 
-    function submitScore() {
+   /*! function submitScore() {
       if (!user) return;
       const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
       db.ref("leaderboard/" + user.uid).set({
@@ -2443,7 +2443,7 @@ function loadPlayerData(uid) {
         tempBoostAmount: clickPower - (originalClickPower || clickPower),
         lastUpdate: Date.now()
 
-        referrer_uid: user.referrer_uid || null
+       referrer_uid: user.referrer_uid || null
   }).then(() => {
     // Проверяем, есть ли реферер
     db.ref(`leaderboard/${user.uid}/referrer_uid`).once('value').then(snapshot => {
@@ -2480,7 +2480,7 @@ function loadPlayerData(uid) {
         console.error("Ошибка сохранения счёта:", error);
         showMessage("Не удалось сохранить прогресс.");
       });
-    }
+    }!*/
 
 
 
