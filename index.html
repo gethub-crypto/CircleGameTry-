@@ -204,16 +204,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px #00c3ff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  filter: drop-shadow(0 0 15px #00c3ff); /* Заменяем box-shadow */
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .main-click-button:hover {
-  box-shadow: 0 0 25px #00ffa6;
+  filter: drop-shadow(0 0 25px #00ffa6); /* Тень при наведении */
 }
 
 .main-click-button:active {
   transform: scale(0.9);
+  filter: drop-shadow(0 0 10px #00c3ff); /* Уменьшаем тень при нажатии */
 }
 
 .main-click-button .icon {
