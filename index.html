@@ -421,10 +421,6 @@
       50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000
     ];
 
-
-
-
-
    
 
 const dailyTasks = [
@@ -1833,7 +1829,14 @@ function clickToken() {
       updateProfilePanel();
       animateCounter();
 
-      // Анимация частиц (опционально, требует библиотеки, например, particles.js)
+      // Очищаем текущие частицы и добавляем новые
+  window.pJSDom[0].pJS.fn.particlesEmpty(); // Очищаем частицы
+  window.pJSDom[0].pJS.particles.number.value = 20; // Уменьшаем количество для эффекта
+  window.pJSDom[0].pJS.particles.color.value = "#ffd700"; // Золотой цвет для "монет"
+  window.pJSDom[0].pJS.fn.particlesRefresh(); // Обновляем частицы
+      
+
+      // Анимация частиц (опционально, требует библиотеки, например, particles.js)?
       const button = document.getElementById("mainClickButton");
       button.classList.add("pulse");
       setTimeout(() => {
@@ -1843,6 +1846,25 @@ function clickToken() {
 
       // Вызываем submitScore с ограничением частоты
      // submitScoreDebounced();
+     // Инициализация particles.js при загрузке страницы
+document.addEventListener("DOMContentLoaded", function() {
+  particlesJS("particles-js", {
+    "particles": {
+      "number": { "value": 0 }, // Изначально частиц нет
+      "color": { "value": "#ffd700" },
+      "shape": { "type": "circle" },
+      "size": { "value": 5, "random": true },
+      "move": { "enable": true, "speed": 10, "direction": "top", "out_mode": "out" }
+    },
+    "interactivity": {
+      "events": {
+        "onclick": { "enable": false },
+        "onhover": { "enable": false }
+      }
+    }
+
+
+      
     }
   }).catch(error => {
     console.error('Error updating score via transaction:', error);
