@@ -1791,7 +1791,7 @@ document.addEventListener("DOMContentLoaded", function() {
       animateCounter();
     }!*/
 
-    function clickToken() {
+ /*!!   function clickToken() {
 
       if (isAnimating) return; // Пропускаем, если анимация уже идёт
         isAnimating = true;
@@ -1817,11 +1817,11 @@ setTimeout(() => {
   }, 200);
       
       
-}
+}!!*/ // animacia
 
      
 
-/*!!function clickToken() {
+function clickToken() {
   if (!user) {
     console.log('User not authenticated, cannot process click.');
     return;
@@ -1872,7 +1872,7 @@ setTimeout(() => {
     console.error('Error updating score via transaction:', error);
     isAnimating = false; // Сбрасываем флаг анимации в случае ошибки
   });
-}!!*/ //ref
+}
 
   
 /*!!!!!function clickToken() {
@@ -2781,7 +2781,7 @@ function loadPlayerData(uid) {
 
 
       
-function clickToken() {
+/*!????function clickToken() {
   if (!user) return;
   // Увеличиваем score в базе через транзакцию
   db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
@@ -2795,7 +2795,7 @@ function clickToken() {
   }).catch(error => {
     console.error('Error updating score via transaction:', error);
   });
-}
+}????!!!*/
 
 function submitScore() {
   if (!user) {
