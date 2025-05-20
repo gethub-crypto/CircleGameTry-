@@ -2684,7 +2684,7 @@ function loadPlayerData(uid) {
   });
 }!!!!!*/
 
-  /*!!!!  function submitScore() {
+    function submitScore() {
   if (!user) return;
   const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
   db.ref("leaderboard/" + user.uid).set({
@@ -2779,10 +2779,10 @@ function loadPlayerData(uid) {
     console.error('Error saving score:', error);
     showMessage('Failed to save progress.');
   });
-}!!!!*/ //clickToken
+} 
 
 
-      function submitScore() {
+     /*!?!?!?!?! function submitScore() {
   if (!user) {
     console.log('User not authenticated, cannot submit score.');
     return;
@@ -2889,7 +2889,7 @@ function loadPlayerData(uid) {
   }).catch(error => {
     console.error('Error syncing score:', error);
   });
-}
+}?!?!?!?*/
 
 
    /*!!!!!!!   function submitScore() {
