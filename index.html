@@ -2684,7 +2684,7 @@ function loadPlayerData(uid) {
   });
 }!!!!!*/
 
-    function submitScore() {
+ /*!!!!   function submitScore() {
   if (!user) return;
   const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
   db.ref("leaderboard/" + user.uid).set({
@@ -2779,7 +2779,127 @@ function loadPlayerData(uid) {
     console.error('Error saving score:', error);
     showMessage('Failed to save progress.');
   });
-} 
+} !!!!*/ //clickToken
+
+
+      
+function clickToken() {
+  if (!user) return;
+  // Увеличиваем score в базе через транзакцию
+  db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+    return (currentScore || 0) + clickPower;
+  }).then(transactionResult => {
+    if (transactionResult.committed) {
+      score = transactionResult.snapshot.val(); // Обновляем локальный score
+      updateCounterDisplay();
+      submitScore(); // Вызываем submitScore для обновления остальных данных
+    }
+  }).catch(error => {
+    console.error('Error updating score via transaction:', error);
+  });
+}
+
+function submitScore() {
+  if (!user) {
+    console.log('User not authenticated, cannot submit score.');
+    return;
+  }
+
+  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
+  // Сохраняем остальные данные, но score уже обновлён через транзакцию
+  db.ref("leaderboard/" + user.uid).update({
+    id: user.uid,
+    name: userName,
+    clickPower: clickPower,
+    autoclickActive: autoclickActive,
+    autoclickEndTime: autoclickEndTime,
+    tempBoostActive: !!tempBoostTimeout,
+    tempBoostEndTime: tempBoostTimeout ? autoclickEndTime : 0,
+    tempBoostOriginalClickPower: originalClickPower || clickPower,
+    tempBoostAmount: clickPower - (originalClickPower || clickPower),
+    referrer_uid: user.referrer_uid || null,
+    referral_bonus_claimed: user.referral_bonus_claimed || false,
+    lastUpdate: Date.now()
+  }).then(() => {
+    console.log(`Leaderboard updated for ${user.uid}`);
+    if (user.referrer_uid) {
+      db.ref(`referrals/${user.referrer_uid}/${user.uid}`).update({
+        tokens_earned: score,
+        lastUpdate: Date.now()
+      }).then(() => {
+        console.log(`Updated tokens_earned for ${user.uid}: ${score}`);
+        if (score >= 1000) {
+          console.log(`User ${user.uid} reached 1000 tokens, checking reward...`);
+          db.ref(`referrals/${user.referrer_uid}/${user.uid}`).once('value').then(refSnapshot => {
+            const refData = refSnapshot.val();
+            console.log(`Referral data for ${user.uid}:`, refData);
+            if (refData && !refData.reward_claimed) {
+              console.log(`Processing referral reward for ${user.uid}...`);
+              // Начисляем 1000 токенов приглашающему
+              db.ref(`leaderboard/${user.referrer_uid}/score`).transaction(currentScore => {
+                return (currentScore || 0) + 1000;
+              }).then(() => {
+                console.log(`Referral reward of 1000 tokens credited to inviter: ${user.referrer_uid}`);
+                db.ref(`notifications/${user.referrer_uid}`).push({
+                  message: 'Referral reward: +1000 tokens!',
+                  timestamp: Date.now(),
+                  read: false
+                });
+              }).catch(error => {
+                console.error('Error crediting inviter:', error);
+              });
+
+              // Начисляем 1000 токенов приглашённому
+              db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+                score = (currentScore || 0) + 1000;
+                return score;
+              }).then(() => {
+                showMessage('Milestone reward: +1000 tokens!');
+                console.log(`Milestone reward of 1000 tokens credited to invited: ${user.uid}`);
+                updateCounterDisplay();
+              }).catch(error => {
+                console.error('Error crediting invited:', error);
+              });
+
+              // Отмечаем награду как полученную
+              db.ref(`referrals/${user.referrer_uid}/${user.uid}`).update({
+                reward_claimed: true,
+                lastUpdate: Date.now()
+              }).then(() => {
+                console.log('Reward marked as claimed for:', user.uid);
+              }).catch(error => {
+                console.error('Error marking reward as claimed:', error);
+              });
+
+              // Логируем начисление
+              db.ref('referral_logs').push({
+                inviter_uid: user.referrer_uid,
+                invited_uid: user.uid,
+                timestamp: Date.now(),
+                action: 'reward_claimed',
+                inviter_reward: 1000,
+                invited_reward: 1000
+              });
+            }
+          }).catch(error => {
+            console.error('Error checking referral data:', error);
+          });
+        }
+      }).catch(error => {
+        console.error('Error updating referral tokens earned:', error);
+      });
+    }
+  }).catch(error => {
+    console.error('Error updating leaderboard:', error);
+    showMessage('Failed to save progress.');
+  });
+}
+
+
+
+
+
+  
 
 
      /*!?!?!?!?! function submitScore() {
