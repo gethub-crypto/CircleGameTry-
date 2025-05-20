@@ -1755,6 +1755,30 @@ function checkTaskCompletion(taskId) {
   });
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+  particlesJS("particles-js", {
+    "particles": {
+      "number": { "value": 0 }, // Изначально частиц нет
+      "color": { "value": "#ffd700" }, // Золотой цвет
+      "shape": { "type": "circle" },
+      "size": { "value": 5, "random": true },
+      "move": { 
+        "enable": true, 
+        "speed": 10, 
+        "direction": "top", // Частицы "взлетают" вверх
+        "out_mode": "out" 
+      }
+    },
+    "interactivity": {
+      "events": {
+        "onclick": { "enable": false },
+        "onhover": { "enable": false }
+      }
+    }
+  });
+});
+
+  
       
    /*! function clickToken() {
       score += clickPower;
