@@ -1856,7 +1856,7 @@ function checkTaskCompletion(taskId) {
       animateCounter();
     }!*/
 
-    function clickToken() {
+   /*!! function clickToken() {
 
       if (isAnimating) return; // Пропускаем, если анимация уже идёт
         isAnimating = true;
@@ -1882,6 +1882,57 @@ setTimeout(() => {
   }, 200);
       
       
+}!!*/
+
+     
+
+function clickToken() {
+  if (!user) {
+    console.log('User not authenticated, cannot process click.');
+    return;
+  }
+
+  if (isAnimating) {
+    console.log('Animation in progress, skipping click.');
+    return; // Пропускаем, если анимация уже идёт
+  }
+  isAnimating = true;
+
+  // Увеличиваем score в базе через транзакцию
+  db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+    console.log(`DB score before transaction: ${currentScore}`);
+    return (currentScore || 0) + clickPower;
+  }).then(transactionResult => {
+    if (transactionResult.committed) {
+      score = transactionResult.snapshot.val(); // Обновляем локальный score
+      console.log(`After click - Local score updated: ${score}`);
+
+      // Обновляем остальные счётчики и прогресс задач
+      totalClicks++;
+      updateTaskProgress("clickMarathon", 1);
+      updateTaskProgress("collectTokens", clickPower); // Обновляем прогресс для collectTokens
+      updateTaskProgress("collectBigTokens", clickPower);
+      updateTaskProgress("clickMasterWeekly", 1);
+      checkAchievements();
+      updateCounterDisplay();
+      updateProfilePanel();
+      animateCounter();
+
+      // Анимация частиц (опционально, требует библиотеки, например, particles.js)
+      const button = document.getElementById("mainClickButton");
+      button.classList.add("pulse");
+      setTimeout(() => {
+        button.classList.remove("pulse");
+        isAnimating = false; // Разрешаем следующую анимацию
+      }, 200);
+
+      // Вызываем submitScore с ограничением частоты
+     // submitScoreDebounced();
+    }
+  }).catch(error => {
+    console.error('Error updating score via transaction:', error);
+    isAnimating = false; // Сбрасываем флаг анимации в случае ошибки
+  });
 }
 
 
