@@ -1330,52 +1330,6 @@ function completeTwitterTask(taskId) {
     showMessage("Failed to fetch task data.");
   });
 } 
-
-
-
-
-
-/*!function checkTaskCompletion(taskId) {
-  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-    const taskData = snapshot.val();
-    const task = dailyTasks.find(t => t.id === taskId);
-
-    if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
-      return;
-    }
-
-    const goal = task.id === "collectTokens" ? taskData.goal : task.goal;
-    if (taskData && taskData.progress >= goal) {
-      const completions = (taskData.completions || 0) + 1;
-      if (completions <= 1) {
-        if (task.id === "clickMarathon") {
-          score += task.reward;
-          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-          updateCounterDisplay();
-          submitScore();
-        } else if (task.id === "collectTokens") {
-          score += taskData.reward;
-          showMessage(`Task "${task.description}" completed! +${taskData.reward} tokens`);
-          updateCounterDisplay();
-          submitScore();
-        } else if (task.id === "autoclickerMaster") {
-          showMessage(`Task "${task.description}" completed! ${task.reward}`);
-          startAutoclicker(300000, true);
-          submitScore();
-        }
-        db.ref(`tasks/${user.uid}/${task.id}`).set({
-          progress: 0,
-          lastReset: taskData.lastReset,
-          completions: completions,
-          completed: true,
-          ...(task.id === "collectTokens" && { goal: taskData.goal, reward: taskData.reward })
-        });
-      }
-      renderTasks();
-    }
-  });
-}!*/
-
   
 function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
