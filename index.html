@@ -425,7 +425,7 @@
   </div>
 </div>-->
 
-<div id="leaderboardContainer">
+<!--<div id="leaderboardContainer">
   <div class="leaderboard-controls">
     <label class="radio-label">
       <input type="radio" name="leaderboardType" value="overall" checked onclick="showTab('overall')">
@@ -450,7 +450,20 @@
       <tbody id="weeklyLeaderboardBody"></tbody>
     </table>
   </div>
-</div>
+</div>-->
+
+ <div id="leaderboardContainer">
+  <div class="tabs">
+    <button class="tab-button active" onclick="showTab('overall')" id="overallTabBtn">Overall</button>
+    <button class="tab-button" onclick="showTab('weekly')" id="weeklyTabBtn">Weekly Winners</button>
+  </div>
+  <table id="leaderboardTable">
+    <thead id="tableHeader">
+      <!-- Заголовки будут меняться в зависимости от вкладки -->
+    </thead>
+    <tbody id="leaderboardBody"></tbody>
+  </table>
+</div>   
     
 
 
