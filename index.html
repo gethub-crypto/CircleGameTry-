@@ -1890,57 +1890,8 @@ function loadPlayerData(uid) {
 }
 
 
-   /*!!! function submitScore() {
-  if (!user) return;
-  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
-  db.ref("leaderboard/" + user.uid).set({
-    id: user.uid,
-    name: userName,
-    score: score,
-    clickPower: clickPower,
-    autoclickActive: autoclickActive,
-    autoclickEndTime: autoclickEndTime,
-    tempBoostActive: !!tempBoostTimeout,
-    tempBoostEndTime: tempBoostTimeout ? autoclickEndTime : 0,
-    tempBoostOriginalClickPower: originalClickPower || clickPower,
-    tempBoostAmount: clickPower - (originalClickPower || clickPower),
-    lastUpdate: Date.now(),
-    referrer_uid: user.referrer_uid || null
-  }).then(() => {
-    // Проверяем, есть ли реферер
-    db.ref(`leaderboard/${user.uid}/referrer_uid`).once('value').then(snapshot => {
-      const referrerUid = snapshot.val();
-      if (referrerUid) {
-        db.ref(`referrals/${referrerUid}/${user.uid}`).update({
-          tokens_earned: score,
-          lastUpdate: Date.now()
-        }).then(() => {
-          // Проверяем, достиг ли пользователь 1000 токенов
-          if (score >= 1000) {
-            db.ref(`referrals/${referrerUid}/${user.uid}`).once('value').then(refSnapshot => {
-              const refData = refSnapshot.val();
-              if (refData && !refData.reward_claimed) {
-                // Начисляем 1000 токенов приглашающему
-                db.ref(`leaderboard/${referrerUid}/score`).transaction(currentScore => {
-                  return (currentScore || 0) + 1000;
-                }).then(() => {
-                  showMessage('Referral reward: +1000 tokens!');
-                  // Отмечаем награду как полученную
-                  db.ref(`referrals/${referrerUid}/${user.uid}`).update({
-                    reward_claimed: true
-                  });
-                });
-              }
-            });
-          }
-        });
-      }
-    });
-  }).catch(error => {
-    console.error('Error saving score:', error);
-    showMessage('Failed to save progress.');
-  });
-}!!!*/
+   
+    
 
 
 /*!!!!function submitScore() {
@@ -2178,22 +2129,7 @@ function loadPlayerData(uid) {
 } !!!!*/ //clickToken
 
 
-      
-/*!????function clickToken() {
-  if (!user) return;
-  // Увеличиваем score в базе через транзакцию
-  db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
-    return (currentScore || 0) + clickPower;
-  }).then(transactionResult => {
-    if (transactionResult.committed) {
-      score = transactionResult.snapshot.val(); // Обновляем локальный score
-      updateCounterDisplay();
-      submitScore(); // Вызываем submitScore для обновления остальных данных
-    }
-  }).catch(error => {
-    console.error('Error updating score via transaction:', error);
-  });
-}????!!!*/
+
 
 function submitScore() {
   if (!user) {
@@ -2558,37 +2494,7 @@ function submitScore() {
         tempBoostAmount: clickPower - (originalClickPower || clickPower),
         lastUpdate: Date.now()
 
-       referrer_uid: user.referrer_uid || null
-  }).then(() => {
-    // Проверяем, есть ли реферер
-    db.ref(`leaderboard/${user.uid}/referrer_uid`).once('value').then(snapshot => {
-      const referrerUid = snapshot.val();
-      if (referrerUid) {
-        db.ref(`referrals/${referrerUid}/${user.uid}`).update({
-          tokens_earned: score,
-          lastUpdate: Date.now()
-        }).then(() => {
-          // Проверяем, достиг ли пользователь 1000 токенов
-          if (score >= 1000) {
-            db.ref(`referrals/${referrerUid}/${user.uid}`).once('value').then(refSnapshot => {
-              const refData = refSnapshot.val();
-              if (refData && !refData.reward_claimed) {
-                // Начисляем 1000 токенов приглашающему
-                db.ref(`leaderboard/${referrerUid}/score`).transaction(currentScore => {
-                  return (currentScore || 0) + 1000;
-                }).then(() => {
-                  showMessage('Referral reward: +1000 tokens!');
-                  // Отмечаем награду как полученную
-                  db.ref(`referrals/${referrerUid}/${user.uid}`).update({
-                    reward_claimed: true
-                  });
-                });
-              }
-            });
-          }
-        });
-      }
-    });
+
 
         
       }).catch(error => {
