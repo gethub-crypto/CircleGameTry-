@@ -2654,46 +2654,7 @@ function submitScore() {
       }
     }
 
-  /*!  function buyAutoclicker(minutes) {
-      if (autoclickCooldown) {
-        showMessage("Autoclicker on cooldown.");
-        return;
-      }
-
-      const prices = {
-        1: 200,
-        5: 800,
-        10: 1400
-      };
-
-      const cost = prices[minutes];
-      if (score >= cost) {
-        score -= cost;
-        updateCounterDisplay();
-        showMessage(`Autoclicker activated for ${minutes} minute(s)!`);
-        autoclickCooldown = true;
-        autoclickActive = true;
-        const duration = minutes * 60000;
-        startAutoclicker(duration);
-        updateTaskProgress("autoclickerMaster", 1);
-
-        if (user) {
-          db.ref("leaderboard/" + user.uid).update({
-            autoclickActive: true,
-            autoclickEndTime: autoclickEndTime,
-            score: score,
-            lastUpdate: Date.now()
-          }).catch(error => {
-            console.error("Error saving autoclicker purchase:", error);
-          });
-        }
-
-        updateProfilePanel();
-        submitScore();
-      } else {
-        showMessage("Not enough tokens for autoclicker.");
-      }
-    }!*/
+  
 
 function buyAutoclicker(minutes) {
   if (autoclickCooldown) {
@@ -2905,33 +2866,6 @@ function saveReferrer(referrer) {
     }
 }
 
-/*!window.onload = function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const referrerUid = urlParams.get('ref');
-  if (referrerUid) {
-    console.log(`Referral detected: ${referrerUid}`);
-    saveReferrer(referrerUid);
-  } else {
-    console.log('No referrer detected');
-  }
-};!*/
-
-/*!!window.onload = function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const referrerUid = urlParams.get('ref');
-  if (referrerUid) {
-    console.log(`Referral detected: ${referrerUid}`);
-    // Сохраняем реферера только после авторизации
-    auth.onAuthStateChanged(currentUser => {
-      if (currentUser) {
-        user = currentUser;
-        saveReferrer(referrerUid);
-      }
-    });
-  } else {
-    console.log('No referrer detected');
-  }
-};!!*/ //chrome 
 
 
 window.onload = function() {
@@ -3030,10 +2964,6 @@ function saveReferrer(referrerUid) {
     isProcessingReferrer = false;
   });
 }
-
-
-    
-
     
   </script>
 
@@ -3058,9 +2988,5 @@ function saveReferrer(referrerUid) {
       Free Game and Bonus
     </a>
   </div>-->
-
-
-
-  
 </body>
 </html>
