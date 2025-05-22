@@ -1061,6 +1061,14 @@ function updateWeeklyLeaderboard() {
   const week = getWeekNumber();
   return `${year}_${week}`;
     }
+
+ //таблица лидеров  
+function getRewardForRank(rank) {
+  if (rank <= 3) return 10000;
+  if (rank <= 5) return 7000;
+  return 5000;
+}
+
     
     
 
