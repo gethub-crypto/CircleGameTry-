@@ -404,7 +404,7 @@
   </table>
 </div>-->
 
-<div id="leaderboardContainer">
+<!--<div id="leaderboardContainer">
   <div class="tabs">
     <button class="tab-button active" onclick="showTab('overall')" id="overallTabBtn">Overall</button>
     <button class="tab-button" onclick="showTab('weekly')" id="weeklyTabBtn">Weekly Winners</button>
@@ -423,7 +423,35 @@
       <tbody id="weeklyLeaderboardBody"></tbody>
     </table>
   </div>
+</div>-->
+
+<div id="leaderboardContainer">
+  <div class="leaderboard-controls">
+    <label class="radio-label">
+      <input type="radio" name="leaderboardType" value="overall" checked onclick="showTab('overall')">
+      <span>Overall</span>
+    </label>
+    <label class="radio-label">
+      <input type="radio" name="leaderboardType" value="weekly" onclick="showTab('weekly')">
+      <span>Weekly Winners</span>
+    </label>
+  </div>
+  <div id="overallLeaderboard" class="leaderboard-tab">
+    <h2>Overall Leaderboard</h2>
+    <table>
+      <thead><tr><th>#</th><th>Player</th><th>Tokens</th></tr></thead>
+      <tbody id="leaderboard"></tbody>
+    </table>
+  </div>
+  <div id="weeklyLeaderboard" class="leaderboard-tab" style="display: none;">
+    <h2>Weekly Winners</h2>
+    <table>
+      <thead><tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr></thead>
+      <tbody id="weeklyLeaderboardBody"></tbody>
+    </table>
+  </div>
 </div>
+    
 
 
     
