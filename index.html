@@ -1069,7 +1069,21 @@ function getRewardForRank(rank) {
   return 5000;
 }
 
-    
+      
+//таблица лидеров 
+   function updateWeeklyScore() {
+  if (!user) return;
+  const weekKey = getWeekKey();
+  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
+  db.ref(`weeklyLeaderboard/${weekKey}/${user.uid}`).update({
+    id: user.uid,
+    name: userName,
+    score: score,
+    lastUpdate: Date.now()
+  }).catch(error => {
+    console.error("Error updating weekly score:", error);
+  });
+} 
     
 
     function closeAllPanels() {
