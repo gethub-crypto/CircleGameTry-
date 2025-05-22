@@ -1084,6 +1084,49 @@ function getRewardForRank(rank) {
     console.error("Error updating weekly score:", error);
   });
 } 
+//таблица лидеров 
+function awardWeeklyRewards() {
+  const weekKey = getWeekKey();
+  db.ref(`weeklyLeaderboard/${weekKey}`).once("value", snapshot => {
+    const data = [];
+    snapshot.forEach(child => {
+      const entry = child.val();
+      if (entry && entry.score >= 50000 && !entry.rewardClaimed) {
+        data.push({
+          id: entry.id,
+          score: entry.score
+        });
+      }
+    });
+
+    data.sort((a, b) => b.score - a.score);
+
+    data.slice(0, 10).forEach((entry, index) => {
+      const reward = getRewardForRank(index + 1);
+      db.ref(`leaderboard/${entry.id}/score`).transaction(currentScore => {
+        return (currentScore || 0) + reward;
+      }).then(() => {
+        db.ref(`weeklyLeaderboard/${weekKey}/${entry.id}`).update({
+          rewardClaimed: true,
+          lastUpdate: Date.now()
+        });
+        if (entry.id === user?.uid) {
+          score += reward;
+          updateCounterDisplay();
+          showMessage(`Weekly reward: +${reward} tokens for rank ${index + 1}!`);
+        }
+        db.ref(`notifications/${entry.id}`).push({
+          message: `Weekly reward: +${reward} tokens for rank ${index + 1}!`,
+          timestamp: Date.now(),
+          read: false
+        });
+      }).catch(error => {
+        console.error("Error awarding weekly reward:", error);
+      });
+    });
+  });
+}
+    
     
 
     function closeAllPanels() {
