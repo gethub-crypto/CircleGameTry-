@@ -2489,7 +2489,7 @@ function loadPlayerData(uid) {
 
 
 
-    function submitScore() {
+ /*!  function submitScore() {
   if (!user) {
     console.log('User not authenticated, cannot submit score.');
     return;
@@ -2571,7 +2571,98 @@ function loadPlayerData(uid) {
     console.error('Error updating leaderboard:', error);
     showMessage('Failed to save progress.');
   });
+}!*/ //rabochiy
+
+
+function submitScore() {
+  if (!user) {
+    console.log('User not authenticated, cannot submit score.');
+    return;
+  }
+
+  const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
+
+  // Обновляем данные в общей таблице лидеров
+  db.ref("leaderboard/" + user.uid).update({
+    id: user.uid,
+    name: userName,
+    clickPower: clickPower,
+    autoclickActive: autoclickActive,
+    autoclickEndTime: autoclickEndTime,
+    tempBoostActive: !!tempBoostTimeout,
+    tempBoostEndTime: tempBoostTimeout ? autoclickEndTime : 0,
+    tempBoostOriginalClickPower: originalClickPower || clickPower,
+    tempBoostAmount: clickPower - (originalClickPower || clickPower),
+    referrer_uid: user.referrer_uid || null,
+    referral_bonus_claimed: user.referral_bonus_claimed || false,
+    lastUpdate: Date.now()
+  }).then(() => {
+    console.log(`Leaderboard updated for ${user.uid}`);
+    // Обновляем еженедельный счет
+    if (score >= 50000) {
+      updateWeeklyScore();
+    }
+    // Реферальная логика
+    if (user.referrer_uid) {
+      db.ref(`referrals/${user.referrer_uid}/${user.uid}`).update({
+        tokens_earned: score,
+        lastUpdate: Date.now()
+      }).then(() => {
+        if (score >= 1000) {
+          db.ref(`referrals/${user.referrer_uid}/${user.uid}`).once('value').then(refSnapshot => {
+            const refData = refSnapshot.val();
+            if (refData && !refData.reward_claimed) {
+              db.ref(`leaderboard/${user.referrer_uid}/score`).transaction(currentScore => {
+                return (currentScore || 0) + 1000;
+              }).then(() => {
+                db.ref(`notifications/${user.referrer_uid}`).push({
+                  message: 'Referral reward: +1000 tokens!',
+                  timestamp: Date.now(),
+                  read: false
+                });
+              }).catch(error => {
+                console.error('Error crediting inviter:', error);
+              });
+
+              db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+                score = (currentScore || 0) + 1000;
+                return score;
+              }).then(() => {
+                showMessage('Milestone reward: +1000 tokens!');
+                updateCounterDisplay();
+              }).catch(error => {
+                console.error('Error crediting invited:', error);
+              });
+
+              db.ref(`referrals/${user.referrer_uid}/${user.uid}`).update({
+                reward_claimed: true,
+                lastUpdate: Date.now()
+              });
+
+              db.ref('referral_logs').push({
+                inviter_uid: user.referrer_uid,
+                invited_uid: user.uid,
+                timestamp: Date.now(),
+                action: 'reward_claimed',
+                inviter_reward: 1000,
+                invited_reward: 1000
+              });
+            }
+          }).catch(error => {
+            console.error('Error checking referral data:', error);
+          });
+        }
+      }).catch(error => {
+        console.error('Error updating referral tokens earned:', error);
+      });
+    }
+  }).catch(error => {
+    console.error('Error updating leaderboard:', error);
+    showMessage('Failed to save progress.');
+  });
 }
+
+  
   
   
 
