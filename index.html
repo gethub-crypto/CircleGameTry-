@@ -1126,6 +1126,25 @@ function awardWeeklyRewards() {
     });
   });
 }
+
+//таблица лидеров 
+   function checkWeeklyReset() {
+  const now = new Date();
+  const weekKey = getWeekKey();
+  db.ref(`weeklyLeaderboard/lastReset`).once("value").then(snapshot => {
+    const lastReset = snapshot.val() || 0;
+    const oneWeek = 7 * 24 * 60 * 60 * 1000; // 7 дней в миллисекундах
+    if (Date.now() - lastReset >= oneWeek) {
+      // Начисляем награды за прошлую неделю
+      awardWeeklyRewards();
+      // Сбрасываем таблицу
+      db.ref(`weeklyLeaderboard/${weekKey}`).remove();
+      db.ref(`weeklyLeaderboard/lastReset`).set(Date.now());
+    }
+  });
+} 
+
+
     
     
 
