@@ -715,7 +715,7 @@ function startBonusTimer() {
   }, 1000);
 }
 
-function claimHourlyBonus() {
+/*!function claimHourlyBonus() {
   if (!user) {
     showMessage("Please sign in to claim the bonus.");
     return;
@@ -749,6 +749,55 @@ function claimHourlyBonus() {
     showMessage("Failed to check bonus eligibility.");
   });
 }
+
+function claimHourlyBonus() {
+  if (!user) {
+    showMessage("Please sign in to claim the bonus.");
+    return;
+  }!*/
+
+  db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
+    const data = snapshot.val() || { lastClaim: 0 };
+    const now = Date.now();
+    const timeSinceLastClaim = now - data.lastClaim;
+    const oneHour = 3600000;
+
+    if (timeSinceLastClaim >= oneHour || !data.lastClaim) {
+      const reward = Math.floor(Math.random() * (200 - 10 + 1)) + 10; // Random 10-200 tokens
+
+      // Используем транзакцию для обновления score
+      db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+        return (currentScore || 0) + reward;
+      }).then(transactionResult => {
+        if (transactionResult.committed) {
+          score = transactionResult.snapshot.val(); // Обновляем локальный score
+          updateCounterDisplay();
+          showMessage(`Claimed ${reward} tokens from Hourly Bonus!`);
+
+          // Сохраняем время последнего получения бонуса
+          db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now }).then(() => {
+            document.getElementById("claimBonusBtn").disabled = true;
+            startBonusTimer();
+          }).catch(error => {
+            console.error("Error saving bonus claim:", error);
+            showMessage("Failed to save bonus claim.");
+          });
+        } else {
+          showMessage("Failed to claim bonus due to server error.");
+        }
+      }).catch(error => {
+        console.error("Error updating score:", error);
+        showMessage("Failed to update score.");
+      });
+    } else {
+      showMessage("Bonus not ready yet!");
+    }
+  }).catch(error => {
+    console.error("Error checking bonus eligibility:", error);
+    showMessage("Failed to check bonus eligibility.");
+  });
+}
+    
 
     function closeAllPanels() {
       console.log("Closing all panels...");
