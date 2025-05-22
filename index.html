@@ -267,6 +267,85 @@
   /*background: #1a1a1a; /* Фон для контраста */
   z-index: -1; /* Частицы на заднем плане */
 }
+
+
+#leaderboardContainer {
+  max-width: 800px;
+  margin: 20px auto;
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3);
+}
+
+.tabs {
+  display: flex;
+  justify-content: flex-start; /* Закладки выровнены слева */
+  margin-bottom: -1px; /* Убираем зазор между вкладками и таблицей */
+}
+
+.tab-button {
+  padding: 10px 20px;
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #00c3ff;
+  border-bottom: none; /* Убираем нижнюю границу для эффекта закладки */
+  border-radius: 5px 5px 0 0; /* Закругленные углы только сверху */
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease, color 0.3s ease;
+  position: relative;
+  z-index: 1; /* Вкладка над таблицей */
+}
+
+.tab-button:hover {
+  background: #3a3a3a;
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #00c3ff, #00ffa6);
+  color: #000;
+  font-weight: bold;
+  border-bottom: 1px solid transparent; /* Скрываем границу для активной вкладки */
+  z-index: 2; /* Активная вкладка выше */
+}
+
+#leaderboardTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1a1a1a;
+}
+
+#tableHeader {
+  background: #00c3ff; /* Синяя полоска для заголовка */
+}
+
+#tableHeader th {
+  padding: 10px;
+  color: #000;
+  font-weight: bold;
+  text-align: left;
+}
+
+#leaderboardBody td {
+  padding: 10px;
+  color: #fff;
+  border-bottom: 1px solid #333;
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 600px) {
+  .tab-button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+
+  #tableHeader th, #leaderboardBody td {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+    
     
                    
   </style>
