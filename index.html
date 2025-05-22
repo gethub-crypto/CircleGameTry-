@@ -748,13 +748,13 @@ function startBonusTimer() {
     console.error("Error checking bonus eligibility:", error);
     showMessage("Failed to check bonus eligibility.");
   });
-}
+}!*/
 
 function claimHourlyBonus() {
   if (!user) {
     showMessage("Please sign in to claim the bonus.");
     return;
-  }!*/
+  }
 
   db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
     const data = snapshot.val() || { lastClaim: 0 };
