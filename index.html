@@ -961,6 +961,27 @@ function claimHourlyBonus() {
     showMessage("Failed to check bonus eligibility.");
   });
 }
+
+    //таблица лидеров
+function showTab(tab) {
+  const tableHeader = document.getElementById("tableHeader");
+  const leaderboardBody = document.getElementById("leaderboardBody");
+  const overallBtn = document.getElementById("overallTabBtn");
+  const weeklyBtn = document.getElementById("weeklyTabBtn");
+
+  if (tab === "overall") {
+    overallBtn.classList.add("active");
+    weeklyBtn.classList.remove("active");
+    tableHeader.innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>";
+    updateOverallLeaderboard(); // Загружаем данные для Overall
+  } else {
+    overallBtn.classList.remove("active");
+    weeklyBtn.classList.add("active");
+    tableHeader.innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>";
+    updateWeeklyLeaderboard(); // Загружаем данные для Weekly
+  }
+}
+                     
     
 
     function closeAllPanels() {
