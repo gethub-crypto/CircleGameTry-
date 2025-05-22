@@ -1054,6 +1054,13 @@ function updateWeeklyLeaderboard() {
   });
 }
 
+//таблица лидеров 
+    function getWeekKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const week = getWeekNumber();
+  return `${year}_${week}`;
+    }
     
     
 
