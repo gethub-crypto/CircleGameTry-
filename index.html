@@ -1015,6 +1015,45 @@ function updateOverallLeaderboard() {
     showMessage("Failed to load leaderboard.");
   });
 }
+
+//таблица лидеров 
+function updateWeeklyLeaderboard() {
+  const weekKey = getWeekKey();
+  const leaderboardBody = document.getElementById("leaderboardBody");
+  db.ref(`weeklyLeaderboard/${weekKey}`).once("value", snapshot => {
+    const data = [];
+    snapshot.forEach(child => {
+      const entry = child.val();
+      if (entry && entry.score >= 50000 && entry.name) {
+        data.push({
+          id: entry.id,
+          name: entry.name,
+          score: entry.score,
+          rewardClaimed: entry.rewardClaimed || false
+        });
+      }
+    });
+
+    data.sort((a, b) => b.score - a.score);
+
+    leaderboardBody.innerHTML = "";
+
+    if (data.length === 0) {
+      leaderboardBody.innerHTML = "<tr><td colspan='4'>No players with 50,000+ tokens this week</td></tr>";
+      return;
+    }
+
+    data.slice(0, 10).forEach((entry, index) => {
+      const reward = getRewardForRank(index + 1);
+      const rewardText = entry.rewardClaimed ? `${reward} (Claimed)` : reward;
+      leaderboardBody.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td><td>${rewardText}</td></tr>`;
+    });
+  }, error => {
+    console.error("Error loading weekly leaderboard:", error);
+    showMessage("Failed to load weekly leaderboard.");
+  });
+}
+
     
     
 
