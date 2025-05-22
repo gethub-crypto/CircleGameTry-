@@ -1830,7 +1830,7 @@ function loadNotifications(uid) {
   });
 }
 
-function loadPlayerData(uid) {
+/*!function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -1937,7 +1937,107 @@ function loadPlayerData(uid) {
       renderAchievements();
     }
   });
+}*!/
+
+
+function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      clickPower = data.clickPower || 1;
+      autoclickActive = data.autoclickActive || false;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      user.referrer_uid = data.referrer_uid || null;
+      user.referral_bonus_claimed = data.referral_bonus_claimed || false;
+      const lastUpdate = data.lastUpdate || 0;
+
+      // Обработка временного буста
+      const tempBoostActive = data.tempBoostActive || false;
+      const tempBoostEndTime = data.tempBoostEndTime || 0;
+      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
+      const tempBoostAmount = data.tempBoostAmount || 0;
+
+      if (tempBoostActive && tempBoostEndTime > Date.now()) {
+        originalClickPower = tempBoostOriginalClickPower;
+        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
+        const remainingDuration = tempBoostEndTime - Date.now();
+
+        if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+        tempBoostTimeout = setTimeout(() => {
+          clickPower = originalClickPower;
+          showMessage(`Буст закончился: Сила клика восстановлена`);
+          updateClickPowerBar();
+          updateProfilePanel();
+          submitScore();
+          db.ref("leaderboard/" + uid).update({
+            tempBoostActive: false,
+            tempBoostEndTime: 0,
+            tempBoostOriginalClickPower: 0,
+            tempBoostAmount: 0,
+            lastUpdate: Date.now()
+          });
+          tempBoostTimeout = null;
+        }, remainingDuration);
+      } else if (tempBoostActive) {
+        clickPower = tempBoostOriginalClickPower;
+        db.ref("leaderboard/" + uid).update({
+          tempBoostActive: false,
+          tempBoostEndTime: 0,
+          tempBoostOriginalClickPower: 0,
+          tempBoostAmount: 0,
+          clickPower: clickPower,
+          lastUpdate: Date.now()
+        });
+      }
+
+      // Обработка автокликера
+      if (autoclickActive && autoclickEndTime > Date.now()) {
+        const elapsedTime = Date.now() - lastUpdate;
+        const secondsPassed = Math.floor(elapsedTime / 1000);
+        const tokensEarned = secondsPassed * clickPower;
+        if (tokensEarned > 0) {
+          db.ref(`leaderboard/${uid}/score`).transaction(currentScore => {
+            score = (currentScore || 0) + tokensEarned;
+            return score;
+          }).then(() => {
+            showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
+            updateTaskProgress("collectTokens", tokensEarned);
+            updateTaskProgress("collectBigTokens", tokensEarned);
+            updateCounterDisplay();
+          });
+        }
+        const remainingTime = autoclickEndTime - Date.now();
+        startAutoclicker(remainingTime, false);
+      } else if (autoclickActive) {
+        stopAutoclicker();
+      }
+
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      renderAchievements();
+      updateClickPowerCostText();
+     // startBonusTimer();
+    }
+
+    db.ref("leaderboard/" + uid).update({
+      lastUpdate: Date.now()
+    });
+  }).catch(error => {
+    console.error("Ошибка загрузки данных игрока:", error);
+    showMessage("Не удалось загрузить данные.");
+  });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      achievements = data;
+      renderAchievements();
+    }
+  });
 }
+  
 
 
    
