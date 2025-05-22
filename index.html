@@ -981,7 +981,41 @@ function showTab(tab) {
     updateWeeklyLeaderboard(); // Загружаем данные для Weekly
   }
 }
-                     
+
+//таблица лидеров 
+function updateOverallLeaderboard() {
+  const leaderboardBody = document.getElementById("leaderboardBody");
+  db.ref("leaderboard").once("value", snapshot => {
+    const data = [];
+    snapshot.forEach(child => {
+      const entry = child.val();
+      if (entry && entry.score !== undefined && entry.name) {
+        data.push({
+          id: entry.id,
+          name: entry.name,
+          score: entry.score
+        });
+      }
+    });
+
+    data.sort((a, b) => b.score - a.score);
+
+    leaderboardBody.innerHTML = "";
+
+    if (data.length === 0) {
+      leaderboardBody.innerHTML = "<tr><td colspan='3'>No players yet</td></tr>";
+      return;
+    }
+
+    data.slice(0, 10).forEach((entry, index) => {
+      leaderboardBody.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
+    });
+  }, error => {
+    console.error("Error loading leaderboard:", error);
+    showMessage("Failed to load leaderboard.");
+  });
+}
+    
     
 
     function closeAllPanels() {
