@@ -2930,7 +2930,7 @@ function buyAutoclicker(minutes) {
     }!!*/
     
 
-    function signOut() {
+/*!    function signOut() {
       if (user) {
         submitScore();
       }
@@ -2947,7 +2947,47 @@ function buyAutoclicker(minutes) {
         updateClickPowerBar();
         updateProfilePanel();
       });
+    }!*/
+
+    function signOut() {
+    if (user) {
+        submitScore().then(() => {
+            auth.signOut().then(() => {
+                user = null;
+                score = 0;
+                clickPower = 1; // Локальный сброс, но данные сохранены в базе
+                autoclickEndTime = 0;
+                clearInterval(autoclickInterval);
+                document.getElementById("authSection").style.display = "block";
+                document.getElementById("gameSection").style.display = "none";
+                updateCounterDisplay();
+                updateClickPowerBar();
+                updateProfilePanel();
+                showMessage("Вы успешно вышли из аккаунта.");
+            }).catch(error => {
+                console.error("Ошибка при выходе из аккаунта:", error);
+                showMessage("Не удалось выйти из аккаунта.");
+            });
+        }).catch(error => {
+            console.error("Ошибка при сохранении данных перед выходом:", error);
+            showMessage("Не удалось сохранить прогресс перед выходом.");
+        });
+    } else {
+        auth.signOut().then(() => {
+            user = null;
+            score = 0;
+            clickPower = 1;
+            autoclickEndTime = 0;
+            clearInterval(autoclickInterval);
+            document.getElementById("authSection").style.display = "block";
+            document.getElementById("gameSection").style.display = "none";
+            updateCounterDisplay();
+            updateClickPowerBar();
+            updateProfilePanel();
+            showMessage("Вы успешно вышли из аккаунта.");
+        });
     }
+}
 
   /*!  auth.onAuthStateChanged(currentUser => {
       if (currentUser) {
