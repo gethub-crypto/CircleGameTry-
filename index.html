@@ -2949,7 +2949,7 @@ function buyAutoclicker(minutes) {
       });
     }!*/
 
-    function signOut() {
+ /*!!   function signOut() {
     if (user) {
         submitScore().then(() => {
             auth.signOut().then(() => {
@@ -2987,7 +2987,28 @@ function buyAutoclicker(minutes) {
             showMessage("Вы успешно вышли из аккаунта.");
         });
     }
+}*!!/
+
+function signOut() {
+    console.log("signOut вызвана, user:", user);
+    auth.signOut().then(() => {
+        user = null;
+        score = 0;
+        clickPower = 1;
+        autoclickEndTime = 0;
+        clearInterval(autoclickInterval);
+        document.getElementById("authSection").style.display = "block";
+        document.getElementById("gameSection").style.display = "none";
+        updateCounterDisplay();
+        updateClickPowerBar();
+        updateProfilePanel();
+        showMessage("Вы успешно вышли из аккаунта.");
+    }).catch(error => {
+        console.error("Ошибка при выходе из аккаунта:", error);
+        showMessage("Не удалось выйти из аккаунта.");
+    });
 }
+
 
   /*!  auth.onAuthStateChanged(currentUser => {
       if (currentUser) {
