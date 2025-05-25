@@ -1166,6 +1166,8 @@ function awardWeeklyRewards() {
       // Сбрасываем таблицу
       db.ref(`weeklyLeaderboard/${weekKey}`).remove();
       db.ref(`weeklyLeaderboard/lastReset`).set(Date.now());
+
+      listenToWeeklyLeaderboard();
     }
   });
 } 
