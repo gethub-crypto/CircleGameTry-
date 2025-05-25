@@ -2717,6 +2717,7 @@ function submitScore() {
   db.ref("leaderboard/" + user.uid).update({
     id: user.uid,
     name: userName,
+    score: score, // Явно сохраняем score
     clickPower: clickPower,
     autoclickActive: autoclickActive,
     autoclickEndTime: autoclickEndTime,
