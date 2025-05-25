@@ -3097,6 +3097,49 @@ function signOut() {
       showMessage("Failed to load leaderboard.");
     });!*/
 
+
+
+// Слушатель для Overall таблица лидеров 
+db.ref("leaderboard").on("value", snapshot => {
+  if (currentTab !== "overall") return; // Обновляем только если активна вкладка Overall
+
+  const leaderboardBody = document.getElementById("leaderboardBody");
+  const data = [];
+
+  snapshot.forEach(child => {
+    const entry = child.val();
+    if (entry && entry.score !== undefined && entry.name) {
+      data.push({
+        id: entry.id,
+        name: entry.name,
+        score: entry.score
+      });
+    }
+  });
+
+  data.sort((a, b) => b.score - a.score);
+
+  leaderboardBody.innerHTML = "";
+
+  if (data.length === 0) {
+    leaderboardBody.innerHTML = "<tr><td colspan='3'>No players yet</td></tr>";
+    return;
+  }
+
+  data.slice(0, 10).forEach((entry, index) => {
+    leaderboardBody.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
+  });
+
+  // Визуальная обратная связь
+  leaderboardBody.classList.add("updated");
+}, error => {
+  console.error("Error loading leaderboard:", error);
+  showMessage("Failed to load leaderboard.");
+});
+
+
+    
+
 // Инициализация таблицы при загрузке
 showTab("overall");
 
