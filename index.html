@@ -667,6 +667,8 @@ const dailyTasks = [
     let bonusTimerInterval = null;
     let isAnimating = false;
     let isProcessingReferrer = false;
+    let currentTab = "overall"; // Отслеживаем текущую вкладку
+
 
     let miniGameActive = false;
     let miniGameClicks = 0;
@@ -988,6 +990,9 @@ function showTab(tab) {
   const overallBtn = document.getElementById("overallTabBtn");
   const weeklyBtn = document.getElementById("weeklyTabBtn");
 
+  currentTab = tab; // Обновляем текущую вкладку
+
+  
   if (tab === "overall") {
     overallBtn.classList.add("active");
     weeklyBtn.classList.remove("active");
