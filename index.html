@@ -2847,7 +2847,7 @@ function submitScore() {
 
     
 
-    function buyUpgrade(type) {
+  /*!  function buyUpgrade(type) {
       const cost = getClickPowerUpgradeCost();
       if (type === "clickPower") {
         if (clickPower >= 8) {
@@ -2877,7 +2877,55 @@ function submitScore() {
           showMessage("Not enough tokens for upgrade.");
         }
       }
+    }!*/
+
+
+    function buyUpgrade(type) {
+  if (type === "clickPower") {
+    if (clickPower >= 8) {
+      showMessage("Click Power is at maximum!");
+      return;
     }
+
+    const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
+    if (clickPower >= 3 && currentLevel < clickPower + 1) {
+      showMessage(`Reach player level ${clickPower + 1} to upgrade Click Power further!`);
+      const buyButton = document.querySelector("button[onclick=\"buyUpgrade('clickPower')\"]");
+      buyButton.style.animation = "shake 0.3s";
+      setTimeout(() => buyButton.style.animation = "", 300);
+      return;
+    }
+
+    const cost = getClickPowerUpgradeCost();
+
+    // Проверяем и обновляем score через транзакцию
+    db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+      const newScore = (currentScore || 0) - cost;
+      if (newScore < 0) {
+        // Отменяем транзакцию, если недостаточно токенов
+        return undefined;
+      }
+      return newScore;
+    }).then(transactionResult => {
+      if (transactionResult.committed) {
+        // Транзакция успешна
+        score = transactionResult.snapshot.val();
+        clickPower++;
+        updateCounterDisplay();
+        updateClickPowerBar();
+        updateProfilePanel();
+        updateClickPowerCostText();
+        submitScore();
+        showMessage("Click Power upgraded!");
+      } else {
+        showMessage("Not enough tokens for upgrade.");
+      }
+    }).catch(error => {
+      console.error("Error during upgrade transaction:", error);
+      showMessage("Failed to upgrade Click Power.");
+    });
+  }
+}
 
   
 
