@@ -963,7 +963,7 @@ function claimHourlyBonus() {
 }
 
     //таблица лидеров
-function showTab(tab) {
+/*!function showTab(tab) {
   const tableHeader = document.getElementById("tableHeader");
   const leaderboardBody = document.getElementById("leaderboardBody");
   const overallBtn = document.getElementById("overallTabBtn");
@@ -980,7 +980,28 @@ function showTab(tab) {
     tableHeader.innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>";
     updateWeeklyLeaderboard(); // Загружаем данные для Weekly
   }
+}!*/ // obnovlenie pri perezagruzke stranici
+
+function showTab(tab) {
+  const tableHeader = document.getElementById("tableHeader");
+  const leaderboardBody = document.getElementById("leaderboardBody");
+  const overallBtn = document.getElementById("overallTabBtn");
+  const weeklyBtn = document.getElementById("weeklyTabBtn");
+
+  if (tab === "overall") {
+    overallBtn.classList.add("active");
+    weeklyBtn.classList.remove("active");
+    tableHeader.innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>";
+    // Данные будут загружены слушателем
+  } else {
+    overallBtn.classList.remove("active");
+    weeklyBtn.classList.add("active");
+    tableHeader.innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>";
+    // Данные будут загружены слушателем
+  }
 }
+
+    
 
 //таблица лидеров 
 function updateOverallLeaderboard() {
