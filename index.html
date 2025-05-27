@@ -685,7 +685,7 @@ const dailyTasks = [
     let miniGameClicks = 0;
     let miniGameTimer = null;
 
-function startMiniGame() {
+/*!function startMiniGame() {
   if (score < 1000) {
     showMessage("You need 1000 tokens to start the mini-game!");
     return;
@@ -703,7 +703,31 @@ function startMiniGame() {
       endMiniGame();
     }
   }, 1000);
+}!*/
+
+function startMiniGame() {
+  if (score < 1000) {
+    showMessage("You need 1000 tokens to start the mini-game!");
+    return;
+  }
+  miniGameActive = true;
+  miniGameClicks = 0;
+  document.getElementById("miniGamePanel").style.display = "block";
+  document.getElementById("miniGameClicks").innerText = miniGameClicks;
+  let timeLeft = 10;
+  document.getElementById("miniGameTimer").innerText = timeLeft;
+  miniGameTimer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("miniGameTimer").innerText = timeLeft;
+    if (timeLeft <= 0) {
+      endMiniGame();
+    }
+  }, 1000);
+
+  // Обновляем прогресс задания
+  updateTaskProgress("miniGameChallenge", 1);
 }
+    
 
 function miniGameClick() {
   if (miniGameActive) {
