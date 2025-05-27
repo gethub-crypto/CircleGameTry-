@@ -1740,7 +1740,7 @@ function renderTasks() {
 }
     
 
-function claimTask(taskId) {
+/*!function claimTask(taskId) {
   if (!user) {
     showMessage("Please sign in to complete tasks.");
     return;
@@ -1762,6 +1762,59 @@ function claimTask(taskId) {
 
       score += reward;
       showMessage(`Task "${task.description}" completed! +${reward} tokens`);
+      updateCounterDisplay();
+      submitScore();
+
+      db.ref(`tasks/${user.uid}/${task.id}`).set({
+        progress: taskData.progress,
+        lastReset: taskData.lastReset,
+        completions: completions,
+        completed: true,
+        ...(task.id === "collectTokens" || task.id === "collectBigTokens" ? { goal: taskData.goal, reward: taskData.reward } : {})
+      }).then(() => {
+        renderTasks();
+      }).catch(error => {
+        console.error("Error completing task:", error);
+        showMessage("Failed to complete task.");
+      });
+    } else {
+      showMessage("Task not yet completed!");
+    }
+  }).catch(error => {
+    console.error("Error fetching task data:", error);
+    showMessage("Failed to fetch task data.");
+  });
+}!*/
+
+    function claimTask(taskId) {
+  if (!user) {
+    showMessage("Please sign in to complete tasks.");
+    return;
+  }
+
+  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
+    const taskData = snapshot.val();
+    const task = dailyTasks.find(t => t.id === taskId);
+
+    if (taskData && (taskData.completed || taskData.completions >= 1)) {
+      showMessage("Task already completed for this period!");
+      return;
+    }
+
+    const goal = task.id === "collectTokens" || task.id === "collectBigTokens" ? taskData.goal : task.goal;
+    if (taskData.progress >= goal) {
+      const completions = (taskData.completions || 0) + 1;
+      let reward = task.id === "collectTokens" || task.id === "collectBigTokens" ? taskData.reward : task.reward;
+
+      if (task.rewardType === "crystals") {
+        crystals += reward;
+        showMessage(`Task "${task.description}" completed! +${reward} 💎`);
+        updateProfilePanel(); // Update to show new crystal count
+      } else {
+        score += reward;
+        showMessage(`Task "${task.description}" completed! +${reward} tokens`);
+      }
+
       updateCounterDisplay();
       submitScore();
 
