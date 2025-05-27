@@ -2652,6 +2652,7 @@ function loadPlayerData(uid) {
     const data = snapshot.val();
     if (data) {
       score = data.score || 0;
+      crystals = data.crystals || 0; // Load crystals
       clickPower = data.clickPower || 1;
       autoclickActive = data.autoclickActive || false;
       autoclickEndTime = data.autoclickEndTime || 0;
