@@ -2076,7 +2076,7 @@ function completeTwitterTask(taskId) {
   });
 } 
   
-/*!function checkTaskCompletion(taskId) {
+function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -2112,10 +2112,10 @@ function completeTwitterTask(taskId) {
       renderTasks();
     }
   });
-}!*/
+}
 
 
-    function checkTaskCompletion(taskId) {
+  /*!?!!?  function checkTaskCompletion(taskId) {
   db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
     const taskData = snapshot.val();
     const task = dailyTasks.find(t => t.id === taskId);
@@ -2153,7 +2153,7 @@ function completeTwitterTask(taskId) {
       renderTasks();
     }
   });
-}
+}?!?*/
 
 document.addEventListener("DOMContentLoaded", function() {
   particlesJS("particles-js", {
