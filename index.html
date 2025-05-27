@@ -737,6 +737,7 @@ function endMiniGame(success = false) {
     score += 500;
     showMessage("Mini-game completed! +500 tokens!");
     updateTaskProgress("miniGameChallenge", 1); // Increment mini-game task progress
+    checkTaskCompletion("miniGameChallenge"); // Проверяем завершение задачи
     submitScore();
   } else {
     showMessage("Mini-game failed. Try again!");
