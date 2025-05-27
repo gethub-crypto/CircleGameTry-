@@ -678,7 +678,7 @@ function miniGameClick() {
   updateCounterDisplay();
   updateProfilePanel();
 }!*/
-function endMiniGame(success = false) {
+/*!?!function endMiniGame(success = false) {
   clearInterval(miniGameTimer);
   miniGameActive = false;
   document.getElementById("miniGamePanel").style.display = "none";
@@ -694,7 +694,27 @@ function endMiniGame(success = false) {
   updateCounterDisplay();
   updateProfilePanel();
   renderTasks();
+}!?!*/
+
+
+function endMiniGame(success = false) {
+  clearInterval(miniGameTimer);
+  miniGameActive = false;
+  document.getElementById("miniGamePanel").style.display = "none";
+  if (success) {
+    score += 500;
+    showMessage("Mini-game completed! +500 tokens!");
+    updateTaskProgress("miniGameChallenge", 1); // Увеличиваем прогресс
+    checkTaskCompletion("miniGameChallenge"); // Проверяем завершение и начисляем награду
+    submitScore();
+  } else {
+    showMessage("Mini-game failed. Try again!");
+  }
+  updateCounterDisplay();
+  updateProfilePanel();
+  renderTasks();
 }
+    
     
 
 function generateReferralLink() {
