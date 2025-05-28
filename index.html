@@ -724,11 +724,7 @@ function updateProfilePanel() {
     levelMessageElement.classList.remove('show');
   }
 }
-
-
-
-    
-    
+ 
 
     function checkDailyReward() {
       if (!user) return;
@@ -800,40 +796,7 @@ function startBonusTimer() {
   }, 1000);
 }
 
-/*!function claimHourlyBonus() {
-  if (!user) {
-    showMessage("Please sign in to claim the bonus.");
-    return;
-  }
 
-  db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
-    const data = snapshot.val() || { lastClaim: 0 };
-    const now = Date.now();
-    const timeSinceLastClaim = now - data.lastClaim;
-    const oneHour = 3600000;
-
-    if (timeSinceLastClaim >= oneHour || !data.lastClaim) {
-      const reward = Math.floor(Math.random() * (200 - 10 + 1)) + 10; // Random 10-200 tokens
-      score += reward;
-      updateCounterDisplay();
-      submitScore();
-      showMessage(`Claimed ${reward} tokens from Hourly Bonus!`);
-
-      db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now }).then(() => {
-        document.getElementById("claimBonusBtn").disabled = true;
-        startBonusTimer();
-      }).catch(error => {
-        console.error("Error saving bonus claim:", error);
-        showMessage("Failed to save bonus claim.");
-      });
-    } else {
-      showMessage("Bonus not ready yet!");
-    }
-  }).catch(error => {
-    console.error("Error checking bonus eligibility:", error);
-    showMessage("Failed to check bonus eligibility.");
-  });
-}!*/
 
 function claimHourlyBonus() {
   if (!user) {
