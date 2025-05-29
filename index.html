@@ -3256,6 +3256,15 @@ function activateFreeAutoclicker() {
   updateAutoclickerShop();
   submitScore();
 }
+
+
+
+ //noviy autoclicker   
+ function getAutoclickerDuration() {
+  const baseDuration = 60 * 1000; // 1 минута
+  const durationPerLevel = (maxAutoclickerDuration - baseDuration) / 19;
+  return Math.floor(baseDuration + (autoclickerLevel - 1) * durationPerLevel);
+ }   
     
 
     
