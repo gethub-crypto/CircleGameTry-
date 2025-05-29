@@ -654,6 +654,11 @@ const dailyTasks = [
     let miniGameTimer = null;
 
 
+    let autoclickerLevel = 1;
+
+    const maxAutoclickerDuration = 4 * 60 * 60 * 1000; // 4 часа
+
+
 
 function startMiniGame() {
   if (score < 1000) {
