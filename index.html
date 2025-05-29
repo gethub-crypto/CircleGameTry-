@@ -3265,7 +3265,19 @@ function activateFreeAutoclicker() {
   const durationPerLevel = (maxAutoclickerDuration - baseDuration) / 19;
   return Math.floor(baseDuration + (autoclickerLevel - 1) * durationPerLevel);
  }   
-    
+
+//noviy autoclicer upgrade 
+function getAutoclickerUpgradeCost() {
+  const baseTokenCost = 100;
+  const baseCrystalCost = 10;
+  const multiplier = Math.pow(1.5, autoclickerLevel - 1);
+  return {
+    tokens: Math.floor(baseTokenCost * multiplier),
+    crystals: Math.floor(baseCrystalCost * multiplier)
+  };
+}
+
+                     
 
     
    function signInWithGoogle() {
