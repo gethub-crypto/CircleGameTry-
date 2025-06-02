@@ -3273,10 +3273,10 @@ function upgradeAutoclicker() {
     showMessage("Autoclicker is at maximum level!");
     return;
   }
-  //if (autoclickerLevel >= Math.min(currentLevel, 1)) {
-    //showMessage(`Upgrade requires player level ${autoclickerLevel + 1}!`);
-    //return;
- // }
+  if (autoclickerLevel >= Math.min(currentLevel, 1)) {
+    showMessage(`Upgrade requires player level ${autoclickerLevel + 1}!`);
+    return;
+  }
 
   const cost = getAutoclickerUpgradeCost();
   if (score < cost.tokens || crystals < cost.crystals) {
