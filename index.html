@@ -3203,7 +3203,7 @@ function buyAutoclicker(minutes) {
 }
     
 //noviy autocliker
-function updateAutoclickerShop() {
+/*!function updateAutoclickerShop() {
   const levelDisplay = document.getElementById("autoclickerLevel");
   const durationDisplay = document.getElementById("autoclickerDurationValue");
   const upgradeCostDisplay = document.getElementById("autoclickerUpgradeCost");
@@ -3231,7 +3231,35 @@ function updateAutoclickerShop() {
   }
 
   freeAutoclickerBtn.disabled = autoclickActive;
+}!*/
+function updateAutoclickerShop() {
+  const levelDisplay = document.getElementById("autoclickerLevel");
+  const durationDisplay = document.getElementById("autoclickerDurationValue");
+  const upgradeCostDisplay = document.getElementById("autoclickerUpgradeCost");
+  const upgradeBtn = document.getElementById("upgradeAutoclickerBtn");
+  const freeAutoclickerBtn = document.getElementById("activateFreeAutoclickerBtn");
+
+  levelDisplay.innerText = autoclickerLevel;
+  const durationSeconds = Math.floor(getAutoclickerDuration() / 1000);
+  durationDisplay.innerText = durationSeconds >= 3600 
+    ? `${Math.floor(durationSeconds / 3600)}h ${Math.floor((durationSeconds % 3600) / 60)}m`
+    : durationSeconds >= 60 
+      ? `${Math.floor(durationSeconds / 60)}m ${durationSeconds % 60}s`
+      : `${durationSeconds}s`;
+
+  if (autoclickerLevel >= 20) {
+    upgradeCostDisplay.innerText = "Autoclicker: MAX LEVEL";
+    upgradeBtn.disabled = true;
+  } else {
+    const cost = getAutoclickerUpgradeCost();
+    upgradeCostDisplay.innerText = `Upgrade Cost: ${cost.tokens} Tokens + ${cost.crystals} 💎`;
+    upgradeBtn.disabled = false;
+  }
+
+  freeAutoclickerBtn.disabled = autoclickActive;
 }
+
+    
 
 
 //noviy autoclicker    
