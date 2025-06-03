@@ -3268,7 +3268,7 @@ function activateFreeAutoclicker() {
 
 
 //noviy autoclicker upgrade 
-function upgradeAutoclicker() {
+/*!function upgradeAutoclicker() {
   if (autoclickerLevel >= 20) {
     showMessage("Autoclicker is at maximum level!");
     return;
@@ -3311,7 +3311,57 @@ function upgradeAutoclicker() {
     console.error("Error upgrading autoclicker:", error);
     showMessage("Failed to upgrade autoclicker.");
   });
+}!*/
+
+function upgradeAutoclicker() {
+  updateProfilePanel(); // Оставляем для синхронизации интерфейса
+
+  if (autoclickerLevel >= 20) {
+    showMessage("Autoclicker is at maximum level!");
+    return;
+  }
+  // Удаляем проверку зависимости от currentLevel
+  // if (autoclickerLevel >= Math.min(currentLevel, 4)) {
+  //   showMessage(`Upgrade requires player level ${autoclickerLevel + 1}!`);
+  //   return;
+  // }
+
+  const cost = getAutoclickerUpgradeCost();
+  if (score < cost.tokens || crystals < cost.crystals) {
+    showMessage("Not enough tokens or crystals to upgrade!");
+    return;
+  }
+
+  db.ref(`leaderboard/${user.uid}`).transaction(data => {
+    if ((data.score || 0) >= cost.tokens && (data.crystals || 0) >= cost.crystals) {
+      return {
+        ...data,
+        score: (data.score || 0) - cost.tokens,
+        crystals: (data.crystals || 0) - cost.crystals,
+        autoclickerLevel: (data.autoclickerLevel || 1) + 1
+      };
+    }
+    return undefined;
+  }).then(transactionResult => {
+    if (transactionResult.committed) {
+      score = transactionResult.snapshot.val().score;
+      crystals = transactionResult.snapshot.val().crystals;
+      autoclickerLevel++;
+      showMessage(`Autoclicker upgraded to level ${autoclickerLevel}!`);
+      updateCounterDisplay();
+      updateProfilePanel();
+      updateAutoclickerShop();
+      submitScore();
+    } else {
+      showMessage("Not enough tokens or crystals to upgrade!");
+    }
+  }).catch(error => {
+    console.error("Error upgrading autoclicker:", error);
+    showMessage("Failed to upgrade autoclicker.");
+  });
 }
+
+    
     
 
 //noviy autoclicer upgrade 
