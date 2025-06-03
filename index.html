@@ -346,38 +346,6 @@
   }
 }
     
-
-
- /* #settings {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  background: #1a1a1a;
-  padding: 20px;
-  border-radius: 12px;
-  width: 200px;
-  margin: 0 auto;
-  box-shadow: 0 0 10px #00c3ff;
-}
-#settings h3 {
-  color: #00ffa6;
-  margin: 0;
-}
-#settings p {
-  color: #fff;
-  margin: 5px 0;
-}
-#settings .click-button:disabled {
-  background: #555;
-  cursor: not-allowed;
-}  */
-
-
-
-    
-
-  
                    
   </style>
 </head>
@@ -1397,102 +1365,6 @@ function getWeekNumber() {
 } 
 
 
-/*??????function renderTasks() {
-  if (isRenderingTasks) return;
-  isRenderingTasks = true;
-
-  const list = document.getElementById("tasksList");
-  list.innerHTML = "";
-
-  if (!user) {
-    isRenderingTasks = false;
-    return;
-  }
-
-  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
-    const tasksData = snapshot.val() || {};
-    const today = new Date().toDateString();
-    const startOfWeek = new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + (new Date().getDay() === 0 ? -6 : 1))).toDateString();
-    const weekNumber = getWeekNumber();
-    const isEvenWeek = weekNumber % 2 === 0;
-
-    const activeTasks = dailyTasks.filter(task => {
-      if (!task.alternate) return true;
-      if (task.id === "autoclickerMaster" && isEvenWeek) return true;
-      if (task.id === "collectBigTokens" && !isEvenWeek) return true;
-      return false;
-    });
-
-    activeTasks.forEach(task => {
-      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
-
-      const resetKey = task.period === "weekly" ? startOfWeek : today;
-      if (taskData.lastReset !== resetKey) {
-        taskData = { 
-          progress: 0, 
-          lastReset: resetKey, 
-          completions: 0, 
-          completed: false,
-          ...(task.goalOptions && {
-            goal: task.goalOptions[Math.floor(Math.random() * task.goalOptions.length)],
-            reward: task.rewards[Math.floor(Math.random() * task.rewards.length)]
-          })
-        };
-        db.ref(`tasks/${user.uid}/${task.id}`).set(taskData);
-      }
-
-      const div = document.createElement("div");
-      if (taskData.completed || taskData.completions >= 1) {
-        div.innerHTML = `${task.description}: Completed for ${task.period === "weekly" ? "this week" : "today"}!`;
-      } else {
-        if (task.id === "collectTokens" || task.id === "collectBigTokens") {
-          div.innerHTML = `
-            ${task.description}: ${taskData.progress}/${taskData.goal} (Reward: ${taskData.reward} tokens)
-            <br>
-            <button class="click-button" onclick="claimTask('${task.id}')" ${taskData.progress < taskData.goal ? 'disabled' : ''}>Claim</button>
-          `;
-        } else if (task.id === "subscribeTwitter") {
-          div.innerHTML = `
-            ${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} tokens)
-            <br>
-            <a href="${task.link}" target="_blank" rel="noopener noreferrer" style="color: #00ffa6; text-decoration: none; cursor: pointer;" onclick="openTwitterLink('${task.link}'); return false;">Go to X</a>
-            <button class="click-button" onclick="completeTwitterTask('${task.id}')" style="margin-left: 10px;">Claim</button>
-          `;
-        } else if (task.id === "clickMasterWeekly") {
-          div.innerHTML = `
-            ${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} tokens)
-            <br>
-            <button class="click-button" onclick="claimTask('${task.id}')" ${taskData.progress < task.goal ? 'disabled' : ''}>Claim</button>
-          `;
-        } else if (task.id === "miniGameChallenge") {
-          div.innerHTML = `
-            ${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} 💎)
-          `;
-        } else {
-          div.innerHTML = `
-            ${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} ${task.rewardType === "crystals" ? "💎" : "tokens"})
-            <br>
-            <button class="click-button" onclick="claimTask('${task.id}')" ${taskData.progress < taskData.goal ? 'disabled' : ''}>Claim</button>
-          `;
-        }
-      }
-      list.appendChild(div);
-    });
-
-    const validTaskIds = activeTasks.map(task => task.id);
-    for (const taskId in tasksData) {
-      if (!validTaskIds.includes(taskId)) {
-        db.ref(`tasks/${user.uid}/${taskId}`).remove();
-      }
-    }
-
-    isRenderingTasks = false;
-  }).catch(error => {
-    console.error("Error rendering tasks:", error);
-    showMessage("Failed to load tasks.");
-    isRenderingTasks = false;
-  });
-}????*/
 
 function renderTasks() {
   if (isRenderingTasks) return;
@@ -1893,43 +1765,7 @@ function completeTwitterTask(taskId) {
   });
 } 
   
-/*!function checkTaskCompletion(taskId) {
-  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-    const taskData = snapshot.val();
-    const task = dailyTasks.find(t => t.id === taskId);
 
-    if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
-      return;
-    }
-
-    const goal = task.id === "collectTokens" || task.id === "collectBigTokens" ? taskData.goal : task.goal;
-    if (taskData && taskData.progress >= goal) {
-      const completions = (taskData.completions || 0) + 1;
-      if (completions <= 1) {
-        if (task.id === "clickMarathon" || task.id === "clickMasterWeekly") {
-          score += task.reward;
-          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-          updateCounterDisplay();
-          submitScore();
-        } else if (task.id === "collectTokens" || task.id === "collectBigTokens") {
-          // Награда начисляется через claimTask
-        } else if (task.id === "autoclickerMaster") {
-          showMessage(`Task "${task.description}" completed! ${task.reward}`);
-          startAutoclicker(300000, true);
-          submitScore();
-        }
-        db.ref(`tasks/${user.uid}/${task.id}`).set({
-          progress: taskData.progress,
-          lastReset: taskData.lastReset,
-          completions: completions,
-          completed: true,
-          ...(task.id === "collectTokens" || task.id === "collectBigTokens" ? { goal: taskData.goal, reward: taskData.reward } : {})
-        });
-      }
-      renderTasks();
-    }
-  });
-}!*/
 
 
   function checkTaskCompletion(taskId) {
