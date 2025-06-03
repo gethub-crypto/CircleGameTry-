@@ -3294,7 +3294,7 @@ function upgradeAutoclicker() {
 function getAutoclickerUpgradeCost() {
   const baseTokenCost = 100;
   const baseCrystalCost = 10;
-  const multiplier = Math.pow(1.5, autoclickerLevel - 1);
+  const multiplier = Math.pow(6, autoclickerLevel - 1);
   return {
     tokens: Math.floor(baseTokenCost * multiplier),
     crystals: Math.floor(baseCrystalCost * multiplier)
