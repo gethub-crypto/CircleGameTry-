@@ -2726,6 +2726,7 @@ function loadPlayerData(uid) {
       updateProfilePanel();
       renderAchievements();
       updateClickPowerCostText();
+      updateAutoclickerShop(); // Должно обновить интерфейс
       startBonusTimer();
       checkWeeklyReset(); // Проверяем сброс еженедельной таблицы
       if (score >= 50000) updateWeeklyScore(); // Обновляем еженедельный счет
