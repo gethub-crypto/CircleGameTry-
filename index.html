@@ -3291,7 +3291,7 @@ function upgradeAutoclicker() {
     
 
 //noviy autoclicer upgrade 
-function getAutoclickerUpgradeCost() {
+/*!function getAutoclickerUpgradeCost() {
   const baseTokenCost = 100;
   const baseCrystalCost = 10;
   const multiplier = Math.pow(4, autoclickerLevel - 1);
@@ -3299,9 +3299,34 @@ function getAutoclickerUpgradeCost() {
     tokens: Math.floor(baseTokenCost * multiplier),
     crystals: Math.floor(baseCrystalCost * multiplier)
   };
+}!*/
+
+function getAutoclickerUpgradeCost() {
+  let tokens, crystals;
+
+  if (autoclickerLevel >= 10) {
+    // Уровень 10 и выше
+    tokens = 1500000;
+    crystals = 1000;
+  } else if (autoclickerLevel >= 6) {
+    // Уровни 6–9
+    tokens = 1000000 + 125000 * (autoclickerLevel - 6);
+    crystals = 500 + 125 * (autoclickerLevel - 6);
+  } else {
+    // Уровни 1–5
+    const k = Math.pow(1000, 1/5); // ~3.981
+    tokens = Math.round(1000 * Math.pow(k, autoclickerLevel - 1));
+    crystals = 10 + 98 * (autoclickerLevel - 1);
+  }
+
+  return {
+    tokens: tokens,
+    crystals: crystals
+  };
 }
 
-                     
+
+    
 
     
    function signInWithGoogle() {
