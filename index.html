@@ -2492,6 +2492,7 @@ function loadPlayerData(uid) {
       clickPower = data.clickPower || 1;
       autoclickActive = data.autoclickActive || false;
       autoclickEndTime = data.autoclickEndTime || 0;
+      autoclickerLevel = data.autoclickerLevel || 1; // Добавляем загрузку уровня автокликера
       user.referrer_uid = data.referrer_uid || null;
       user.referral_bonus_claimed = data.referral_bonus_claimed || false;
       const lastUpdate = data.lastUpdate || 0;
