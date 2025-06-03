@@ -3341,7 +3341,7 @@ function activateFreeAutoclicker() {
   });
 }!*/
 
-function upgradeAutoclicker() {
+/*!!function upgradeAutoclicker() {
   updateProfilePanel(); // Оставляем для синхронизации интерфейса
 
   if (autoclickerLevel >= 20) {
@@ -3387,7 +3387,67 @@ function upgradeAutoclicker() {
     console.error("Error upgrading autoclicker:", error);
     showMessage("Failed to upgrade autoclicker.");
   });
+}!!*/
+
+function upgradeAutoclicker() {
+  updateProfilePanel(); // Синхронизация интерфейса
+
+  if (autoclickerLevel >= 20) {
+    showMessage("Autoclicker is at maximum level!");
+    return;
+  }
+
+  const cost = getAutoclickerUpgradeCost();
+  if (score < cost.tokens || crystals < cost.crystals) {
+    showMessage("Not enough tokens or crystals to upgrade!");
+    return;
+  }
+
+  // Проверка, что пользователь аутентифицирован
+  if (!user || !user.uid) {
+    showMessage("User not authenticated. Please log in.");
+    return;
+  }
+
+  db.ref(`leaderboard/${user.uid}`).transaction(data => {
+    // Логируем входные данные для отладки
+    console.log("Transaction data:", data);
+    console.log("Required cost:", cost.tokens, "tokens,", cost.crystals, "crystals");
+    console.log("Current local score:", score, "crystals:", crystals);
+
+    if ((data.score || 0) >= cost.tokens && (data.crystals || 0) >= cost.crystals) {
+      return {
+        ...data,
+        score: (data.score || 0) - cost.tokens,
+        crystals: (data.crystals || 0) - cost.crystals,
+        autoclickerLevel: (data.autoclickerLevel || 1) + 1
+      };
+    }
+    return undefined; // Транзакция не выполняется, если ресурсов недостаточно
+  }).then(transactionResult => {
+    if (transactionResult.committed) {
+      // Обновляем локальные переменные только после успешной транзакции
+      score = transactionResult.snapshot.val().score;
+      crystals = transactionResult.snapshot.val().crystals;
+      autoclickerLevel = transactionResult.snapshot.val().autoclickerLevel || autoclickerLevel + 1;
+      showMessage(`Autoclicker upgraded to level ${autoclickerLevel}!`);
+      updateCounterDisplay();
+      updateProfilePanel();
+      updateAutoclickerShop();
+      submitScore();
+    } else {
+      showMessage("Not enough tokens or crystals to upgrade!");
+      // Не обновляем локальные переменные, чтобы не списывать ресурсы
+    }
+  }).catch(error => {
+    console.error("Error upgrading autoclicker:", error);
+    showMessage("Failed to upgrade autoclicker. Please try again.");
+    // Не обновляем локальные переменные, чтобы не списывать ресурсы
+  });
 }
+
+
+    
 
     
     
