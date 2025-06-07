@@ -2558,6 +2558,15 @@ function loadPlayerData(uid) {
     showMessage("Не удалось загрузить данные.");
   });
 
+
+  // Загрузка данных о спинах
+  db.ref(`luckySpin/${uid}`).once("value").then(snapshot => {
+    const spinData = snapshot.val();
+    if (spinData) {
+      // Данные о спинах загружаются для возможного отображения в UI
+    }
+  });
+
   db.ref("achievements/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
