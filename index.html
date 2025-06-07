@@ -2159,6 +2159,101 @@ function loadNotifications(uid) {
   });
 }
 
+
+//lucky spin
+function buyLuckySpin(tokenCost = 300, crystalCost = 5) {
+  if (!user) {
+    showMessage("Please sign in to use Lucky Spin.");
+    return;
+  }
+
+  // Проверка лимита активаций
+  db.ref(`luckySpin/${user.uid}`).once("value").then(snapshot => {
+    const spinData = snapshot.val() || { spinsToday: 0, lastSpinDate: "" };
+    const today = new Date().toDateString();
+    let spinsToday = spinData.lastSpinDate === today ? spinData.spinsToday : 0;
+
+    if (spinsToday >= 3) {
+      showMessage("Daily Lucky Spin limit reached! Try again tomorrow.");
+      return;
+    }
+
+    if (score < tokenCost || crystals < crystalCost) {
+      showMessage("Not enough tokens or crystals!");
+      return;
+    }
+
+    // Списываем ресурсы
+    db.ref(`leaderboard/${user.uid}`).transaction(data => {
+      if ((data.score || 0) >= tokenCost && (data.crystals || 0) >= crystalCost) {
+        return {
+          ...data,
+          score: (data.score || 0) - tokenCost,
+          crystals: (data.crystals || 0) - crystalCost
+        };
+      }
+      return undefined;
+    }).then(result => {
+      if (result.committed) {
+        score = result.snapshot.val().score;
+        crystals = result.snapshot.val().crystals;
+
+        // Обновляем счетчик спинов
+        db.ref(`luckySpin/${user.uid}`).update({
+          spinsToday: spinsToday + 1,
+          lastSpinDate: today
+        });
+
+        // Выполняем спин
+        const rand = Math.random();
+        let rewardMessage = "";
+        if (rand < 0.4) {
+          // Токены
+          const tokens = Math.floor(500 + Math.random() * 1500);
+          score += tokens;
+          rewardMessage = `Lucky Spin: +${tokens} tokens!`;
+        } else if (rand < 0.7) {
+          // Кристаллы (10–20)
+          const crystalReward = Math.floor(2 + Math.random() * 5);
+          crystals += crystalReward;
+          rewardMessage = `Lucky Spin: +${crystalReward} 💎!`;
+        } else if (rand < 0.85) {
+          // Временный множитель кликов
+          boostClickPowerTemporarily(clickPower, 300000);
+          rewardMessage = "Lucky Spin: x2 Click Multiplier for 5 minutes!";
+        } else {
+          // Бонусное время автокликера
+          startAutoclicker(600000, true);
+          rewardMessage = "Lucky Spin: +10 minutes Autoclicker!";
+        }
+
+        showMessage(rewardMessage);
+        updateCounterDisplay();
+        updateProfilePanel();
+        submitScore();
+
+        // Сохраняем обновленные данные
+        db.ref(`leaderboard/${user.uid}`).update({
+          score: score,
+          crystals: crystals,
+          lastUpdate: Date.now()
+        });
+      } else {
+        showMessage("Not enough tokens or crystals!");
+      }
+    }).catch(error => {
+      console.error("Error buying lucky spin:", error);
+      showMessage("Failed to purchase Lucky Spin.");
+    });
+  }).catch(error => {
+    console.error("Error checking spin limit:", error);
+    showMessage("Failed to check spin limit.");
+  });
+}
+
+    
+    
+
 /*!function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
