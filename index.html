@@ -2274,7 +2274,65 @@ function buyLuckySpin(tokenCost = 300, crystalCost = 10) {
   });
 }
 
-    
+ //busters super click
+
+  let superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
+let superAutoclickInterval = null;
+
+function buySuperAutoclicker(multiplier, duration, tokenCost, crystalCost) {
+  if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) {
+    showMessage("Super Autoclicker is already active!");
+    return;
+  }
+  if (score < tokenCost || crystals < crystalCost) {
+    showMessage("Not enough tokens or crystals!");
+    return;
+  }
+  db.ref(`leaderboard/${user.uid}`).transaction(data => {
+    if ((data.score || 0) >= tokenCost && (data.crystals || 0) >= crystalCost) {
+      return {
+        ...data,
+        score: (data.score || 0) - tokenCost,
+        crystals: (data.crystals || 0) - crystalCost
+      };
+    }
+    return undefined;
+  }).then(result => {
+    if (result.committed) {
+      score = result.snapshot.val().score;
+      crystals = result.snapshot.val().crystals;
+      superAutoclicker = { active: true, multiplier: multiplier, endTime: Date.now() + duration };
+      db.ref(`leaderboard/${user.uid}`).update({
+        superAutoclicker: superAutoclicker,
+        lastUpdate: Date.now()
+      });
+      superAutoclickInterval = setInterval(() => {
+        const points = clickPower * multiplier;
+        score += points;
+        updateCounterDisplay();
+        updateTaskProgress("collectTokens", points);
+        submitScore();
+        showMessage(`Super Autoclicker: +${points} tokens!`);
+      }, 1000);
+      setTimeout(() => {
+        clearInterval(superAutoclickInterval);
+        superAutoclickInterval = null;
+        superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
+        db.ref(`leaderboard/${user.uid}`).update({ superAutoclicker: superAutoclicker });
+        showMessage("Super Autoclicker ended!");
+      }, duration);
+      showMessage(`Super Autoclicker x${multiplier} activated for ${duration / 60000} minutes!`);
+      updateCounterDisplay();
+      updateProfilePanel();
+      submitScore();
+    } else {
+      showMessage("Not enough tokens or crystals!");
+    }
+  }).catch(error => {
+    console.error("Error buying super autoclicker:", error);
+    showMessage("Failed to purchase Super Autoclicker.");
+  });
+}  
     
 
 /*!function loadPlayerData(uid) {
