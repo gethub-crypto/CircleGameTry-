@@ -2161,7 +2161,7 @@ function loadNotifications(uid) {
 
 
 //lucky spin
-function buyLuckySpin(tokenCost = 300, crystalCost = 5) {
+function buyLuckySpin(tokenCost = 300, crystalCost = 10) {
   if (!user) {
     showMessage("Please sign in to use Lucky Spin.");
     return;
@@ -2214,7 +2214,7 @@ function buyLuckySpin(tokenCost = 300, crystalCost = 5) {
           rewardMessage = `Lucky Spin: +${tokens} tokens!`;
         } else if (rand < 0.7) {
           // Кристаллы (10–20)
-          const crystalReward = Math.floor(2 + Math.random() * 5);
+          const crystalReward = Math.floor(10 + Math.random() * 20);
           crystals += crystalReward;
           rewardMessage = `Lucky Spin: +${crystalReward} 💎!`;
         } else if (rand < 0.85) {
