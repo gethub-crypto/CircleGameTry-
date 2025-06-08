@@ -2545,7 +2545,7 @@ function buySuperAutoclicker(multiplier, duration, tokenCost, crystalCost) {
 
 
 
-function loadPlayerData(uid) {
+/*!function loadPlayerData(uid) {
   db.ref("leaderboard/" + uid).once("value").then(snapshot => {
     const data = snapshot.val();
     if (data) {
@@ -2655,7 +2655,190 @@ function loadPlayerData(uid) {
       renderAchievements();
     }
   });
+}!*/
+
+function loadPlayerData(uid) {
+  db.ref("leaderboard/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      score = data.score || 0;
+      crystals = data.crystals || 0;
+      clickPower = data.clickPower || 1;
+      autoclickActive = data.autoclickActive || false;
+      autoclickEndTime = data.autoclickEndTime || 0;
+      autoclickerLevel = data.autoclickerLevel || 1;
+      user.referrer_uid = data.referrer_uid || null;
+      user.referral_bonus_claimed = data.referral_bonus_claimed || false;
+      const lastUpdate = data.lastUpdate || 0;
+
+      // Загрузка состояния бустов
+      taskRewardBoost = data.taskRewardBoost || { active: false, multiplier: 1, endTime: 0 };
+      upgradeDiscount = data.upgradeDiscount || { active: false, multiplier: 1, endTime: 0 };
+      tokenMagnet = data.tokenMagnet || { active: false, chanceIncrease: 0, endTime: 0 };
+      criticalClick = data.criticalClick || { active: false, chance: 0, multiplier: 10, endTime: 0 };
+      crystalDrop = data.crystalDrop || { active: false, chance: 0, endTime: 0 };
+      referralBoost = data.referralBoost || { active: false, multiplier: 1, endTime: 0 };
+      superAutoclicker = data.superAutoclicker || { active: false, multiplier: 1, endTime: 0 };
+
+      // Обработка временного буста
+      const tempBoostActive = data.tempBoostActive || false;
+      const tempBoostEndTime = data.tempBoostEndTime || 0;
+      const tempBoostOriginalClickPower = data.tempBoostOriginalClickPower || clickPower;
+      const tempBoostAmount = data.tempBoostAmount || 0;
+
+      if (tempBoostActive && tempBoostEndTime > Date.now()) {
+        originalClickPower = tempBoostOriginalClickPower;
+        clickPower = Math.min(tempBoostOriginalClickPower + tempBoostAmount, 8);
+        const remainingDuration = tempBoostEndTime - Date.now();
+        if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
+        tempBoostTimeout = setTimeout(() => {
+          clickPower = originalClickPower;
+          showMessage(`Boost ended: Click Power restored`);
+          updateClickPowerBar();
+          updateProfilePanel();
+          submitScore();
+          db.ref("leaderboard/" + uid).update({
+            tempBoostActive: false,
+            tempBoostEndTime: 0,
+            tempBoostOriginalClickPower: 0,
+            tempBoostAmount: 0,
+            lastUpdate: Date.now()
+          });
+          tempBoostTimeout = null;
+        }, remainingDuration);
+      } else if (tempBoostActive) {
+        clickPower = tempBoostOriginalClickPower;
+        db.ref("leaderboard/" + uid).update({
+          tempBoostActive: false,
+          tempBoostEndTime: 0,
+          tempBoostOriginalClickPower: 0,
+          tempBoostAmount: 0,
+          clickPower: clickPower,
+          lastUpdate: Date.now()
+        });
+      }
+
+      // Обработка автокликера
+      if (autoclickActive && autoclickEndTime > Date.now()) {
+        const elapsedTime = Date.now() - lastUpdate;
+        const secondsPassed = Math.floor(elapsedTime / 1000);
+        const tokensEarned = secondsPassed * clickPower;
+        if (tokensEarned > 0) {
+          db.ref(`leaderboard/${uid}/score`).transaction(currentScore => {
+            score = (currentScore || 0) + tokensEarned;
+            return score;
+          }).then(() => {
+            showMessage(`Autoclicker earned ${tokensEarned} tokens while you were away!`);
+            updateTaskProgress("collectTokens", tokensEarned);
+            updateTaskProgress("collectBigTokens", tokensEarned);
+            updateCounterDisplay();
+          });
+        }
+        const remainingTime = autoclickEndTime - Date.now();
+        startAutoclicker(remainingTime, false);
+      } else if (autoclickActive) {
+        stopAutoclicker();
+      }
+
+      // Восстановление бустов
+      if (taskRewardBoost.active && taskRewardBoost.endTime > Date.now()) {
+        setTimeout(() => {
+          taskRewardBoost = { active: false, multiplier: 1, endTime: 0 };
+          db.ref(`leaderboard/${uid}`).update({ taskRewardBoost: taskRewardBoost });
+          showMessage("Task reward boost ended!");
+        }, taskRewardBoost.endTime - Date.now());
+      }
+      if (upgradeDiscount.active && upgradeDiscount.endTime > Date.now()) {
+        setTimeout(() => {
+          upgradeDiscount = { active: false, multiplier: 1, endTime: 0 };
+          db.ref(`leaderboard/${uid}`).update({ upgradeDiscount: upgradeDiscount });
+          showMessage("Upgrade discount ended!");
+          updateClickPowerCostText();
+          updateAutoclickerShop();
+        }, upgradeDiscount.endTime - Date.now());
+      }
+      if (tokenMagnet.active && tokenMagnet.endTime > Date.now()) {
+        setTimeout(() => {
+          tokenMagnet = { active: false, chanceIncrease: 0, endTime: 0 };
+          db.ref(`leaderboard/${uid}`).update({ tokenMagnet: tokenMagnet });
+          showMessage("Token Magnet boost ended!");
+        }, tokenMagnet.endTime - Date.now());
+      }
+      if (criticalClick.active && criticalClick.endTime > Date.now()) {
+        setTimeout(() => {
+          criticalClick = { active: false, chance: 0, multiplier: 10, endTime: 0 };
+          db.ref(`leaderboard/${uid}`).update({ criticalClick: criticalClick });
+          showMessage("Critical Click boost ended!");
+        }, criticalClick.endTime - Date.now());
+      }
+      if (crystalDrop.active && crystalDrop.endTime > Date.now()) {
+        setTimeout(() => {
+          crystalDrop = { active: false, chance: 0, endTime: 0 };
+          db.ref(`leaderboard/${uid}`).update({ crystalDrop: crystalDrop });
+          showMessage("Crystal Drop boost ended!");
+        }, crystalDrop.endTime - Date.now());
+      }
+      if (referralBoost.active && referralBoost.endTime > Date.now()) {
+        setTimeout(() => {
+          referralBoost = { active: false, multiplier: 1, endTime: 0 };
+          db.ref(`leaderboard/${uid}`).update({ referralBoost: referralBoost });
+          showMessage("Referral Boost ended!");
+        }, referralBoost.endTime - Date.now());
+      }
+      if (superAutoclicker.active && superAutoclicker.endTime > Date.now()) {
+        superAutoclickInterval = setInterval(() => {
+          const points = clickPower * superAutoclicker.multiplier;
+          score += points;
+          updateCounterDisplay();
+          updateTaskProgress("collectTokens", points);
+          submitScore();
+          showMessage(`Super Autoclicker: +${points} tokens!`);
+        }, 1000);
+        setTimeout(() => {
+          clearInterval(superAutoclickInterval);
+          superAutoclickInterval = null;
+          superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
+          db.ref(`leaderboard/${uid}`).update({ superAutoclicker: superAutoclicker });
+          showMessage("Super Autoclicker ended!");
+        }, superAutoclicker.endTime - Date.now());
+      }
+
+      updateCounterDisplay();
+      updateClickPowerBar();
+      updateProfilePanel();
+      renderAchievements();
+      updateClickPowerCostText();
+      updateAutoclickerShop();
+      startBonusTimer();
+      checkWeeklyReset();
+      if (score >= 50000) updateWeeklyScore();
+    }
+
+    db.ref("leaderboard/" + uid).update({
+      lastUpdate: Date.now()
+    });
+  }).catch(error => {
+    console.error("Ошибка загрузки данных игрока:", error);
+    showMessage("Не удалось загрузить данные.");
+  });
+
+  // Загрузка данных о спинах
+  db.ref(`luckySpin/${uid}`).once("value").then(snapshot => {
+    const spinData = snapshot.val();
+    if (spinData) {
+      // Данные о спинах загружаются для возможного отображения в UI
+    }
+  });
+
+  db.ref("achievements/" + uid).once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      achievements = data;
+      renderAchievements();
+    }
+  });
 }
+  
   
   
               
