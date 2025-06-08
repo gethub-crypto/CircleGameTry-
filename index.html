@@ -2729,40 +2729,6 @@ function submitScore() {
 }!!*/
 
     
-
-  /*!  function buyUpgrade(type) {
-      const cost = getClickPowerUpgradeCost();
-      if (type === "clickPower") {
-        if (clickPower >= 8) {
-          showMessage("Click Power is at maximum!");
-          return;
-        }
-
-        const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
-        if (clickPower >= 3 && currentLevel < clickPower + 1) {
-          showMessage(`Reach player level ${clickPower + 1} to upgrade Click Power further!`);
-          const buyButton = document.querySelector("button[onclick=\"buyUpgrade('clickPower')\"]");
-          buyButton.style.animation = "shake 0.3s";
-          setTimeout(() => buyButton.style.animation = "", 300);
-          return;
-        }
-
-        if (score >= cost) {
-          score -= cost;
-          clickPower++;
-          updateCounterDisplay();
-          updateClickPowerBar();
-          updateProfilePanel();
-          updateClickPowerCostText();
-          submitScore();
-          showMessage("Click Power upgraded!");
-        } else {
-          showMessage("Not enough tokens for upgrade.");
-        }
-      }
-    }!*/
-
-
     function buyUpgrade(type) {
   if (type === "clickPower") {
     if (clickPower >= 8) {
@@ -2853,35 +2819,6 @@ function buyAutoclicker(minutes) {
 }
     
 //noviy autocliker
-/*!function updateAutoclickerShop() {
-  const levelDisplay = document.getElementById("autoclickerLevel");
-  const durationDisplay = document.getElementById("autoclickerDurationValue");
-  const upgradeCostDisplay = document.getElementById("autoclickerUpgradeCost");
-  const upgradeBtn = document.getElementById("upgradeAutoclickerBtn");
-  const freeAutoclickerBtn = document.getElementById("activateFreeAutoclickerBtn");
-
-  levelDisplay.innerText = autoclickerLevel;
-  const durationSeconds = Math.floor(getAutoclickerDuration() / 1000);
-  durationDisplay.innerText = durationSeconds >= 3600 
-    ? `${Math.floor(durationSeconds / 3600)}h ${Math.floor((durationSeconds % 3600) / 60)}m`
-    : durationSeconds >= 60 
-      ? `${Math.floor(durationSeconds / 60)}m ${durationSeconds % 60}s`
-      : `${durationSeconds}s`;
-
-  if (autoclickerLevel >= 20) {
-    upgradeCostDisplay.innerText = "Autoclicker: MAX LEVEL";
-    upgradeBtn.disabled = true;
-  } else if (autoclickerLevel >= Math.min(currentLevel, 4)) {
-    upgradeCostDisplay.innerText = `Need Player Level ${autoclickerLevel + 1}`;
-    upgradeBtn.disabled = true;
-  } else {
-    const cost = getAutoclickerUpgradeCost();
-    upgradeCostDisplay.innerText = `Upgrade Cost: ${cost.tokens} Tokens + ${cost.crystals} 💎`;
-    upgradeBtn.disabled = false;
-  }
-
-  freeAutoclickerBtn.disabled = autoclickActive;
-}!*/
 function updateAutoclickerShop() {
   const levelDisplay = document.getElementById("autoclickerLevel");
   const durationDisplay = document.getElementById("autoclickerDurationValue");
@@ -2946,99 +2883,6 @@ function activateFreeAutoclicker() {
 
 
 //noviy autoclicker upgrade 
-/*!function upgradeAutoclicker() {
-  if (autoclickerLevel >= 20) {
-    showMessage("Autoclicker is at maximum level!");
-    return;
-  }
-  if (autoclickerLevel >= Math.min(currentLevel, 1)) {
-    showMessage(`Upgrade requires player level ${autoclickerLevel + 1}!`);
-    return;
-  }
-
-  const cost = getAutoclickerUpgradeCost();
-  if (score < cost.tokens || crystals < cost.crystals) {
-    showMessage("Not enough tokens or crystals to upgrade!");
-    return;
-  }
-
-  db.ref(`leaderboard/${user.uid}`).transaction(data => {
-    if ((data.score || 0) >= cost.tokens && (data.crystals || 0) >= cost.crystals) {
-      return {
-        ...data,
-        score: (data.score || 0) - cost.tokens,
-        crystals: (data.crystals || 0) - cost.crystals,
-        autoclickerLevel: (data.autoclickerLevel || 1) + 1
-      };
-    }
-    return undefined;
-  }).then(transactionResult => {
-    if (transactionResult.committed) {
-      score = transactionResult.snapshot.val().score;
-      crystals = transactionResult.snapshot.val().crystals;
-      autoclickerLevel++;
-      showMessage(`Autoclicker upgraded to level ${autoclickerLevel}!`);
-      updateCounterDisplay();
-      updateProfilePanel();
-      updateAutoclickerShop();
-      submitScore();
-    } else {
-      showMessage("Not enough tokens or crystals to upgrade!");
-    }
-  }).catch(error => {
-    console.error("Error upgrading autoclicker:", error);
-    showMessage("Failed to upgrade autoclicker.");
-  });
-}!*/
-
-/*!!function upgradeAutoclicker() {
-  updateProfilePanel(); // Оставляем для синхронизации интерфейса
-
-  if (autoclickerLevel >= 20) {
-    showMessage("Autoclicker is at maximum level!");
-    return;
-  }
-  // Удаляем проверку зависимости от currentLevel
-  // if (autoclickerLevel >= Math.min(currentLevel, 4)) {
-  //   showMessage(`Upgrade requires player level ${autoclickerLevel + 1}!`);
-  //   return;
-  // }
-
-  const cost = getAutoclickerUpgradeCost();
-  if (score < cost.tokens || crystals < cost.crystals) {
-    showMessage("Not enough tokens or crystals to upgrade!");
-    return;
-  }
-
-  db.ref(`leaderboard/${user.uid}`).transaction(data => {
-    if ((data.score || 0) >= cost.tokens && (data.crystals || 0) >= cost.crystals) {
-      return {
-        ...data,
-        score: (data.score || 0) - cost.tokens,
-        crystals: (data.crystals || 0) - cost.crystals,
-        autoclickerLevel: (data.autoclickerLevel || 1) + 1
-      };
-    }
-    return undefined;
-  }).then(transactionResult => {
-    if (transactionResult.committed) {
-      score = transactionResult.snapshot.val().score;
-      crystals = transactionResult.snapshot.val().crystals;
-      autoclickerLevel++;
-      showMessage(`Autoclicker upgraded to level ${autoclickerLevel}!`);
-      updateCounterDisplay();
-      updateProfilePanel();
-      updateAutoclickerShop();
-      submitScore();
-    } else {
-      showMessage("Not enough tokens or crystals to upgrade!");
-    }
-  }).catch(error => {
-    console.error("Error upgrading autoclicker:", error);
-    showMessage("Failed to upgrade autoclicker.");
-  });
-}!!*/
-
 function upgradeAutoclicker() {
   updateProfilePanel(); // Синхронизация интерфейса
 
