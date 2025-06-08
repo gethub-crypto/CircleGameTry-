@@ -388,11 +388,7 @@
       <button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button>
     </div>
   </div>
-   <!-- <div id="dailyReward" style="display: none; margin-top: 20px;">
-      <h2>Daily Reward</h2>
-      <p id="streakText">Login streak: 0 days</p>
-      <button class="click-button" onclick="claimDailyReward()">Claim Reward</button>
-    </div>-->
+   
 
     <div id="mainButtonContainer">
       <div id="particles-js" style="position: absolute; width: 100%; height: 100%; z-index: -1;"></div>
@@ -1730,45 +1726,7 @@ function completeTwitterTask(taskId) {
 }
 
 
-  /*!?!!?  function checkTaskCompletion(taskId) {
-  db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-    const taskData = snapshot.val();
-    const task = dailyTasks.find(t => t.id === taskId);
 
-    if (taskData && (taskData.completed || (taskData.completions || 0) >= 1)) {
-      return;
-    }
-
-    const goal = task.id === "collectTokens" || task.id === "collectBigTokens" ? taskData.goal : task.goal;
-    if (taskData && taskData.progress >= goal) {
-      const completions = (taskData.completions || 0) + 1;
-      if (completions <= 1) {
-        if (task.id === "clickMarathon" || task.id === "clickMasterWeekly") {
-          score += task.reward;
-          showMessage(`Task "${task.description}" completed! +${task.reward} tokens`);
-          updateCounterDisplay();
-          submitScore();
-        } else if (task.id === "collectTokens" || task.id === "collectBigTokens") {
-          // Награда начисляется через claimTask
-        } else if (task.id === "autoclickerMaster") {
-          showMessage(`Task "${task.description}" completed! ${task.reward}`);
-          startAutoclicker(300000, true);
-          submitScore();
-        } else if (task.id === "miniGameChallenge") {
-          // Награда начисляется через claimTask
-        }
-        db.ref(`tasks/${user.uid}/${task.id}`).set({
-          progress: taskData.progress,
-          lastReset: taskData.lastReset,
-          completions: completions,
-          completed: true,
-          ...(task.id === "collectTokens" || task.id === "collectBigTokens" ? { goal: taskData.goal, reward: taskData.reward } : {})
-        });
-      }
-      renderTasks();
-    }
-  });
-}?!?*/
 
 document.addEventListener("DOMContentLoaded", function() {
   particlesJS("particles-js", {
