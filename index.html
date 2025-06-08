@@ -3094,25 +3094,9 @@ function upgradeAutoclicker() {
     showMessage("Failed to upgrade autoclicker. Please try again.");
     // Не обновляем локальные переменные, чтобы не списывать ресурсы
   });
-}
+}  
 
-
-    
-
-    
-    
-
-//noviy autoclicer upgrade 
-/*!function getAutoclickerUpgradeCost() {
-  const baseTokenCost = 100;
-  const baseCrystalCost = 10;
-  const multiplier = Math.pow(4, autoclickerLevel - 1);
-  return {
-    tokens: Math.floor(baseTokenCost * multiplier),
-    crystals: Math.floor(baseCrystalCost * multiplier)
-  };
-}!*/
-
+//noviy autoclicer upgrade
 function getAutoclickerUpgradeCost() {
   let tokens, crystals;
 
@@ -3177,65 +3161,6 @@ function getAutoclickerUpgradeCost() {
     }!!*/
     
 
-/*!    function signOut() {
-      if (user) {
-        submitScore();
-      }
-
-      auth.signOut().then(() => {
-        user = null;
-        score = 0;
-        clickPower = 1;
-        autoclickEndTime = 0;
-        clearInterval(autoclickInterval);
-        document.getElementById("authSection").style.display = "block";
-        document.getElementById("gameSection").style.display = "none";
-        updateCounterDisplay();
-        updateClickPowerBar();
-        updateProfilePanel();
-      });
-    }!*/
-
- /*!!   function signOut() {
-    if (user) {
-        submitScore().then(() => {
-            auth.signOut().then(() => {
-                user = null;
-                score = 0;
-                clickPower = 1; // Локальный сброс, но данные сохранены в базе
-                autoclickEndTime = 0;
-                clearInterval(autoclickInterval);
-                document.getElementById("authSection").style.display = "block";
-                document.getElementById("gameSection").style.display = "none";
-                updateCounterDisplay();
-                updateClickPowerBar();
-                updateProfilePanel();
-                showMessage("Вы успешно вышли из аккаунта.");
-            }).catch(error => {
-                console.error("Ошибка при выходе из аккаунта:", error);
-                showMessage("Не удалось выйти из аккаунта.");
-            });
-        }).catch(error => {
-            console.error("Ошибка при сохранении данных перед выходом:", error);
-            showMessage("Не удалось сохранить прогресс перед выходом.");
-        });
-    } else {
-        auth.signOut().then(() => {
-            user = null;
-            score = 0;
-            clickPower = 1;
-            autoclickEndTime = 0;
-            clearInterval(autoclickInterval);
-            document.getElementById("authSection").style.display = "block";
-            document.getElementById("gameSection").style.display = "none";
-            updateCounterDisplay();
-            updateClickPowerBar();
-            updateProfilePanel();
-            showMessage("Вы успешно вышли из аккаунта.");
-        });
-    }
-}!!*/
-
 function signOut() {
     console.log("signOut вызвана, user:", user);
     auth.signOut().then(() => {
@@ -3256,17 +3181,6 @@ function signOut() {
     });
 }
 
-
-  /*!  auth.onAuthStateChanged(currentUser => {
-      if (currentUser) {
-        user = currentUser;
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("gameSection").style.display = "block";
-        loadPlayerData(user.uid);
-        checkDailyReward();
-        renderTasks();
-      }
-    });!*/
 
     auth.onAuthStateChanged(currentUser => {
   if (currentUser) {
