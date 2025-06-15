@@ -3066,12 +3066,14 @@ function getAutoclickerUpgradeCost() {
     
 
 function signOut() {
+    stopOnlineTimer(); // Останавливаем таймер zadanie 30 minutes 
     console.log("signOut вызвана, user:", user);
     auth.signOut().then(() => {
         user = null;
         score = 0;
         clickPower = 1;
         autoclickEndTime = 0;
+        onlineTime = 0; // Сбрасываем локальное время zafanie 30 minutes 
         clearInterval(autoclickInterval);
         document.getElementById("authSection").style.display = "block";
         document.getElementById("gameSection").style.display = "none";
@@ -3413,17 +3415,5 @@ function saveReferrer(referrerUid) {
     <script type="text/javascript" src="//www.highperformanceformat.com/37256add668a0f644adfae7b41a567a3/invoke.js"></script>
     </div>
 
-
-<!-- <div style="text-align: center; margin: 20px 0;">
-    <a href="http://t.me/TokenCarnivalBot/Carnival?startapp=r_522543795" target="_blank" rel="noopener" style="color: #00ffa6; font-size: 38px; font-weight: bold; text-decoration: none; text-shadow: 0 0 8px #00c3ff;">
-      Just Three Spins and Get a Bonus!
-    </a>
-</div> -->
-
- <!-- <div style="text-align: center; margin: 20px 0;">
-    <a href="https://t.me/rslite_bot/rsl_app?startapp=RZ8CSrP" target="_blank" rel="noopener" style="color: #00ffa6; font-size: 38px; font-weight: bold; text-decoration: none; text-shadow: 0 0 8px #00c3ff;">
-      Free Game and Bonus
-    </a>
-  </div>-->
 </body>
 </html>
