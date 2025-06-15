@@ -902,6 +902,33 @@ function claimHourlyBonus() {
   });
 }
 
+// Функция для запуска таймера присутствия zadanie 30 minutes 
+function startOnlineTimer() {
+  if (onlineTimer) return; // Предотвращаем множественные таймеры
+  onlineTimer = setInterval(() => {
+    if (user) {
+      onlineTime++;
+      updateTaskProgress("onlineTime", 1); // Обновляем прогресс задачи
+      // Сохраняем время в базе каждые 60 секунд
+      if (onlineTime % 60 === 0) {
+        db.ref(`leaderboard/${user.uid}`).update({
+          onlineTime: onlineTime,
+          lastUpdate: Date.now()
+        });
+      }
+    }
+  }, 1000);
+}
+
+
+   // Функция для остановки таймера присутствия zadanie 30 minutes 
+function stopOnlineTimer() {
+  if (onlineTimer) {
+    clearInterval(onlineTimer);
+    onlineTimer = null;
+  }
+} 
+          
 
 function showTab(tab) {
   const tableHeader = document.getElementById("tableHeader");
