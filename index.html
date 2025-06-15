@@ -1433,7 +1433,7 @@ function getWeekNumber() {
 
 
 
-/*!function renderTasks() {
+function renderTasks() {
   if (isRenderingTasks) return;
   isRenderingTasks = true;
 
@@ -1532,11 +1532,11 @@ function getWeekNumber() {
     showMessage("Failed to load tasks.");
     isRenderingTasks = false;
   });
-}  !*/
+}  
 
 
 // (Модификация из предыдущей реализации, без изменений)
-function renderTasks() {
+/*!!function renderTasks() {
   if (isRenderingTasks) return;
   isRenderingTasks = true;
 
@@ -1660,7 +1660,7 @@ function renderTasks() {
       });
     }
   });
-}    
+}    !!*/
     
 
 function claimTask(taskId) {
