@@ -1514,6 +1514,14 @@ function renderTasks() {
             <br>
             <button class="click-button" onclick="claimTask('${task.id}')" ${taskData.progress < taskData.goal ? 'disabled' : ''}>Claim</button>
           `;
+        } else if  (task.id === "onlineTime") {
+          const minutes = Math.floor(taskData.progress / 60);
+          const seconds = taskData.progress % 60;
+          div.innerHTML = `
+            ${task.description}: ${minutes}m ${seconds}s/30m (Reward: ${task.reward} 💎)
+            <br>
+            <button class="click-button" onclick="claimTask('${task.id}')" ${taskData.progress < task.goal ? 'disabled' : ''}>Claim</button>
+          `;
         }
       }
       list.appendChild(div);
