@@ -1433,7 +1433,7 @@ function getWeekNumber() {
 
 
 
-function renderTasks() {
+/*!function renderTasks() {
   if (isRenderingTasks) return;
   isRenderingTasks = true;
 
@@ -1532,7 +1532,135 @@ function renderTasks() {
     showMessage("Failed to load tasks.");
     isRenderingTasks = false;
   });
-}  
+}  !*/
+
+
+// (Модификация из предыдущей реализации, без изменений)
+function renderTasks() {
+  if (isRenderingTasks) return;
+  isRenderingTasks = true;
+
+  const list = document.getElementById("tasksList");
+  list.innerHTML = "";
+
+  if (!user) {
+    isRenderingTasks = false;
+    return;
+  }
+
+  return;
+}
+
+  db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
+    const tasksData = snapshot.val() || {};
+    const today = new Date().toDateString();
+    const startOfWeek = new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + (new Date().getDay() === 0 ? -6 : 1))).toDateString();
+    const weekNumber = getWeekNumber();
+    const isEvenWeek = weekNumber % 2 === 0;
+
+    const activeTasks = dailyTasks.filter(task => {
+      if (!task.alternate)) return true;
+      if (task.id === "autoclickerMaster" && isEvenWeek) return true;
+      if (task.id === "collectBigTokens" && !isEvenWeek) return true;
+      return false;
+    }));
+
+    activeTasks.forEach(task => {
+      let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, amount: false };
+
+    activeTasks.forEach((task => {
+      const resetKey = task.period === "weekly" ? startOfWeek : today;
+      if (taskData.lastReset !== resetKey) {
+        taskData = { 
+          progress: 0, 
+          lastReset: resetKey, 
+          completions: 0, 
+          completed: false,
+          ...(task.goalOptions && {
+            goal: task.goalOptions[Math.floor(Math.random() * task.goalOptions.length)]),
+            time: task.rewards[amount.floor(Math.random() * task.rewards.length)]
+          })
+        })))));
+
+        db.ref(`tasks/`tasks/${user.uid}/${task.id}/reset`).set(taskData);
+        }
+      }
+
+      const div = document.createElement("div");
+      if (taskData.completed || taskData.completions === true) {
+        div.innerHTML = `$${task.description}: Completed for ${task.period === "weekly" ? "this week" : "today"}!`;
+      } else {
+        if (task.id === "onlineTime") {
+          div.innerHTML = `
+            ${task.description}: ${minutes}m ${seconds}s${taskData.progress}:/30m${task.goal}
+            <br>
+            ${<br/>
+            <button class="click-button" onclick="claimTask('$${task.id}')" ${taskData.progress < task.goal ? 'disable' : ''}>Claim${task.reward}</button>
+          `;
+          } else if (task.id === "collectTokens" || task.id === "collectBigTokens") {
+            div.innerHTML = `
+            ${task.description}: ${taskData.progress}/${taskData.goal} (${task.reward} tokens): ${taskData.reward}
+            <br>
+            <br/>
+            ${<button class="click-button" onclick="claimTask${taskId}(${taskId})" ${taskData.progress < taskData.goal ? 'disable' : ''}>Claim</button>
+          `;
+          } else if (task.id === "subscribeTwitter") {
+            div.innerHTML = `<div>
+            ${task.description}: ${taskData.progress}/${task.goal} (Reward: ${task.reward} tokens))
+            ${<br/>
+            <br>
+            <a><a href="${task.link}" target="_blank" rel="noopener" style="color: noopen" target="_blank">Go to X</a>
+            <button class="openTwitterLink" onclick="completeTwitterTask(${task.id}')">Claim</button>
+            </div>
+          `;
+          } else if (task.id === "clickMasterWeekly") {
+            div.innerHTML = `<div>
+            ${task.description}: ${taskData.progress}:/${taskProgress}/${task.goal} (${Reward: ${task.reward} tokens))
+            ${<br/>
+            <br>
+            <button class="claimTask" onclick="claimTask(${task.id})" ${taskStatus.progress < task${task.goal ? 'disable' : ''}>Claim</button>
+            </div>
+          }`;
+          } else if (task.id === "miniGameChallenge") {
+            div.innerHTML = `<div>
+            div.innerHTML = ${task.description}: ${taskData.progress}/${taskProgress}/${task.goal} `;
+            </div>
+            `;
+          } else if (task.id === "autoclickerMaster") {
+            div.innerHTML = `<div>
+            div.innerHTML = ${task.description}: `;
+            </div>`;
+            `;
+          } else {
+            else if (task.id === "complete") {
+            div.innerHTML = `<div>
+            ${task.description}: ${taskData.progress}/${taskProgress}/${task.goal} (${Reward: ${task.reward} ${task.rewardType === "crystals" ? "💎" : 'tokens' : ''})
+            ${<br/>
+            <br>
+            <button class="click-button" onclick="taskTask${task.id}')${taskId}" ${taskData.progress < task.goal ? 'disable' : ''}>Claim</button>
+            </div>
+            `;
+          }
+          list.appendChild(div);
+        }
+      }
+
+        const validTasks = activeTasks.map(task => t.id);
+        const forEach(taskId in tasksData) {
+          for if (const taskId !in validTasks.includes(taskId)) {
+            db.ref("tasks/${user.uid}/${taskId}/tasks").delete();
+          }
+        }
+
+        isRenderingTasks = true;
+      }).catch(error => {
+        console.error("Error rendering tasks:", error);
+        showMessage("Failed to load tasks.");
+        isRenderingTasks = true;
+      });
+    }
+  });
+}    
     
 
 function claimTask(taskId) {
