@@ -199,8 +199,8 @@
       background-color: #222; 
       border-radius: 10px; 
       height: 12px; 
-      width: 100%;
-      margin: 10px 0; 
+      width: 140px; 
+      margin: 10px auto; 
       overflow: hidden; 
       box-shadow: 0 0 5px #00ffc8; 
     }
@@ -222,38 +222,17 @@
       box-shadow: 0 0 10px #00c3ff; 
     }
 
-    .achievement-panel {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease, padding 0.4s ease;
-      padding: 0 10px;
+    .panel {
+      display: none;
+      margin-top: 20px;
       background-color: #1a1a1a;
       border-radius: 10px;
-      margin-top: 20px;
       box-shadow: 0 0 10px #00c3ff;
+      padding: 15px;
     }
 
-    .achievement-panel.open {
-      max-height: 500px;
-      padding: 10px;
-      overflow-y: auto;
-    }
-
-    #tasksPanel {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease, padding 0.4s ease;
-      padding: 0 10px;
-      background-color: #1a1a1a;
-      border-radius: 10px;
-      margin-top: 20px;
-      box-shadow: 0 0 10px #00c3ff;
-    }
-
-    #tasksPanel.open {
-      max-height: 600px;
-      padding: 10px;
-      overflow-y: auto;
+    .panel.open {
+      display: block;
     }
 
     #tasksList div {
@@ -561,13 +540,13 @@
       <div id="message"></div>
       
       <div id="buttonGroup">
-        <button class="click-button" id="shopBtn" onclick="toggleShop()">Shop ▼</button>
-        <button class="click-button" onclick="toggleAchievements()">🏆 Achievements</button>
-        <button class="click-button" onclick="toggleTasks()">📋 Tasks</button>
+        <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
+        <button class="click-button" id="achievementsBtn" onclick="togglePanel('achievements')">🏆 Achievements ▼</button>
+        <button class="click-button" id="tasksBtn" onclick="togglePanel('tasks')">📋 Tasks ▼</button>
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
       </div>
 
-      <div id="shop" style="display:none; margin-top: 20px;">
+      <div id="shop" class="panel">
         <h2>🛒 Upgrades</h2>
         <p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p>
         <p>Current: <span id="clickPowerDisplay">1</span> / 8</p>
@@ -607,12 +586,12 @@
         </div>
       </div>
 
-      <div id="achievementsPanel" class="achievement-panel">
+      <div id="achievements" class="panel">
         <h2>Achievements</h2>
         <div id="achievementsList"></div>
       </div>
 
-      <div id="tasksPanel" class="achievement-panel">
+      <div id="tasks" class="panel">
         <h2>Daily Tasks</h2>
         <div id="tasksList"></div>
       </div>
@@ -684,8 +663,6 @@
     let tempBoostTimeout = null;
     let originalClickPower = null;
     let isRenderingTasks = false;
-    let tasksNeedUpdate = false;
-    let tasksUpdateTimeout = null;
     let bonusTimerInterval = null;
     let isAnimating = false;
     let isProcessingReferrer = false;
@@ -919,17 +896,47 @@
       freeAutoclickerBtn.disabled = autoclickActive;
     }
 
+    // НОВАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПАНЕЛЕЙ
+    function togglePanel(panelName) {
+      const panel = document.getElementById(panelName);
+      if (!panel) return;
+      
+      const isOpen = panel.classList.contains('open');
+      
+      // Закрываем все панели
+      closeAllPanels();
+      
+      // Если панель была закрыта - открываем её
+      if (!isOpen) {
+        panel.classList.add('open');
+        
+        // Обновляем текст кнопки
+        switch(panelName) {
+          case 'shop':
+            document.getElementById('shopBtn').innerHTML = 'Shop ▲';
+            break;
+          case 'achievements':
+            document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲';
+            renderAchievements();
+            break;
+          case 'tasks':
+            document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲';
+            renderTasks();
+            break;
+        }
+      }
+    }
+
     function closeAllPanels() {
-      document.getElementById("shop").style.display = "none";
-      document.getElementById("shopBtn").innerHTML = "Shop ▼";
+      // Закрываем все панели
+      document.querySelectorAll('.panel').forEach(panel => {
+        panel.classList.remove('open');
+      });
       
-      const achievementsPanel = document.getElementById("achievementsPanel");
-      achievementsPanel.classList.remove("open");
-      document.querySelector("button[onclick='toggleAchievements()']").innerHTML = "🏆 Achievements ▼";
-      
-      const tasksPanel = document.getElementById("tasksPanel");
-      tasksPanel.classList.remove("open");
-      document.querySelector("button[onclick='toggleTasks()']").innerHTML = "📋 Tasks ▼";
+      // Сбрасываем текст кнопок
+      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
+      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
+      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
     }
 
     // Game mechanics
@@ -976,8 +983,7 @@
 
       originalClickPower = clickPower;
       clickPower = Math.min(clickPower + amount, 8);
-      const actualBoost = clickPower - originalClickPower;
-      showMessage(`Temporary boost: Click Power +${actualBoost} for ${duration / 1000} sec`);
+      showMessage(`Temporary boost: Click Power +${amount} for ${duration / 1000} sec`);
       tempBoostEndTime = Date.now() + duration;
 
       if (user) {
@@ -997,16 +1003,6 @@
         updateClickPowerBar();
         updateProfilePanel();
         submitScore();
-
-        if (user) {
-          db.ref("leaderboard/" + user.uid).update({
-            tempBoostActive: false,
-            tempBoostEndTime: 0,
-            tempBoostOriginalClickPower: 0,
-            tempBoostAmount: 0,
-            lastUpdate: Date.now()
-          });
-        }
         tempBoostTimeout = null;
         tempBoostEndTime = 0;
       }, duration);
@@ -1039,14 +1035,6 @@
       updateTaskProgress("autoclickerMaster", 1);
       updateProfilePanel();
       submitScore();
-
-      if (user) {
-        db.ref("leaderboard/" + user.uid).update({
-          autoclickActive: true,
-          autoclickEndTime: autoclickEndTime,
-          lastUpdate: Date.now()
-        });
-      }
     }
 
     function stopAutoclicker() {
@@ -1057,15 +1045,6 @@
       autoclickCooldown = false;
       updateProfilePanel();
       submitScore();
-      showMessage("Autoclicker deactivated.");
-
-      if (user) {
-        db.ref("leaderboard/" + user.uid).update({
-          autoclickActive: false,
-          autoclickEndTime: 0,
-          lastUpdate: Date.now()
-        });
-      }
     }
 
     function activateFreeAutoclicker() {
@@ -1073,16 +1052,8 @@
         showMessage("Autoclicker is already active!");
         return;
       }
-
       const duration = getAutoclickerDuration();
       startAutoclicker(duration);
-      const durationSeconds = Math.floor(duration / 1000);
-      const durationText = durationSeconds >= 3600 
-        ? `${Math.floor(durationSeconds / 3600)}h ${Math.floor((durationSeconds % 3600) / 60)}m`
-        : durationSeconds >= 60 
-          ? `${Math.floor(durationSeconds / 60)}m ${durationSeconds % 60}s`
-          : `${durationSeconds}s`;
-      showMessage(`Free autoclicker activated for ${durationText}!`);
       updateAutoclickerShop();
     }
 
@@ -1091,12 +1062,6 @@
       if (type === "clickPower") {
         if (clickPower >= 8) {
           showMessage("Click Power is at maximum!");
-          return;
-        }
-
-        const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
-        if (clickPower >= 3 && currentLevel < clickPower + 1) {
-          showMessage(`Reach player level ${clickPower + 1} to upgrade Click Power further!`);
           return;
         }
 
@@ -1270,7 +1235,7 @@
       });
     }
 
-    // Исправленная система заданий
+    // Tasks functions
     function renderTasks() {
       if (isRenderingTasks) return;
       isRenderingTasks = true;
@@ -1281,9 +1246,10 @@
         return;
       }
       
-      list.innerHTML = "";
+      list.innerHTML = "<div style='text-align: center; color: #00c3ff;'>Loading tasks...</div>";
 
       if (!user) {
+        list.innerHTML = "<div style='text-align: center;'>Please sign in to view tasks.</div>";
         isRenderingTasks = false;
         return;
       }
@@ -1301,6 +1267,12 @@
           if (task.id === "collectBigTokens" && !isEvenWeek) return true;
           return false;
         });
+
+        list.innerHTML = "";
+
+        if (activeTasks.length === 0) {
+          list.innerHTML = "<div style='text-align: center;'>No tasks available.</div>";
+        }
 
         activeTasks.forEach(task => {
           let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
@@ -1323,77 +1295,45 @@
           const div = document.createElement("div");
           
           if (taskData.completed || taskData.completions >= 1) {
-            div.innerHTML = `
-              <div style="color: #00ffa6; font-weight: bold;">
-                ✅ ${task.description}: Completed!
-              </div>
-            `;
+            div.innerHTML = `<span style="color: #00ffa6;">✅ ${task.description} - Completed!</span>`;
           } else {
             const goal = taskData.goal || task.goal;
             const progress = taskData.progress || 0;
-            const progressPercent = Math.min((progress / goal) * 100, 100);
             const reward = taskData.reward || task.reward;
             const rewardText = task.rewardType === "crystals" ? `${reward} 💎` : `${reward} tokens`;
-            
-            let actionButton = '';
+            const canClaim = progress >= goal;
             
             if (task.id === "subscribeTwitter") {
-              actionButton = `
-                <div style="margin-top: 8px;">
-                  <a href="${task.link}" target="_blank" rel="noopener noreferrer" 
-                     style="color: #00ffa6; text-decoration: none; margin-right: 10px;">
-                    <i class="fab fa-twitter"></i> Go to X
-                  </a>
-                  <button class="click-button" onclick="completeTwitterTask('${task.id}')" 
-                          style="padding: 5px 15px; font-size: 12px;">
-                    Claim
-                  </button>
-                </div>
+              div.innerHTML = `
+                ${task.description}<br>
+                <a href="${task.link}" target="_blank" style="color: #00ffa6;">Go to X</a>
+                <button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding: 5px 15px; font-size: 12px; margin-left: 10px;">Claim</button>
               `;
-            } else if (task.id !== "miniGameChallenge" && task.id !== "onlineTime") {
-              const canClaim = progress >= goal;
-              actionButton = `
-                <div style="margin-top: 8px;">
-                  <button class="click-button" 
-                          onclick="claimTask('${task.id}')" 
-                          ${!canClaim ? 'disabled' : ''}
-                          style="padding: 5px 15px; font-size: 12px;">
-                    ${canClaim ? '🎁 Claim Reward' : '🔒 In Progress'}
-                  </button>
-                </div>
+            } else if (task.id === "miniGameChallenge" || task.id === "onlineTime") {
+              div.innerHTML = `
+                ${task.description}: ${progress}/${goal}<br>
+                <small>Reward: ${rewardText}</small>
+              `;
+            } else {
+              div.innerHTML = `
+                ${task.description}: ${progress}/${goal} (Reward: ${rewardText})<br>
+                <button class="click-button" onclick="claimTask('${task.id}')" 
+                  ${!canClaim ? 'disabled' : ''}
+                  style="padding: 5px 15px; font-size: 12px;">
+                  ${canClaim ? 'Claim' : 'In Progress'}
+                </button>
               `;
             }
-            
-            div.innerHTML = `
-              <div style="margin-bottom: 8px;">
-                <strong>${task.description}</strong>
-              </div>
-              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                <div class="progress-container" style="flex: 1; margin: 0;">
-                  <div class="progress-bar" style="width: ${progressPercent}%; 
-                       background: ${progressPercent >= 100 ? 'linear-gradient(90deg, #00ffa6, #00ff00)' : 'linear-gradient(90deg, #00c3ff, #00ffa6)'};">
-                  </div>
-                </div>
-                <span style="font-size: 12px; white-space: nowrap;">
-                  ${progress}/${goal}
-                </span>
-              </div>
-              <div style="font-size: 12px; color: #00ffa6;">
-                Reward: ${rewardText}
-              </div>
-              ${actionButton}
-            `;
           }
           
           list.appendChild(div);
         });
 
         isRenderingTasks = false;
-        tasksNeedUpdate = false;
       }).catch(error => {
         console.error("Error rendering tasks:", error);
+        list.innerHTML = "<div style='text-align: center; color: #ff5555;'>Failed to load tasks.</div>";
         isRenderingTasks = false;
-        tasksNeedUpdate = false;
       });
     }
 
@@ -1437,33 +1377,13 @@
         
         if (newProgress !== taskData.progress) {
           taskData.progress = newProgress;
-          
           db.ref(`tasks/${user.uid}/${taskId}`).set(taskData).then(() => {
             if (newProgress >= (taskData.goal || task.goal)) {
               checkTaskCompletion(taskId);
             }
-            scheduleTasksUpdate();
           }).catch(() => {});
         }
       }).catch(() => {});
-    }
-
-    function scheduleTasksUpdate() {
-      if (tasksNeedUpdate) return;
-      
-      tasksNeedUpdate = true;
-      
-      if (tasksUpdateTimeout) {
-        clearTimeout(tasksUpdateTimeout);
-      }
-      
-      tasksUpdateTimeout = setTimeout(() => {
-        const tasksPanel = document.getElementById("tasksPanel");
-        if (tasksPanel && tasksPanel.classList.contains("open")) {
-          renderTasks();
-        }
-        tasksNeedUpdate = false;
-      }, 2000);
     }
 
     function checkTaskCompletion(taskId) {
@@ -1492,10 +1412,7 @@
                 showMessage(`✅ Task completed: ${task.description}! +${taskData.reward || task.reward} 💎`);
                 updateProfilePanel();
               }
-              scheduleTasksUpdate();
             }).catch(() => {});
-          } else {
-            scheduleTasksUpdate();
           }
         }
       }).catch(() => {});
@@ -1599,19 +1516,6 @@
       });
     }
 
-    function openTwitterLink(url) {
-      try {
-        const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-        if (newWindow) {
-          newWindow.focus();
-        } else {
-          showMessage("Please visit https://x.com/CircleGameTry manually.");
-        }
-      } catch (error) {
-        showMessage("Error opening X link.");
-      }
-    }
-
     // Mini-game
     function startMiniGame() {
       if (score < 1000) {
@@ -1653,7 +1557,6 @@
       }
       updateCounterDisplay();
       updateProfilePanel();
-      renderTasks();
     }
 
     // Achievements
@@ -1844,8 +1747,6 @@
         autoclickEndTime: autoclickEndTime,
         tempBoostActive: !!tempBoostTimeout,
         tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0,
-        tempBoostOriginalClickPower: originalClickPower || clickPower,
-        tempBoostAmount: clickPower - (originalClickPower || clickPower),
         lastUpdate: Date.now()
       });
 
@@ -1916,12 +1817,6 @@
     function signOut() {
       stopOnlineTimer();
       
-      if (tasksUpdateTimeout) {
-        clearTimeout(tasksUpdateTimeout);
-        tasksUpdateTimeout = null;
-      }
-      tasksNeedUpdate = false;
-      
       auth.signOut().then(() => {
         user = null;
         score = 0;
@@ -1978,49 +1873,6 @@
       });
     }
 
-    // UI Toggle functions
-    function toggleShop() {
-      const shop = document.getElementById("shop");
-      const btn = document.getElementById("shopBtn");
-      const isCurrentlyOpen = shop.style.display === "block";
-
-      closeAllPanels();
-
-      shop.style.display = isCurrentlyOpen ? "none" : "block";
-      btn.innerHTML = isCurrentlyOpen ? "Shop ▼" : "Shop ▲";
-    }
-
-    function toggleAchievements() {
-      const panel = document.getElementById("achievementsPanel");
-      const btn = document.querySelector("button[onclick='toggleAchievements()']");
-      const isCurrentlyOpen = panel.classList.contains("open");
-
-      closeAllPanels();
-
-      if (!isCurrentlyOpen) {
-        panel.classList.add("open");
-        btn.innerHTML = "🏆 Achievements ▲";
-        renderAchievements();
-      }
-    }
-
-    function toggleTasks() {
-      const panel = document.getElementById("tasksPanel");
-      const btn = document.querySelector("button[onclick='toggleTasks()']");
-      
-      if (!panel || !btn) return;
-      
-      const isCurrentlyOpen = panel.classList.contains("open");
-
-      closeAllPanels();
-
-      if (!isCurrentlyOpen) {
-        panel.classList.add("open");
-        btn.innerHTML = "📋 Tasks ▲";
-        renderTasks();
-      }
-    }
-
     // Auth state observer
     auth.onAuthStateChanged(currentUser => {
       if (currentUser) {
@@ -2028,7 +1880,6 @@
         document.getElementById("authSection").style.display = "none";
         document.getElementById("gameSection").style.display = "block";
         loadPlayerData(user.uid);
-        renderTasks();
         startBonusTimer();
       } else {
         if (bonusTimerInterval) clearInterval(bonusTimerInterval);
