@@ -213,15 +213,7 @@
       border-radius: 10px; 
     }
 
-    #shop { 
-      display: none; 
-      margin-top: 20px; 
-      background: #1a1a1a; 
-      padding: 20px; 
-      border-radius: 12px; 
-      box-shadow: 0 0 10px #00c3ff; 
-    }
-
+    /* Панели */
     .panel {
       display: none;
       margin-top: 20px;
@@ -546,6 +538,7 @@
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
       </div>
 
+      <!-- SHOP PANEL -->
       <div id="shop" class="panel">
         <h2>🛒 Upgrades</h2>
         <p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p>
@@ -555,47 +548,50 @@
         </div>
         <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
 
-        <h2>⚡ Autoclickers</h2>
-        <div id="settings" style="background: #1a1a1a; padding: 20px; border-radius: 4px; width: 300px; margin: 0 auto; box-shadow: 0 0 10px #00c3ff;">
+        <h2 style="margin-top: 20px;">⚡ Autoclickers</h2>
+        <div id="settings" style="background: #2a2a2a; padding: 20px; border-radius: 8px; width: 320px; margin: 15px auto; box-shadow: 0 0 10px #00c3ff;">
           <h3>Autoclicker Level: <span id="autoclickerLevel">1</span> / 20</h3>
           <p id="autoclickerDurationValue">Duration: <span id="timeLeft">60</span>s</p>
           <p id="autoclickerUpgradeCost">Upgrade Cost: 100 Tokens + 10 💎</p>
-          <button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()">Upgrade Autoclicker</button>
-          <button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()">Activate Free Autoclicker</button>
+          <button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width: 100%;">Upgrade Autoclicker</button>
+          <button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width: 100%; margin-top: 5px;">Activate Free Autoclicker</button>
         </div>
-        <br>
 
-        <div id="autoclickerShop">
+        <h2 style="margin-top: 20px;">🎮 Boosters</h2>
+        <div id="autoclickerShop" style="margin-top: 15px;">
           <div class="booster-card">
-            <h2>🎰 Lucky Spin</h2>
+            <h3>🎰 Lucky Spin</h3>
             <p>Spin for a random reward (Cost: 300 tokens + 10 💎)</p>
             <button class="click-button" onclick="buyLuckySpin(300, 10)">Spin!</button>
           </div>   
 
           <div class="booster-card">
-            <h2>🚀 Super Autoclicker x5</h2>
+            <h3>🚀 Super Autoclicker x5</h3>
             <p>x5 Click Power Autoclicker for 2 minutes (Cost: 500 tokens + 15 💎)</p>
             <button class="click-button" onclick="buySuperAutoclicker(5, 120000, 500, 15)">Buy x5</button>
           </div>
           
           <div class="booster-card">
-            <h2>🚀 Super Autoclicker x10</h2>
+            <h3>🚀 Super Autoclicker x10</h3>
             <p>x10 Click Power Autoclicker for 2 minutes (Cost: 1000 tokens + 35 💎)</p>
             <button class="click-button" onclick="buySuperAutoclicker(10, 120000, 1000, 35)">Buy x10</button>
           </div>
         </div>
       </div>
 
+      <!-- ACHIEVEMENTS PANEL -->
       <div id="achievements" class="panel">
-        <h2>Achievements</h2>
+        <h2>🏆 Achievements</h2>
         <div id="achievementsList"></div>
       </div>
 
+      <!-- TASKS PANEL -->
       <div id="tasks" class="panel">
-        <h2>Daily Tasks</h2>
+        <h2>📋 Daily Tasks</h2>
         <div id="tasksList"></div>
       </div>
 
+      <!-- MINI-GAME PANEL -->
       <div id="miniGamePanel" style="display: none; margin-top: 20px; background: #1a1a1a; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px #00c3ff;">
         <h2>Mini-Game: Clicker Race!</h2>
         <p>Click 50 times in 10 seconds!</p>
@@ -604,6 +600,7 @@
         <button class="click-button" onclick="miniGameClick()">Click!</button>
       </div>
 
+      <!-- LEADERBOARD -->
       <div id="leaderboardContainer">
         <div class="tabs">
           <button class="tab-button active" onclick="showTab('overall')" id="overallTabBtn">Overall</button>
@@ -896,21 +893,23 @@
       freeAutoclickerBtn.disabled = autoclickActive;
     }
 
-    // НОВАЯ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ПАНЕЛЕЙ
+    // Panel toggle function
     function togglePanel(panelName) {
       const panel = document.getElementById(panelName);
       if (!panel) return;
       
       const isOpen = panel.classList.contains('open');
       
-      // Закрываем все панели
-      closeAllPanels();
+      // Close all panels
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
+      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
+      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
       
-      // Если панель была закрыта - открываем её
+      // If panel was closed, open it
       if (!isOpen) {
         panel.classList.add('open');
         
-        // Обновляем текст кнопки
         switch(panelName) {
           case 'shop':
             document.getElementById('shopBtn').innerHTML = 'Shop ▲';
@@ -925,18 +924,6 @@
             break;
         }
       }
-    }
-
-    function closeAllPanels() {
-      // Закрываем все панели
-      document.querySelectorAll('.panel').forEach(panel => {
-        panel.classList.remove('open');
-      });
-      
-      // Сбрасываем текст кнопок
-      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
-      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
-      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
     }
 
     // Game mechanics
@@ -1246,10 +1233,10 @@
         return;
       }
       
-      list.innerHTML = "<div style='text-align: center; color: #00c3ff;'>Loading tasks...</div>";
+      list.innerHTML = "Loading...";
 
       if (!user) {
-        list.innerHTML = "<div style='text-align: center;'>Please sign in to view tasks.</div>";
+        list.innerHTML = "Please sign in to view tasks.";
         isRenderingTasks = false;
         return;
       }
@@ -1269,10 +1256,6 @@
         });
 
         list.innerHTML = "";
-
-        if (activeTasks.length === 0) {
-          list.innerHTML = "<div style='text-align: center;'>No tasks available.</div>";
-        }
 
         activeTasks.forEach(task => {
           let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
@@ -1332,7 +1315,7 @@
         isRenderingTasks = false;
       }).catch(error => {
         console.error("Error rendering tasks:", error);
-        list.innerHTML = "<div style='text-align: center; color: #ff5555;'>Failed to load tasks.</div>";
+        list.innerHTML = "Failed to load tasks.";
         isRenderingTasks = false;
       });
     }
@@ -1377,43 +1360,7 @@
         
         if (newProgress !== taskData.progress) {
           taskData.progress = newProgress;
-          db.ref(`tasks/${user.uid}/${taskId}`).set(taskData).then(() => {
-            if (newProgress >= (taskData.goal || task.goal)) {
-              checkTaskCompletion(taskId);
-            }
-          }).catch(() => {});
-        }
-      }).catch(() => {});
-    }
-
-    function checkTaskCompletion(taskId) {
-      if (!user) return;
-      
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-        const taskData = snapshot.val();
-        const task = dailyTasks.find(t => t.id === taskId);
-        
-        if (!task || !taskData) return;
-        if (taskData.completed || (taskData.completions || 0) >= 1) return;
-        
-        const goal = taskData.goal || task.goal;
-        
-        if ((taskData.progress || 0) >= goal) {
-          if (task.id === "miniGameChallenge" || task.id === "onlineTime") {
-            const completions = (taskData.completions || 0) + 1;
-            
-            db.ref(`tasks/${user.uid}/${task.id}`).set({
-              ...taskData,
-              completions: completions,
-              completed: true
-            }).then(() => {
-              if (task.rewardType === "crystals") {
-                crystals = (crystals || 0) + (taskData.reward || task.reward);
-                showMessage(`✅ Task completed: ${task.description}! +${taskData.reward || task.reward} 💎`);
-                updateProfilePanel();
-              }
-            }).catch(() => {});
-          }
+          db.ref(`tasks/${user.uid}/${taskId}`).set(taskData).catch(() => {});
         }
       }).catch(() => {});
     }
