@@ -213,7 +213,6 @@
       border-radius: 10px; 
     }
 
-    /* Панели */
     .panel {
       display: none;
       margin-top: 20px;
@@ -353,21 +352,70 @@
       transition: opacity 0.5s ease-in-out;
     }
 
+    /* ========== МОБИЛЬНАЯ ВЕРСИЯ ========== */
     @media (max-width: 768px) {
       body {
         padding: 10px;
       }
 
+      /* Заголовок переносим наверх */
+      h1 {
+        font-size: 1.6em;
+        margin: 10px 0;
+        order: -1;
+        text-shadow: 0 0 15px #00c3ff;
+      }
+
       .game-header {
         flex-direction: column;
         align-items: center;
-        gap: 15px;
+        gap: 10px;
+        padding: 5px;
       }
 
+      /* Меню пользователя - сворачиваемое */
       #profilePanel {
         width: 100%;
         max-width: 400px;
-        font-size: 14px;
+        font-size: 13px;
+        max-height: 55px;
+        overflow: hidden;
+        transition: max-height 0.4s ease, padding 0.4s ease;
+        cursor: pointer;
+        position: relative;
+        padding-bottom: 25px;
+      }
+
+      #profilePanel::after {
+        content: '▼ Tap to expand';
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        color: #00c3ff;
+        opacity: 0.8;
+      }
+
+      #profilePanel.expanded {
+        max-height: 800px;
+        padding-bottom: 25px;
+      }
+
+      #profilePanel.expanded::after {
+        content: '▲ Tap to collapse';
+      }
+
+      #profilePanel:not(.expanded) div:not(:first-child) {
+        opacity: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      #profilePanel:not(.expanded) div:first-child {
+        margin-bottom: 0;
       }
 
       #hourlyBonus {
@@ -380,62 +428,9 @@
       }
 
       h1 {
-        font-size: 1.8em;
+        font-size: 1.6em;
       }
 
-      .main-click-button {
-        width: 120px;
-        height: 120px;
-      }
-
-      .main-click-button .icon {
-        font-size: 45px;
-      }
-
-      #counter {
-        font-size: 28px;
-      }
-
-      .click-button {
-        padding: 10px 20px;
-        font-size: 14px;
-      }
-
-      #buttonGroup {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      #buttonGroup .click-button {
-        width: 80%;
-        max-width: 300px;
-      }
-
-      .booster-card {
-        width: 100%;
-        max-width: 300px;
-      }
-
-      .tabs {
-        flex-direction: column;
-      }
-
-      .tab-button {
-        border-radius: 0;
-        border-bottom: 1px solid #00c3ff;
-      }
-
-      #leaderboardTable {
-        font-size: 12px;
-      }
-
-      #leaderboardTable th,
-      #leaderboardTable td {
-        padding: 6px;
-      }
-    }
-
-    @media (max-width: 480px) {
       .main-click-button {
         width: 100px;
         height: 100px;
@@ -449,11 +444,61 @@
         font-size: 24px;
       }
 
-      h1 {
-        font-size: 1.5em;
+      .click-button {
+        padding: 10px 18px;
+        font-size: 13px;
+      }
+
+      #buttonGroup {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #buttonGroup .click-button {
+        width: 85%;
+        max-width: 300px;
+      }
+
+      .booster-card {
+        width: 100%;
+        max-width: 280px;
+      }
+
+      .tabs {
+        flex-direction: column;
+      }
+
+      .tab-button {
+        border-radius: 0;
+        font-size: 13px;
+      }
+
+      #leaderboardTable {
+        font-size: 11px;
       }
     }
 
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.4em;
+      }
+
+      .main-click-button {
+        width: 90px;
+        height: 90px;
+      }
+
+      .main-click-button .icon {
+        font-size: 35px;
+      }
+
+      #counter {
+        font-size: 22px;
+      }
+    }
+
+    /* ========== ПК ВЕРСИЯ ========== */
     @media (min-width: 1024px) {
       .game-header {
         padding: 20px;
@@ -462,6 +507,18 @@
       #profilePanel {
         width: 250px;
         font-size: 16px;
+        max-height: none;
+        overflow: visible;
+      }
+
+      #profilePanel::after {
+        display: none;
+      }
+
+      #profilePanel:not(.expanded) div {
+        opacity: 1;
+        height: auto;
+        overflow: visible;
       }
 
       .bonus-card {
@@ -538,7 +595,6 @@
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
       </div>
 
-      <!-- SHOP PANEL -->
       <div id="shop" class="panel">
         <h2>🛒 Upgrades</h2>
         <p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p>
@@ -579,19 +635,16 @@
         </div>
       </div>
 
-      <!-- ACHIEVEMENTS PANEL -->
       <div id="achievements" class="panel">
         <h2>🏆 Achievements</h2>
         <div id="achievementsList"></div>
       </div>
 
-      <!-- TASKS PANEL -->
       <div id="tasks" class="panel">
         <h2>📋 Daily Tasks</h2>
         <div id="tasksList"></div>
       </div>
 
-      <!-- MINI-GAME PANEL -->
       <div id="miniGamePanel" style="display: none; margin-top: 20px; background: #1a1a1a; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px #00c3ff;">
         <h2>Mini-Game: Clicker Race!</h2>
         <p>Click 50 times in 10 seconds!</p>
@@ -600,7 +653,6 @@
         <button class="click-button" onclick="miniGameClick()">Click!</button>
       </div>
 
-      <!-- LEADERBOARD -->
       <div id="leaderboardContainer">
         <div class="tabs">
           <button class="tab-button active" onclick="showTab('overall')" id="overallTabBtn">Overall</button>
@@ -900,13 +952,11 @@
       
       const isOpen = panel.classList.contains('open');
       
-      // Close all panels
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
       document.getElementById('shopBtn').innerHTML = 'Shop ▼';
       document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
       document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
       
-      // If panel was closed, open it
       if (!isOpen) {
         panel.classList.add('open');
         
@@ -1819,6 +1869,37 @@
         });
       });
     }
+
+    // Mobile menu toggle
+    const profilePanel = document.getElementById('profilePanel');
+
+    function isMobile() {
+      return window.innerWidth <= 768;
+    }
+
+    if (isMobile()) {
+      profilePanel.classList.remove('expanded');
+    }
+
+    profilePanel.addEventListener('click', function(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+        return;
+      }
+      
+      if (isMobile()) {
+        this.classList.toggle('expanded');
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (isMobile()) {
+        profilePanel.classList.remove('expanded');
+        profilePanel.style.maxHeight = '';
+      } else {
+        profilePanel.classList.add('expanded');
+        profilePanel.style.maxHeight = 'none';
+      }
+    });
 
     // Auth state observer
     auth.onAuthStateChanged(currentUser => {
