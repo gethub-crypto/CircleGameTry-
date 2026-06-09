@@ -80,6 +80,7 @@
       text-align: left;
       transition: all 0.3s ease;
       position: relative;
+      overflow: hidden;
     }
 
     #profilePanel div {
@@ -91,14 +92,20 @@
       color: #00ffa6;
     }
 
+    /* Стрелка сворачивания */
     #profilePanel .collapse-arrow {
       display: none;
       position: absolute;
-      right: 15px;
-      top: 15px;
+      right: 12px;
+      top: 12px;
       color: #00c3ff;
-      font-size: 14px;
+      font-size: 12px;
       transition: transform 0.3s ease;
+      z-index: 2;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      text-align: center;
     }
 
     #profilePanel.expanded .collapse-arrow {
@@ -386,7 +393,8 @@
       transition: opacity 0.5s ease-in-out;
     }
 
-    @media (max-width: 768px) {
+    /* ========== МОБИЛЬНАЯ И ПЛАНШЕТНАЯ ВЕРСИЯ ========== */
+    @media (max-width: 1023px) {
       body {
         padding: 10px;
       }
@@ -408,12 +416,12 @@
         width: 100%;
         max-width: 400px;
         font-size: 13px;
-        max-height: 50px;
+        max-height: 44px;
         overflow: hidden;
-        transition: max-height 0.4s ease;
+        transition: max-height 0.4s ease, padding 0.4s ease;
         cursor: pointer;
         position: relative;
-        padding: 12px 15px;
+        padding: 12px 35px 12px 15px;
       }
 
       #profilePanel .collapse-arrow {
@@ -421,15 +429,18 @@
       }
 
       #profilePanel.expanded {
-        max-height: 800px;
+        max-height: 600px;
+        overflow-y: auto;
       }
 
-      #profilePanel:not(.expanded) div:not(:first-child):not(.collapse-arrow) {
-        opacity: 0;
-        height: 0;
+      #profilePanel:not(.expanded) > div:not(:first-of-type) {
+        display: none;
+      }
+
+      #profilePanel:not(.expanded) > div:first-of-type {
         margin: 0;
         padding: 0;
-        overflow: hidden;
+        line-height: 20px;
       }
 
       #hourlyBonus {
@@ -513,6 +524,7 @@
       }
     }
 
+    /* ========== ПК ВЕРСИЯ ========== */
     @media (min-width: 1024px) {
       .game-header {
         padding: 20px;
@@ -529,10 +541,8 @@
         display: none;
       }
 
-      #profilePanel:not(.expanded) div {
-        opacity: 1;
-        height: auto;
-        overflow: visible;
+      #profilePanel:not(.expanded) > div {
+        display: block;
       }
 
       .bonus-card {
@@ -1002,9 +1012,7 @@
       }
     }
 
-    // ============================================
-    // ИСПРАВЛЕНО: clickToken - без двойного начисления
-    // ============================================
+    // Game mechanics
     function clickToken() {
       if (!user) return;
       if (isAnimating) return;
@@ -1075,9 +1083,6 @@
       }, duration);
     }
 
-    // ============================================
-    // ИСПРАВЛЕНО: autoclickTick - проверка user
-    // ============================================
     function autoclickTick() {
       if (!user) {
         stopAutoclicker();
@@ -1086,9 +1091,6 @@
       clickToken();
     }
 
-    // ============================================
-    // ИСПРАВЛЕНО: startAutoclicker - использует autoclickTick
-    // ============================================
     function startAutoclicker(duration, extendTime = false) {
       if (autoclickInterval) {
         clearInterval(autoclickInterval);
@@ -1133,9 +1135,6 @@
       }
     }
 
-    // ============================================
-    // ИСПРАВЛЕНО: stopAutoclicker - полная очистка
-    // ============================================
     function stopAutoclicker() {
       if (autoclickInterval) {
         clearInterval(autoclickInterval);
@@ -1299,9 +1298,6 @@
       });
     }
 
-    // ============================================
-    // ИСПРАВЛЕНО: buySuperAutoclicker - проверка user в интервале
-    // ============================================
     function buySuperAutoclicker(multiplier, duration, tokenCost, crystalCost) {
       if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) {
         showMessage("Super Autoclicker is already active!");
@@ -1914,9 +1910,6 @@
       });
     }
 
-    // ============================================
-    // ИСПРАВЛЕНО: signOut - очистка всех интервалов
-    // ============================================
     function signOut() {
       stopOnlineTimer();
       stopAutoclicker();
@@ -1991,35 +1984,39 @@
       });
     }
 
-    // Mobile menu toggle
+    // ============================================
+    // Mobile/Tablet menu toggle
+    // ============================================
     const profilePanel = document.getElementById('profilePanel');
 
-    function isMobile() {
-      return window.innerWidth <= 768;
+    function isMobileOrTablet() {
+      return window.innerWidth <= 1023;
     }
 
-    if (isMobile()) {
+    // Init
+    if (isMobileOrTablet()) {
       profilePanel.classList.remove('expanded');
+    } else {
+      profilePanel.classList.add('expanded');
     }
 
+    // Click handler
     profilePanel.addEventListener('click', function(e) {
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A') {
         return;
       }
       
-      if (isMobile()) {
+      if (isMobileOrTablet()) {
         this.classList.toggle('expanded');
       }
     });
 
+    // Resize handler
     window.addEventListener('resize', () => {
-      if (isMobile()) {
-        if (!profilePanel.classList.contains('expanded')) {
-          profilePanel.style.maxHeight = '50px';
-        }
+      if (isMobileOrTablet()) {
+        profilePanel.classList.remove('expanded');
       } else {
         profilePanel.classList.add('expanded');
-        profilePanel.style.maxHeight = 'none';
       }
     });
 
