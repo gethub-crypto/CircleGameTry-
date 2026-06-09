@@ -91,7 +91,6 @@
       color: #00ffa6;
     }
 
-    /* Стрелка для сворачивания меню */
     #profilePanel .collapse-arrow {
       display: none;
       position: absolute;
@@ -132,7 +131,6 @@
       color: #fff;
     }
 
-    /* Сообщение о бонусе внутри карточки */
     .bonus-message {
       font-size: 12px;
       color: #ffd700;
@@ -276,7 +274,6 @@
       text-align: center;
     }
 
-    /* Центрирование блока настроек автокликера */
     #settings {
       background: #2a2a2a;
       padding: 20px;
@@ -389,7 +386,6 @@
       transition: opacity 0.5s ease-in-out;
     }
 
-    /* ========== МОБИЛЬНАЯ ВЕРСИЯ ========== */
     @media (max-width: 768px) {
       body {
         padding: 10px;
@@ -420,7 +416,6 @@
         padding: 12px 15px;
       }
 
-      /* Показываем стрелку на мобилке */
       #profilePanel .collapse-arrow {
         display: block;
       }
@@ -518,7 +513,6 @@
       }
     }
 
-    /* ========== ПК ВЕРСИЯ ========== */
     @media (min-width: 1024px) {
       .game-header {
         padding: 20px;
@@ -830,7 +824,6 @@
 
     function showMessage(msg, isBonus = false) {
       if (isBonus) {
-        // Показываем сообщение в карточке бонуса
         const bonusMsg = document.getElementById("bonusMessage");
         bonusMsg.innerText = msg;
         bonusMsg.style.opacity = 1;
@@ -1009,7 +1002,9 @@
       }
     }
 
-    // Game mechanics
+    // ============================================
+    // ИСПРАВЛЕНО: clickToken - без двойного начисления
+    // ============================================
     function clickToken() {
       if (!user) return;
       if (isAnimating) return;
@@ -1038,6 +1033,8 @@
             button.classList.remove("pulse");
             isAnimating = false;
           }, 200);
+        } else {
+          isAnimating = false;
         }
       }).catch(error => {
         console.error('Error updating score:', error);
@@ -1078,26 +1075,47 @@
       }, duration);
     }
 
+    // ============================================
+    // ИСПРАВЛЕНО: autoclickTick - проверка user
+    // ============================================
+    function autoclickTick() {
+      if (!user) {
+        stopAutoclicker();
+        return;
+      }
+      clickToken();
+    }
+
+    // ============================================
+    // ИСПРАВЛЕНО: startAutoclicker - использует autoclickTick
+    // ============================================
     function startAutoclicker(duration, extendTime = false) {
+      if (autoclickInterval) {
+        clearInterval(autoclickInterval);
+        autoclickInterval = null;
+      }
+
       if (autoclickActive) {
         const remainingTime = Math.max(0, autoclickEndTime - Date.now());
         if (remainingTime <= 0) {
           stopAutoclicker();
+          autoclickActive = true;
+          autoclickEndTime = Date.now() + duration;
+          autoclickInterval = setInterval(autoclickTick, 1000);
+          setTimeout(() => stopAutoclicker(), duration);
         } else if (extendTime) {
           autoclickEndTime = Date.now() + remainingTime + duration;
-          clearInterval(autoclickInterval);
-          autoclickInterval = setInterval(() => clickToken(), 1000);
+          autoclickInterval = setInterval(autoclickTick, 1000);
           setTimeout(() => stopAutoclicker(), remainingTime + duration);
         } else {
           autoclickEndTime = Date.now() + duration;
-          clearInterval(autoclickInterval);
-          autoclickInterval = setInterval(() => clickToken(), 1000);
+          autoclickInterval = setInterval(autoclickTick, 1000);
           setTimeout(() => stopAutoclicker(), duration);
         }
       } else {
         autoclickActive = true;
         autoclickEndTime = Date.now() + duration;
-        autoclickInterval = setInterval(() => clickToken(), 1000);
+        autoclickInterval = setInterval(autoclickTick, 1000);
         setTimeout(() => stopAutoclicker(), duration);
       }
 
@@ -1105,16 +1123,37 @@
       updateTaskProgress("autoclickerMaster", 1);
       updateProfilePanel();
       submitScore();
+
+      if (user) {
+        db.ref("leaderboard/" + user.uid).update({
+          autoclickActive: true,
+          autoclickEndTime: autoclickEndTime,
+          lastUpdate: Date.now()
+        }).catch(() => {});
+      }
     }
 
+    // ============================================
+    // ИСПРАВЛЕНО: stopAutoclicker - полная очистка
+    // ============================================
     function stopAutoclicker() {
-      clearInterval(autoclickInterval);
+      if (autoclickInterval) {
+        clearInterval(autoclickInterval);
+        autoclickInterval = null;
+      }
       autoclickActive = false;
       autoclickEndTime = 0;
-      autoclickInterval = null;
       autoclickCooldown = false;
       updateProfilePanel();
       submitScore();
+
+      if (user) {
+        db.ref("leaderboard/" + user.uid).update({
+          autoclickActive: false,
+          autoclickEndTime: 0,
+          lastUpdate: Date.now()
+        }).catch(() => {});
+      }
     }
 
     function activateFreeAutoclicker() {
@@ -1260,9 +1299,16 @@
       });
     }
 
+    // ============================================
+    // ИСПРАВЛЕНО: buySuperAutoclicker - проверка user в интервале
+    // ============================================
     function buySuperAutoclicker(multiplier, duration, tokenCost, crystalCost) {
       if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) {
         showMessage("Super Autoclicker is already active!");
+        return;
+      }
+      if (!user) {
+        showMessage("Please sign in first.");
         return;
       }
       if (score < tokenCost || crystals < crystalCost) {
@@ -1275,7 +1321,8 @@
           return {
             ...data,
             score: (data.score || 0) - tokenCost,
-            crystals: (data.crystals || 0) - crystalCost
+            crystals: (data.crystals || 0) - crystalCost,
+            superAutoclicker: { active: true, multiplier: multiplier, endTime: Date.now() + duration }
           };
         }
         return undefined;
@@ -1285,7 +1332,17 @@
           crystals = result.snapshot.val().crystals;
           superAutoclicker = { active: true, multiplier: multiplier, endTime: Date.now() + duration };
           
+          if (superAutoclickInterval) {
+            clearInterval(superAutoclickInterval);
+          }
+          
           superAutoclickInterval = setInterval(() => {
+            if (!user) {
+              clearInterval(superAutoclickInterval);
+              superAutoclickInterval = null;
+              superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
+              return;
+            }
             const points = clickPower * multiplier;
             score += points;
             updateCounterDisplay();
@@ -1294,14 +1351,27 @@
           }, 1000);
           
           setTimeout(() => {
-            clearInterval(superAutoclickInterval);
-            superAutoclickInterval = null;
+            if (superAutoclickInterval) {
+              clearInterval(superAutoclickInterval);
+              superAutoclickInterval = null;
+            }
             superAutoclicker = { active: false, multiplier: 1, endTime: 0 };
+            if (user) {
+              db.ref(`leaderboard/${user.uid}`).update({ superAutoclicker: superAutoclicker });
+            }
             showMessage("Super Autoclicker ended!");
           }, duration);
           
+          updateCounterDisplay();
+          updateProfilePanel();
+          submitScore();
           showMessage(`Super Autoclicker x${multiplier} activated for ${duration / 60000} minutes!`);
+        } else {
+          showMessage("Not enough tokens or crystals!");
         }
+      }).catch(error => {
+        console.error("Error buying super autoclicker:", error);
+        showMessage("Failed to purchase Super Autoclicker.");
       });
     }
 
@@ -1844,8 +1914,27 @@
       });
     }
 
+    // ============================================
+    // ИСПРАВЛЕНО: signOut - очистка всех интервалов
+    // ============================================
     function signOut() {
       stopOnlineTimer();
+      stopAutoclicker();
+      
+      if (tempBoostTimeout) {
+        clearTimeout(tempBoostTimeout);
+        tempBoostTimeout = null;
+      }
+      
+      if (superAutoclickInterval) {
+        clearInterval(superAutoclickInterval);
+        superAutoclickInterval = null;
+      }
+      
+      if (bonusTimerInterval) {
+        clearInterval(bonusTimerInterval);
+        bonusTimerInterval = null;
+      }
       
       auth.signOut().then(() => {
         user = null;
@@ -1853,7 +1942,6 @@
         clickPower = 1;
         autoclickEndTime = 0;
         onlineTime = 0;
-        clearInterval(autoclickInterval);
         document.getElementById("authSection").style.display = "block";
         document.getElementById("gameSection").style.display = "none";
         updateCounterDisplay();
@@ -1924,7 +2012,6 @@
       }
     });
 
-    // Не закрываем меню при скролле
     window.addEventListener('resize', () => {
       if (isMobile()) {
         if (!profilePanel.classList.contains('expanded')) {
