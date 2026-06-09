@@ -79,6 +79,7 @@
       width: 220px;
       text-align: left;
       transition: all 0.3s ease;
+      position: relative;
     }
 
     #profilePanel div {
@@ -88,6 +89,21 @@
 
     #profilePanel strong {
       color: #00ffa6;
+    }
+
+    /* Стрелка для сворачивания меню */
+    #profilePanel .collapse-arrow {
+      display: none;
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      color: #00c3ff;
+      font-size: 14px;
+      transition: transform 0.3s ease;
+    }
+
+    #profilePanel.expanded .collapse-arrow {
+      transform: rotate(180deg);
     }
 
     #hourlyBonus {
@@ -101,6 +117,7 @@
       width: 200px;
       box-shadow: 0 0 15px #00c3ff;
       text-align: center;
+      position: relative;
     }
 
     .bonus-card h3 {
@@ -113,6 +130,15 @@
       margin: 0 0 10px;
       font-size: 14px;
       color: #fff;
+    }
+
+    /* Сообщение о бонусе внутри карточки */
+    .bonus-message {
+      font-size: 12px;
+      color: #ffd700;
+      margin-top: 8px;
+      min-height: 18px;
+      transition: opacity 0.3s ease;
     }
 
     .main-content {
@@ -250,6 +276,17 @@
       text-align: center;
     }
 
+    /* Центрирование блока настроек автокликера */
+    #settings {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 8px;
+      width: 320px;
+      margin: 15px auto !important;
+      box-shadow: 0 0 10px #00c3ff;
+      text-align: center;
+    }
+
     #leaderboardContainer {
       max-width: 800px;
       margin: 20px auto;
@@ -358,11 +395,9 @@
         padding: 10px;
       }
 
-      /* Заголовок переносим наверх */
       h1 {
         font-size: 1.6em;
         margin: 10px 0;
-        order: -1;
         text-shadow: 0 0 15px #00c3ff;
       }
 
@@ -373,49 +408,33 @@
         padding: 5px;
       }
 
-      /* Меню пользователя - сворачиваемое */
       #profilePanel {
         width: 100%;
         max-width: 400px;
         font-size: 13px;
-        max-height: 55px;
+        max-height: 50px;
         overflow: hidden;
-        transition: max-height 0.4s ease, padding 0.4s ease;
+        transition: max-height 0.4s ease;
         cursor: pointer;
         position: relative;
-        padding-bottom: 25px;
+        padding: 12px 15px;
       }
 
-      #profilePanel::after {
-        content: '▼ Tap to expand';
-        position: absolute;
-        bottom: 5px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 11px;
-        color: #00c3ff;
-        opacity: 0.8;
+      /* Показываем стрелку на мобилке */
+      #profilePanel .collapse-arrow {
+        display: block;
       }
 
       #profilePanel.expanded {
         max-height: 800px;
-        padding-bottom: 25px;
       }
 
-      #profilePanel.expanded::after {
-        content: '▲ Tap to collapse';
-      }
-
-      #profilePanel:not(.expanded) div:not(:first-child) {
+      #profilePanel:not(.expanded) div:not(:first-child):not(.collapse-arrow) {
         opacity: 0;
         height: 0;
         margin: 0;
         padding: 0;
         overflow: hidden;
-      }
-
-      #profilePanel:not(.expanded) div:first-child {
-        margin-bottom: 0;
       }
 
       #hourlyBonus {
@@ -425,10 +444,6 @@
 
       .bonus-card {
         width: 100%;
-      }
-
-      h1 {
-        font-size: 1.6em;
       }
 
       .main-click-button {
@@ -458,6 +473,11 @@
       #buttonGroup .click-button {
         width: 85%;
         max-width: 300px;
+      }
+
+      #settings {
+        width: 90% !important;
+        max-width: 320px;
       }
 
       .booster-card {
@@ -511,7 +531,7 @@
         overflow: visible;
       }
 
-      #profilePanel::after {
+      #profilePanel .collapse-arrow {
         display: none;
       }
 
@@ -540,6 +560,7 @@
 <body>
   <div class="game-header">
     <div id="profilePanel">
+      <span class="collapse-arrow">▼</span>
       <div><strong>Player:</strong> <span id="profileName">Anonymous</span></div>
       <div><strong>Level:</strong> <span id="playerLevel">1</span> / 10</div>
       <div><strong>Click Power:</strong> <span id="profileClickPower">1</span></div>
@@ -561,6 +582,7 @@
         <h3>Hourly Bonus</h3>
         <p id="bonusTimer">Next in: 01:00:00</p>
         <button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button>
+        <div class="bonus-message" id="bonusMessage"></div>
       </div>
     </div>
   </div>
@@ -605,7 +627,7 @@
         <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
 
         <h2 style="margin-top: 20px;">⚡ Autoclickers</h2>
-        <div id="settings" style="background: #2a2a2a; padding: 20px; border-radius: 8px; width: 320px; margin: 15px auto; box-shadow: 0 0 10px #00c3ff;">
+        <div id="settings">
           <h3>Autoclicker Level: <span id="autoclickerLevel">1</span> / 20</h3>
           <p id="autoclickerDurationValue">Duration: <span id="timeLeft">60</span>s</p>
           <p id="autoclickerUpgradeCost">Upgrade Cost: 100 Tokens + 10 💎</p>
@@ -806,10 +828,21 @@
       document.getElementById("counter").innerText = `Tokens: ${score}`;
     }
 
-    function showMessage(msg) {
-      const el = document.getElementById("message");
-      el.innerText = msg;
-      setTimeout(() => el.innerText = '', 3000);
+    function showMessage(msg, isBonus = false) {
+      if (isBonus) {
+        // Показываем сообщение в карточке бонуса
+        const bonusMsg = document.getElementById("bonusMessage");
+        bonusMsg.innerText = msg;
+        bonusMsg.style.opacity = 1;
+        setTimeout(() => {
+          bonusMsg.style.opacity = 0;
+          setTimeout(() => bonusMsg.innerText = '', 300);
+        }, 3000);
+      } else {
+        const el = document.getElementById("message");
+        el.innerText = msg;
+        setTimeout(() => el.innerText = '', 3000);
+      }
     }
 
     function animateCounter() {
@@ -1635,7 +1668,7 @@
 
     function claimHourlyBonus() {
       if (!user) {
-        showMessage("Please sign in to claim the bonus.");
+        showMessage("Please sign in to claim the bonus.", true);
         return;
       }
 
@@ -1654,14 +1687,14 @@
             if (transactionResult.committed) {
               score = transactionResult.snapshot.val();
               updateCounterDisplay();
-              showMessage(`Claimed ${reward} tokens from Hourly Bonus!`);
+              showMessage(`✅ Claimed ${reward} tokens!`, true);
               db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: now });
               document.getElementById("claimBonusBtn").disabled = true;
               startBonusTimer();
             }
           });
         } else {
-          showMessage("Bonus not ready yet!");
+          showMessage("Bonus not ready yet!", true);
         }
       });
     }
@@ -1891,10 +1924,12 @@
       }
     });
 
+    // Не закрываем меню при скролле
     window.addEventListener('resize', () => {
       if (isMobile()) {
-        profilePanel.classList.remove('expanded');
-        profilePanel.style.maxHeight = '';
+        if (!profilePanel.classList.contains('expanded')) {
+          profilePanel.style.maxHeight = '50px';
+        }
       } else {
         profilePanel.classList.add('expanded');
         profilePanel.style.maxHeight = 'none';
