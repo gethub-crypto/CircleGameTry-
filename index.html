@@ -236,6 +236,20 @@
       "Skip signing in — miss the rewards!"
     ];
 
+    // ==================== CLEANUP ON UNLOAD ====================
+    function cleanupAllTimers() {
+      if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
+      if (superAutoclickInterval) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; }
+      if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
+      if (tempBoostTimeout) { clearTimeout(tempBoostTimeout); tempBoostTimeout = null; }
+      if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
+      if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; }
+    }
+
+    window.addEventListener('beforeunload', cleanupAllTimers);
+    window.addEventListener('pagehide', cleanupAllTimers);
+
     // ==================== UTILS ====================
     function getWeekNumber() { const n = new Date(); const s = new Date(n.getFullYear(), 0, 1); return Math.ceil(((n - s) / 86400000 + s.getDay() + 1) / 7); }
     function getWeekKey() { return `${new Date().getFullYear()}_${getWeekNumber()}`; }
@@ -256,21 +270,16 @@
       else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); }
     }
 
-    // ==================== SCORE LISTENER (fix race condition) ====================
+    // ==================== SCORE LISTENER ====================
     function startScoreListener() {
+      if (!user) return;
       if (scoreListener) db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener);
       scoreListener = db.ref(`leaderboard/${user.uid}/score`).on("value", snapshot => {
         const newScore = snapshot.val() || 0;
-        if (newScore !== score) {
-          score = newScore;
-          updateCounterDisplay();
-          updateProfilePanel();
-        }
+        if (newScore !== score) { score = newScore; updateCounterDisplay(); updateProfilePanel(); }
       });
     }
-    function stopScoreListener() {
-      if (scoreListener) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; }
-    }
+    function stopScoreListener() { if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; } }
 
     // ==================== UI ====================
     function updateProfilePanel() {
@@ -311,12 +320,8 @@
       if (!user || isAnimating) return;
       isAnimating = true;
       db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs || 0) + clickPower).then(tr => {
-        if (tr.committed) {
-          totalClicks++;
-          updateTaskProgress("clickMarathon", 1); updateTaskProgress("collectTokens", clickPower); updateTaskProgress("collectBigTokens", clickPower); updateTaskProgress("clickMasterWeekly", 1);
-          checkAchievements(); animateCounter();
-          const btn = document.getElementById("mainClickButton"); btn.classList.add("pulse"); setTimeout(() => { btn.classList.remove("pulse"); isAnimating = false; }, 200);
-        } else isAnimating = false;
+        if (tr.committed) { totalClicks++; updateTaskProgress("clickMarathon", 1); updateTaskProgress("collectTokens", clickPower); updateTaskProgress("collectBigTokens", clickPower); updateTaskProgress("clickMasterWeekly", 1); checkAchievements(); animateCounter(); }
+        const btn = document.getElementById("mainClickButton"); btn.classList.add("pulse"); setTimeout(() => { btn.classList.remove("pulse"); isAnimating = false; }, 200);
       }).catch(() => { isAnimating = false; });
     }
 
@@ -474,7 +479,17 @@
     function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); } }
 
     // ==================== BONUS ====================
-    function startBonusTimer() { if (bonusTimerInterval) clearInterval(bonusTimerInterval); bonusTimerInterval = setInterval(() => { if (!user) return; db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { const d = s.val() || { lastClaim: 0 }, tr = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); if (tr <= 0) { document.getElementById("claimBonusBtn").disabled = false; document.getElementById("bonusTimer").innerText = "Claim now!"; } else { document.getElementById("claimBonusBtn").disabled = true; const h = Math.floor(tr/3600000), m = Math.floor((tr%3600000)/60000), sec = Math.floor((tr%60000)/1000); document.getElementById("bonusTimer").innerText = `Next: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; } }); }, 1000); }
+    function startBonusTimer() { 
+      if (bonusTimerInterval) clearInterval(bonusTimerInterval); 
+      bonusTimerInterval = setInterval(() => { 
+        if (!user) return; 
+        db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { 
+          const d = s.val() || { lastClaim: 0 }, tr = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); 
+          if (tr <= 0) { document.getElementById("claimBonusBtn").disabled = false; document.getElementById("bonusTimer").innerText = "Claim now!"; } 
+          else { document.getElementById("claimBonusBtn").disabled = true; const h = Math.floor(tr/3600000), m = Math.floor((tr%3600000)/60000), sec = Math.floor((tr%60000)/1000); document.getElementById("bonusTimer").innerText = `Next: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; } 
+        }); 
+      }, 1000); 
+    }
     function claimHourlyBonus() { if (!user) return showMessage("Sign in.", true); db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { const d = s.val() || { lastClaim: 0 }; if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { const rw = Math.floor(Math.random()*191)+10; db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw).then(() => { showMessage(`✅ +${rw} tokens!`, true); db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now() }); document.getElementById("claimBonusBtn").disabled = true; startBonusTimer(); }); } else showMessage("Not ready!", true); }); }
     function startOnlineTimer() { if (onlineTimer) return; onlineTimer = setInterval(() => { if (user) { onlineTime++; updateTaskProgress("onlineTime", 1); if (onlineTime % 60 === 0) db.ref(`leaderboard/${user.uid}`).update({ onlineTime, lastUpdate: Date.now() }); } }, 1000); }
     function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
