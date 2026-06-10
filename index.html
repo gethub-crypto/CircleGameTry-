@@ -63,7 +63,7 @@
     #motiveText { margin-top: 20px; font-size: 18px; color: #00ffc8; text-shadow: 0 0 8px #00ffc8; transition: opacity 0.5s ease-in-out; }
     #antiCheatWarning { display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #ff0000; color: #fff; padding: 10px 20px; border-radius: 8px; z-index: 9999; font-weight: bold; }
 
-    /* Вылетающий +score */
+    /* Хаотичный вылет +score */
     .score-popup {
       position: fixed;
       color: #ffd700;
@@ -72,12 +72,13 @@
       pointer-events: none;
       z-index: 9999;
       text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-      animation: floatUp 1s ease-out forwards;
+      animation: floatUpChaotic 1s ease-out forwards;
     }
-    @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0) scale(0.5); }
-      30% { opacity: 1; transform: translateY(-20px) scale(1.2); }
-      100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+    @keyframes floatUpChaotic {
+      0% { opacity: 1; transform: translate(0, 0) scale(0.3) rotate(0deg); }
+      20% { opacity: 1; transform: translate(var(--dx20), -15px) scale(0.8) rotate(var(--rot20)); }
+      50% { opacity: 0.8; transform: translate(var(--dx50), -45px) scale(1.2) rotate(var(--rot50)); }
+      100% { opacity: 0; transform: translate(var(--dx100), -90px) scale(1.5) rotate(var(--rot100)); }
     }
 
     @media (max-width: 1023px) {
@@ -374,13 +375,33 @@
     function activateDualClick() { dualClickActive = true; document.getElementById('secondClickButton').classList.add('visible'); showMessage('🔥 Double Click activated!'); }
     function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
 
-    // ==================== SCORE POPUP ====================
+    // ==================== SCORE POPUP (хаотичный разлёт) ====================
     function spawnScorePopup(x, y, amount) {
       const popup = document.createElement('div');
       popup.className = 'score-popup';
       popup.textContent = `+${amount}`;
       popup.style.left = `${x}px`;
       popup.style.top = `${y}px`;
+
+      // Случайные параметры для хаотичного разлёта
+      const dx20 = (Math.random() - 0.5) * 30;
+      const dx50 = (Math.random() - 0.5) * 60;
+      const dx100 = (Math.random() - 0.5) * 100;
+      const rot20 = (Math.random() - 0.5) * 30;
+      const rot50 = (Math.random() - 0.5) * 60;
+      const rot100 = (Math.random() - 0.5) * 120;
+
+      popup.style.setProperty('--dx20', `${dx20}px`);
+      popup.style.setProperty('--dx50', `${dx50}px`);
+      popup.style.setProperty('--dx100', `${dx100}px`);
+      popup.style.setProperty('--rot20', `${rot20}deg`);
+      popup.style.setProperty('--rot50', `${rot50}deg`);
+      popup.style.setProperty('--rot100', `${rot100}deg`);
+
+      // Случайный оттенок золотого
+      const colors = ['#ffd700', '#ffcc00', '#ffe44d', '#ffaa00', '#ffc107', '#ffeb3b'];
+      popup.style.color = colors[Math.floor(Math.random() * colors.length)];
+
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 1000);
     }
@@ -392,7 +413,7 @@
       const maxReasonable = getMaxReasonableClickPower();
       if (clickPower > maxReasonable) { flagSuspiciousActivity('highClickPower', { clickPower, maxReasonable }); isAnimating = false; return; }
 
-      // Спавн попапа
+      // Хаотичный спавн попапа
       if (event) {
         const rect = event.target.getBoundingClientRect();
         const x = rect.left + rect.width / 2 - 20;
