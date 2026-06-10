@@ -27,11 +27,13 @@
     .bonus-message { font-size: 12px; color: #ffd700; margin-top: 8px; min-height: 18px; transition: opacity 0.3s ease; }
     .main-content { max-width: 1200px; margin: 0 auto; padding: 20px; }
     h1 { margin: 20px 0; font-size: 2.5em; text-shadow: 0 0 10px #00c3ff; }
-    #mainButtonContainer { display: flex; justify-content: center; align-items: center; margin: 40px 0; position: relative; height: 200px; }
+    #mainButtonContainer { display: flex; justify-content: center; align-items: center; margin: 40px 0; position: relative; height: 200px; gap: 20px; }
     .main-click-button { width: 150px; height: 150px; background: linear-gradient(135deg, #00ffa6, #00c3ff); border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px #00c3ff; transition: all 0.2s ease; outline: none; -webkit-tap-highlight-color: transparent; z-index: 1; touch-action: manipulation; }
     .main-click-button:hover { box-shadow: 0 0 35px #00ffa6; transform: scale(1.05); }
     .main-click-button:active { transform: scale(0.9); box-shadow: 0 0 15px #00c3ff; }
     .main-click-button .icon { font-size: 60px; }
+    #secondClickButton { display: none; }
+    #secondClickButton.visible { display: flex; }
     #counter { font-size: 36px; margin: 20px 0; font-weight: bold; transition: transform 0.2s ease; text-shadow: 0 0 10px rgba(0, 255, 166, 0.5); }
     #counter.bounce { transform: scale(1.2); }
     #message { margin: 10px 0; color: #ff5555; font-size: 16px; min-height: 24px; }
@@ -59,6 +61,7 @@
     #levelMessage { display: none; opacity: 0; transition: opacity 1s ease-in-out; color: gold; font-weight: bold; margin-top: 5px; }
     #levelMessage.show { display: block; opacity: 1; }
     #motiveText { margin-top: 20px; font-size: 18px; color: #00ffc8; text-shadow: 0 0 8px #00ffc8; transition: opacity 0.5s ease-in-out; }
+    #antiCheatWarning { display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #ff0000; color: #fff; padding: 10px 20px; border-radius: 8px; z-index: 9999; font-weight: bold; }
 
     @media (max-width: 1023px) {
       body { padding: 10px; }
@@ -96,6 +99,7 @@
   </style>
 </head>
 <body>
+  <div id="antiCheatWarning">⚠️ Suspicious activity detected!</div>
   <div class="game-header">
     <div id="profilePanel">
       <span class="collapse-arrow">▼</span>
@@ -121,7 +125,6 @@
   </div>
 
   <div class="main-content">
-    <div id="playerLevelContainer"><div id="levelMessage" style="display:none;color:gold;font-weight:bold;margin-top:5px;"></div></div>
     <h1>Crypto Clicker 💰</h1>
     <div id="authSection">
       <button class="click-button" onclick="signInWithGoogle()">Sign in with Google</button>
@@ -131,6 +134,7 @@
       <div id="mainButtonContainer">
         <div id="particles-js" style="position:absolute;width:100%;height:100%;z-index:-1;"></div>
         <button id="mainClickButton" class="main-click-button" onclick="clickToken()"><span class="icon">💰</span></button>
+        <button id="secondClickButton" class="main-click-button" onclick="clickToken()"><span class="icon">💰</span></button>
       </div>
       <div id="counter">Tokens: 0</div>
       <div id="message"></div>
@@ -209,6 +213,12 @@
     let onlineTime = 0, onlineTimer = null;
     let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
     let scoreListener = null;
+    let dualClickActive = false; // Флаг двойной кнопки
+
+    // ==================== ANTI-CHEAT CONFIG ====================
+    const MAX_CLICK_POWER = 100; // Абсолютный максимум
+    let suspiciousFlags = 0;
+    const MAX_SUSPICIOUS_FLAGS = 5; // Бан после 5 флагов
 
     const maxAutoclickerDuration = 4 * 60 * 60 * 1000;
     const OFFLINE_LIMIT = 4 * 60 * 60 * 1000;
@@ -236,7 +246,7 @@
       "Skip signing in — miss the rewards!"
     ];
 
-    // ==================== CLEANUP ON UNLOAD ====================
+    // ==================== CLEANUP ====================
     function cleanupAllTimers() {
       if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
@@ -246,7 +256,6 @@
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
       if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; }
     }
-
     window.addEventListener('beforeunload', cleanupAllTimers);
     window.addEventListener('pagehide', cleanupAllTimers);
 
@@ -270,12 +279,70 @@
       else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); }
     }
 
+    // ==================== ANTI-CHEAT ====================
+    function getMaxReasonableClickPower() {
+      // Базовая сила клика + бусты
+      let maxPower = clickPower;
+      
+      // Двойная кнопка = x2
+      if (dualClickActive) maxPower *= 2;
+      
+      // Супер-автокликер
+      if (superAutoclicker.active) maxPower *= superAutoclicker.multiplier;
+      
+      // Запас 50% на случай легитимных бустов
+      return Math.min(maxPower * 1.5, MAX_CLICK_POWER);
+    }
+
+    function flagSuspiciousActivity(type, details) {
+      suspiciousFlags++;
+      console.warn(`⚠️ Suspicious activity: ${type}`, details);
+      
+      // Показываем предупреждение
+      const warning = document.getElementById('antiCheatWarning');
+      warning.style.display = 'block';
+      setTimeout(() => warning.style.display = 'none', 3000);
+      
+      // Логируем в Firebase
+      if (user) {
+        db.ref(`suspiciousActivity/${user.uid}`).push({
+          type: type,
+          details: details,
+          flags: suspiciousFlags,
+          timestamp: Date.now()
+        });
+      }
+      
+      // Автобан после 5 флагов
+      if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) {
+        if (user) {
+          db.ref(`banned/${user.uid}`).set({
+            reason: 'Multiple suspicious activities',
+            flags: suspiciousFlags,
+            bannedAt: Date.now()
+          });
+        }
+        showMessage('🚫 Account suspended for suspicious activity');
+        signOut();
+      }
+    }
+
     // ==================== SCORE LISTENER ====================
     function startScoreListener() {
       if (!user) return;
       if (scoreListener) db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener);
+      
+      let lastScore = score;
       scoreListener = db.ref(`leaderboard/${user.uid}/score`).on("value", snapshot => {
         const newScore = snapshot.val() || 0;
+        const jump = newScore - lastScore;
+        
+        // Проверка на резкий скачок (более 100к за раз)
+        if (jump > 100000 && lastScore > 0) {
+          flagSuspiciousActivity('scoreJump', { from: lastScore, to: newScore, jump: jump });
+        }
+        
+        lastScore = newScore;
         if (newScore !== score) { score = newScore; updateCounterDisplay(); updateProfilePanel(); }
       });
     }
@@ -315,19 +382,59 @@
       if (!isOpen) { panel.classList.add('open'); if (panelName === 'shop') document.getElementById('shopBtn').innerHTML = 'Shop ▲'; else if (panelName === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); } else if (panelName === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); } }
     }
 
+    // ==================== DUAL CLICK (мобильная фича) ====================
+    function activateDualClick() {
+      dualClickActive = true;
+      document.getElementById('secondClickButton').classList.add('visible');
+      showMessage('🔥 Double Click activated!');
+    }
+    function deactivateDualClick() {
+      dualClickActive = false;
+      document.getElementById('secondClickButton').classList.remove('visible');
+    }
+
     // ==================== GAME ====================
     function clickToken() {
       if (!user || isAnimating) return;
       isAnimating = true;
-      db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs || 0) + clickPower).then(tr => {
-        if (tr.committed) { totalClicks++; updateTaskProgress("clickMarathon", 1); updateTaskProgress("collectTokens", clickPower); updateTaskProgress("collectBigTokens", clickPower); updateTaskProgress("clickMasterWeekly", 1); checkAchievements(); animateCounter(); }
-        const btn = document.getElementById("mainClickButton"); btn.classList.add("pulse"); setTimeout(() => { btn.classList.remove("pulse"); isAnimating = false; }, 200);
+
+      const maxReasonable = getMaxReasonableClickPower();
+      
+      // Проверка на взлом clickPower
+      if (clickPower > maxReasonable) {
+        flagSuspiciousActivity('highClickPower', { 
+          clickPower: clickPower, 
+          maxReasonable: maxReasonable,
+          dualClick: dualClickActive,
+          superActive: superAutoclicker.active
+        });
+        isAnimating = false;
+        return;
+      }
+
+      db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+        return (currentScore || 0) + clickPower;
+      }).then(tr => {
+        if (tr.committed) {
+          totalClicks++;
+          updateTaskProgress("clickMarathon", 1);
+          updateTaskProgress("collectTokens", clickPower);
+          updateTaskProgress("collectBigTokens", clickPower);
+          updateTaskProgress("clickMasterWeekly", 1);
+          checkAchievements();
+          animateCounter();
+        }
+        const btn = document.getElementById("mainClickButton");
+        btn.classList.add("pulse");
+        setTimeout(() => { btn.classList.remove("pulse"); isAnimating = false; }, 200);
       }).catch(() => { isAnimating = false; });
     }
 
     function boostClickPowerTemporarily(amount, duration) {
       if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) { showMessage("Boost already active!"); return; }
-      originalClickPower = clickPower; clickPower = Math.min(clickPower + amount, 8); tempBoostEndTime = Date.now() + duration;
+      originalClickPower = clickPower;
+      clickPower = Math.min(clickPower + amount, MAX_CLICK_POWER);
+      tempBoostEndTime = Date.now() + duration;
       showMessage(`Boost: +${amount} power for ${duration/1000}s`);
       if (user) db.ref("leaderboard/" + user.uid).update({ tempBoostActive: true, tempBoostEndTime, tempBoostOriginalClickPower: originalClickPower, tempBoostAmount: amount, lastUpdate: Date.now() });
       if (tempBoostTimeout) clearTimeout(tempBoostTimeout);
@@ -348,7 +455,7 @@
 
     function stopAutoclicker() {
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
-      autoclickActive = false; autoclickEndTime = 0; autoclickCooldown = false; updateProfilePanel(); submitScore();
+      autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); submitScore();
       if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: false, autoclickEndTime: 0, lastUpdate: Date.now() }).catch(() => {});
     }
 
@@ -356,7 +463,8 @@
 
     // ==================== SHOP ====================
     function buyUpgrade(type) {
-      if (type === "clickPower") { if (clickPower >= 8) { showMessage("Max level!"); return; }
+      if (type === "clickPower") {
+        if (clickPower >= 8) { showMessage("Max level!"); return; }
         const cost = getClickPowerUpgradeCost();
         db.ref(`leaderboard/${user.uid}/score`).transaction(cs => { const ns = (cs || 0) - cost; return ns < 0 ? undefined : ns; }).then(tr => {
           if (tr.committed) { clickPower++; updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); submitScore(); showMessage("Click Power upgraded!"); }
@@ -479,17 +587,7 @@
     function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); } }
 
     // ==================== BONUS ====================
-    function startBonusTimer() { 
-      if (bonusTimerInterval) clearInterval(bonusTimerInterval); 
-      bonusTimerInterval = setInterval(() => { 
-        if (!user) return; 
-        db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { 
-          const d = s.val() || { lastClaim: 0 }, tr = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); 
-          if (tr <= 0) { document.getElementById("claimBonusBtn").disabled = false; document.getElementById("bonusTimer").innerText = "Claim now!"; } 
-          else { document.getElementById("claimBonusBtn").disabled = true; const h = Math.floor(tr/3600000), m = Math.floor((tr%3600000)/60000), sec = Math.floor((tr%60000)/1000); document.getElementById("bonusTimer").innerText = `Next: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; } 
-        }); 
-      }, 1000); 
-    }
+    function startBonusTimer() { if (bonusTimerInterval) clearInterval(bonusTimerInterval); bonusTimerInterval = setInterval(() => { if (!user) return; db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { const d = s.val() || { lastClaim: 0 }, tr = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); if (tr <= 0) { document.getElementById("claimBonusBtn").disabled = false; document.getElementById("bonusTimer").innerText = "Claim now!"; } else { document.getElementById("claimBonusBtn").disabled = true; const h = Math.floor(tr/3600000), m = Math.floor((tr%3600000)/60000), sec = Math.floor((tr%60000)/1000); document.getElementById("bonusTimer").innerText = `Next: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; } }); }, 1000); }
     function claimHourlyBonus() { if (!user) return showMessage("Sign in.", true); db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { const d = s.val() || { lastClaim: 0 }; if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { const rw = Math.floor(Math.random()*191)+10; db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw).then(() => { showMessage(`✅ +${rw} tokens!`, true); db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now() }); document.getElementById("claimBonusBtn").disabled = true; startBonusTimer(); }); } else showMessage("Not ready!", true); }); }
     function startOnlineTimer() { if (onlineTimer) return; onlineTimer = setInterval(() => { if (user) { onlineTime++; updateTaskProgress("onlineTime", 1); if (onlineTime % 60 === 0) db.ref(`leaderboard/${user.uid}`).update({ onlineTime, lastUpdate: Date.now() }); } }, 1000); }
     function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
@@ -506,6 +604,8 @@
         const data = snapshot.val(); if (!data) return;
         score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1;
         autoclickActive = data.autoclickActive || false; autoclickEndTime = data.autoclickEndTime || 0; autoclickerLevel = data.autoclickerLevel || 1;
+        suspiciousFlags = data.suspiciousFlags || 0;
+        if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { showMessage('🚫 Account suspended'); signOut(); return; }
         if (autoclickActive && autoclickEndTime > Date.now()) { const rem = autoclickEndTime - Date.now(); const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); if (offlineSec > 0) { const offlineTok = Math.floor(offlineSec * clickPower * 0.5); if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline tokens`)); startAutoclicker(rem, false); } } else if (autoclickActive) stopAutoclicker();
         updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); renderAchievements(); updateClickPowerCostText(); updateAutoclickerShop();
         startScoreListener(); startBonusTimer(); startOnlineTimer(); checkWeeklyReset();
@@ -518,10 +618,8 @@
 
     function signOut() {
       stopOnlineTimer(); stopScoreListener();
-      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
-      if (tempBoostTimeout) { clearTimeout(tempBoostTimeout); tempBoostTimeout = null; }
-      if (superAutoclickInterval) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; }
-      if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
+      cleanupAllTimers();
+      if (user && suspiciousFlags > 0) db.ref("leaderboard/" + user.uid).update({ suspiciousFlags, lastUpdate: Date.now() }).catch(() => {});
       if (user && autoclickActive) db.ref("leaderboard/" + user.uid).update({ autoclickActive: true, autoclickEndTime, lastUpdate: Date.now() }).catch(() => {});
       auth.signOut().then(() => { user = null; score = 0; clickPower = 1; autoclickEndTime = 0; onlineTime = 0; document.getElementById("authSection").style.display = "block"; document.getElementById("gameSection").style.display = "none"; updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); showMessage("Signed out."); });
     }
@@ -546,6 +644,9 @@
 
     // ==================== MOTIVATIONAL ====================
     let mi = 0; const me = document.getElementById("motiveText"); setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1) % motivationalPhrases.length; me.innerText = motivationalPhrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
+
+    // ==================== EXPORT FOR DEBUG ====================
+    window.gameAPI = { activateDualClick, deactivateDualClick, getMaxReasonableClickPower, suspiciousFlags };
   </script>
 </body>
 </html>
