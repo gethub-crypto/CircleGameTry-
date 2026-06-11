@@ -8,7 +8,11 @@
   <title>Crypto Clicker</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; min-height: 100vh; overflow-x: hidden; }
+    body { 
+      background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; 
+      text-align: center; padding: 20px; min-height: 100vh; 
+      overflow-x: hidden; overscroll-behavior: none; 
+    }
     input { padding: 8px; font-size: 16px; margin-bottom: 10px; border-radius: 5px; border: none; background: #2a2a2a; color: #fff; width: 100%; }
     .click-button { background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-weight: bold; padding: 12px 24px; font-size: 16px; border-radius: 12px; cursor: pointer; margin: 5px; border: none; transition: all 0.3s ease; touch-action: manipulation; }
     .click-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 195, 255, 0.4); }
@@ -27,8 +31,24 @@
     .bonus-message { font-size: 12px; color: #ffd700; margin-top: 8px; min-height: 18px; transition: opacity 0.3s ease; }
     .main-content { max-width: 1200px; margin: 0 auto; padding: 20px; }
     h1 { margin: 20px 0; font-size: 2.5em; text-shadow: 0 0 10px #00c3ff; }
-    #mainButtonContainer { display: flex; justify-content: center; align-items: center; margin: 40px 0; position: relative; height: 200px; gap: 30px; }
-    .main-click-button { width: 150px; height: 150px; background: linear-gradient(135deg, #00ffa6, #00c3ff); border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px #00c3ff; transition: all 0.2s ease; outline: none; -webkit-tap-highlight-color: transparent; z-index: 1; touch-action: manipulation; position: relative; }
+    
+    /* Главный контейнер кнопок */
+    #mainButtonContainer { 
+      display: flex; justify-content: center; align-items: center; 
+      margin: 40px auto; position: relative; 
+      width: 350px; height: 350px; max-width: 100%;
+      overflow: hidden;
+    }
+    .main-click-button { 
+      width: 150px; height: 150px; 
+      background: linear-gradient(135deg, #00ffa6, #00c3ff); 
+      border-radius: 50%; border: none; cursor: pointer; 
+      display: flex; align-items: center; justify-content: center; 
+      box-shadow: 0 0 25px #00c3ff; transition: all 0.2s ease; 
+      outline: none; -webkit-tap-highlight-color: transparent; 
+      z-index: 1; touch-action: manipulation; position: relative;
+      will-change: transform; transform-origin: center center;
+    }
     .main-click-button:hover { box-shadow: 0 0 35px #00ffa6; transform: scale(1.05); }
     .main-click-button:active { transform: scale(0.9); box-shadow: 0 0 15px #00c3ff; }
     .main-click-button .icon { font-size: 60px; }
@@ -87,7 +107,7 @@
       #profilePanel:not(.expanded) > div:first-of-type { margin: 0; padding: 0; line-height: 20px; }
       #hourlyBonus { width: 100%; max-width: 400px; }
       .bonus-card { width: 100%; }
-      #mainButtonContainer { gap: 15px; }
+      #mainButtonContainer { width: 250px; height: 250px; gap: 15px; }
       .main-click-button { width: 100px; height: 100px; }
       .main-click-button .icon { font-size: 40px; }
       #counter { font-size: 24px; }
@@ -101,15 +121,17 @@
       #leaderboardTable { font-size: 11px; }
       .score-popup { font-size: 16px; }
     }
-    @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
+    @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
+    
     @media (min-width: 1024px) {
       .game-header { padding: 20px; }
       #profilePanel { width: 250px; font-size: 16px; max-height: none; overflow: visible; }
       #profilePanel .collapse-arrow { display: none; }
       #profilePanel:not(.expanded) > div { display: block; }
       .bonus-card { width: 220px; }
-      .main-click-button { width: 180px; height: 180px; }
-      .main-click-button .icon { font-size: 70px; }
+      #mainButtonContainer { width: 450px; height: 450px; overflow: hidden; }
+      .main-click-button { width: 220px; height: 220px; }
+      .main-click-button .icon { font-size: 80px; }
       .score-popup { font-size: 24px; }
     }
   </style>
@@ -312,30 +334,20 @@
       fb.disabled = autoclickActive;
     }
     
-    // Исправленная функция переключения панелей
     function togglePanel(pn) {
       const panel = document.getElementById(pn); if (!panel) return;
       const io = panel.classList.contains('open');
-      
-      // Закрываем мини-игру при открытии любого меню
       if (miniGameActive) endMiniGame(false);
       document.getElementById("miniGamePanel").style.display = "none";
-      
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
       document.getElementById('shopBtn').innerHTML = 'Shop ▼'; 
       document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼'; 
       document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-      
       if (!io) { 
         panel.classList.add('open'); 
         if (pn === 'shop') document.getElementById('shopBtn').innerHTML = 'Shop ▲'; 
-        else if (pn === 'achievements') { 
-          document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; 
-          renderAchievements(); 
-        } else if (pn === 'tasks') { 
-          document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; 
-          renderTasks(); 
-        } 
+        else if (pn === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); } 
+        else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); } 
       }
     }
 
@@ -379,47 +391,27 @@
     function claimTask(taskId) { if (!user) return showMessage("Sign in."); db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); const g = td.goal || task.goal; if ((td.progress||0) >= g) { const rw = td.reward || task.reward; if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); } else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); } else { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw); showMessage(`✅ +${rw} tokens!`); } db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); submitScore(); renderTasks(); }); } else showMessage(`${td.progress}/${g}`); }); }
     function completeTwitterTask(taskId) { if (!user) return showMessage("Sign in."); db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+task.reward); showMessage(`✅ +${task.reward} tokens!`); submitScore(); renderTasks(); }); }); }
 
-    // ==================== MINI-GAME (исправлено) ====================
     function startMiniGame() { 
       if (score < 1000) return showMessage("Need 1000!");
-      
-      // Остановить предыдущую игру если была
       if (miniGameActive) endMiniGame(false);
-      
-      // Закрываем все открытые панели
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
       document.getElementById('shopBtn').innerHTML = 'Shop ▼';
       document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
       document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-      
       miniGameActive = true; miniGameClicks = 0; 
       document.getElementById("miniGamePanel").style.display = "block"; 
       document.getElementById("miniGameClicks").innerText = 0; 
       let tl = 10; document.getElementById("miniGameTimer").innerText = tl; 
-      
       if (miniGameTimer) clearInterval(miniGameTimer);
-      miniGameTimer = setInterval(() => { 
-        tl--; document.getElementById("miniGameTimer").innerText = tl; 
-        if (tl <= 0) endMiniGame(true); 
-      }, 1000); 
+      miniGameTimer = setInterval(() => { tl--; document.getElementById("miniGameTimer").innerText = tl; if (tl <= 0) endMiniGame(true); }, 1000); 
     }
     function miniGameClick() { if (miniGameActive) { miniGameClicks++; document.getElementById("miniGameClicks").innerText = miniGameClicks; if (miniGameClicks >= 50) endMiniGame(true); } }
     function endMiniGame(success = false) { 
-      if (!miniGameActive) return; // Защита от повторного вызова
-      
-      clearInterval(miniGameTimer); 
-      miniGameActive = false; 
-      miniGameTimer = null;
+      if (!miniGameActive) return;
+      clearInterval(miniGameTimer); miniGameActive = false; miniGameTimer = null;
       document.getElementById("miniGamePanel").style.display = "none"; 
-      
-      if (success) { 
-        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+500); 
-        showMessage("+500 tokens!"); 
-        updateTaskProgress("miniGameChallenge", 1); 
-        submitScore(); 
-      } else {
-        showMessage("Mini-game closed!"); 
-      }
+      if (success) { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+500); showMessage("+500 tokens!"); updateTaskProgress("miniGameChallenge", 1); submitScore(); } 
+      else showMessage("Mini-game closed!"); 
       updateProfilePanel(); 
     }
 
