@@ -311,12 +311,32 @@
       else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade Cost: ${c.tokens} Tokens + ${c.crystals} 💎`; ub.disabled = false; }
       fb.disabled = autoclickActive;
     }
+    
+    // Исправленная функция переключения панелей
     function togglePanel(pn) {
       const panel = document.getElementById(pn); if (!panel) return;
       const io = panel.classList.contains('open');
+      
+      // Закрываем мини-игру при открытии любого меню
+      if (miniGameActive) endMiniGame(false);
+      document.getElementById("miniGamePanel").style.display = "none";
+      
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-      document.getElementById('shopBtn').innerHTML = 'Shop ▼'; document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼'; document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-      if (!io) { panel.classList.add('open'); if (pn === 'shop') document.getElementById('shopBtn').innerHTML = 'Shop ▲'; else if (pn === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); } else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); } }
+      document.getElementById('shopBtn').innerHTML = 'Shop ▼'; 
+      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼'; 
+      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+      
+      if (!io) { 
+        panel.classList.add('open'); 
+        if (pn === 'shop') document.getElementById('shopBtn').innerHTML = 'Shop ▲'; 
+        else if (pn === 'achievements') { 
+          document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; 
+          renderAchievements(); 
+        } else if (pn === 'tasks') { 
+          document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; 
+          renderTasks(); 
+        } 
+      }
     }
 
     function activateDualClick() { dualClickActive = true; document.getElementById('secondClickButton').classList.add('visible'); showMessage('🔥 Double Click!'); }
@@ -363,7 +383,10 @@
     function startMiniGame() { 
       if (score < 1000) return showMessage("Need 1000!");
       
-      // Закрываем все открытые панели перед запуском мини-игры
+      // Остановить предыдущую игру если была
+      if (miniGameActive) endMiniGame(false);
+      
+      // Закрываем все открытые панели
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
       document.getElementById('shopBtn').innerHTML = 'Shop ▼';
       document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
@@ -373,10 +396,32 @@
       document.getElementById("miniGamePanel").style.display = "block"; 
       document.getElementById("miniGameClicks").innerText = 0; 
       let tl = 10; document.getElementById("miniGameTimer").innerText = tl; 
-      miniGameTimer = setInterval(() => { tl--; document.getElementById("miniGameTimer").innerText = tl; if (tl <= 0) endMiniGame(); }, 1000); 
+      
+      if (miniGameTimer) clearInterval(miniGameTimer);
+      miniGameTimer = setInterval(() => { 
+        tl--; document.getElementById("miniGameTimer").innerText = tl; 
+        if (tl <= 0) endMiniGame(true); 
+      }, 1000); 
     }
     function miniGameClick() { if (miniGameActive) { miniGameClicks++; document.getElementById("miniGameClicks").innerText = miniGameClicks; if (miniGameClicks >= 50) endMiniGame(true); } }
-    function endMiniGame(success = false) { clearInterval(miniGameTimer); miniGameActive = false; document.getElementById("miniGamePanel").style.display = "none"; if (success) { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+500); showMessage("+500 tokens!"); updateTaskProgress("miniGameChallenge", 1); submitScore(); } else showMessage("Failed!"); updateProfilePanel(); }
+    function endMiniGame(success = false) { 
+      if (!miniGameActive) return; // Защита от повторного вызова
+      
+      clearInterval(miniGameTimer); 
+      miniGameActive = false; 
+      miniGameTimer = null;
+      document.getElementById("miniGamePanel").style.display = "none"; 
+      
+      if (success) { 
+        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+500); 
+        showMessage("+500 tokens!"); 
+        updateTaskProgress("miniGameChallenge", 1); 
+        submitScore(); 
+      } else {
+        showMessage("Mini-game closed!"); 
+      }
+      updateProfilePanel(); 
+    }
 
     function checkAchievements() { if (!achievements.superClicker && totalClicks >= 10000) { achievements.superClicker = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Super Clicker!"); saveAchievements(); } if (!achievements.tokenHoarder && score >= 1000000) { achievements.tokenHoarder = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Token Hoarder!"); saveAchievements(); } if (!achievements.level5 && parseInt(document.getElementById("playerLevel").innerText) >= 5) { achievements.level5 = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Level 5!"); saveAchievements(); } }
     function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
