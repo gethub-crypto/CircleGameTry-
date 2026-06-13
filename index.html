@@ -12,8 +12,6 @@
       background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; 
       text-align: center; padding: 20px; min-height: 100vh; 
       overflow-x: hidden; overscroll-behavior: none;
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
     input { padding: 8px; font-size: 16px; margin-bottom: 10px; border-radius: 5px; border: none; background: #2a2a2a; color: #fff; width: 100%; }
     .click-button { background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-weight: bold; padding: 12px 24px; font-size: 16px; border-radius: 12px; cursor: pointer; margin: 5px; border: none; transition: all 0.3s ease; touch-action: manipulation; }
@@ -98,8 +96,13 @@
       100% { opacity: 0; transform: translate(var(--dx100), -90px) scale(1.5) rotate(var(--rot100)); }
     }
 
+    /* ========== МОБИЛЬНЫЕ (телефоны) ========== */
     @media (max-width: 1023px) {
-      body { padding: 10px; }
+      body { 
+        padding: 10px;
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        overflow-y: auto; -webkit-overflow-scrolling: touch;
+      }
       h1 { font-size: 1.6em; margin: 10px 0; }
       .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
       #profilePanel { width: 100%; max-width: 400px; font-size: 13px; max-height: 44px; overflow: hidden; transition: max-height 0.4s ease; cursor: pointer; padding: 12px 35px 12px 15px; }
@@ -125,7 +128,30 @@
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     
-    @media (min-width: 1024px) {
+    /* ========== ПЛАНШЕТЫ (горизонтальные) ========== */
+    @media (min-width: 1024px) and (max-width: 1280px) {
+      body {
+        position: static;
+        overflow-y: auto;
+      }
+      .game-header { padding: 15px; }
+      #profilePanel { width: 220px; font-size: 14px; }
+      .bonus-card { width: 200px; }
+      #mainButtonContainer { width: 350px; height: 350px; }
+      .main-click-button { width: 180px; height: 180px; }
+      .main-click-button .icon { font-size: 65px; }
+      #counter { font-size: 30px; }
+      .score-popup { font-size: 20px; }
+      .pulse { animation: pulsePc 0.2s ease; }
+      @keyframes pulsePc { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    }
+
+    /* ========== ПК (большие экраны) ========== */
+    @media (min-width: 1281px) {
+      body {
+        position: static;
+        overflow-y: auto;
+      }
       .game-header { padding: 20px; }
       #profilePanel { width: 250px; font-size: 16px; max-height: none; overflow: visible; }
       #profilePanel .collapse-arrow { display: none; }
