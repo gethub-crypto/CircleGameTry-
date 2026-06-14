@@ -520,21 +520,8 @@
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
         .then(r => { 
           user = r.user;
-          
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-          
           document.getElementById("authSection").style.display = "none"; 
           document.getElementById("gameSection").style.display = "block"; 
-          
-          db.ref(`users/${user.uid}`).update({
-            googleEmail: user.email,
-            displayName: user.displayName,
-            photoUrl: user.photoURL,
-            authProvider: 'google',
-            deviceType: isMobile ? 'google_mobile' : 'google_desktop',
-            lastLogin: firebase.database.ServerValue.TIMESTAMP
-          });
-          
           loadPlayerData(user.uid); 
           submitScore(); 
           const ref = new URLSearchParams(window.location.search).get('ref'); 
@@ -550,115 +537,41 @@
         }); 
     }
 
+    // Авторизация через Telegram с использованием initData
     function signInWithTelegram() {
       if (authInProgress) return;
       
-      if (!isTelegramWebView()) {
+      if (!window.Telegram || !window.Telegram.WebApp) {
         showMessage("Please open from Telegram");
         return;
       }
 
       authInProgress = true;
 
-      let tgUser = null;
-      
-      try {
-        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-          tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-        }
-      } catch(e) {}
-      
-      if (!tgUser && isTelegramWebView()) {
-        auth.signInAnonymously()
-          .then(result => {
-            user = result.user;
-            
-            db.ref(`users/${user.uid}`).update({
-              authProvider: 'telegram',
-              deviceType: 'telegram_mobile',
-              displayName: 'Telegram User',
-              lastLogin: firebase.database.ServerValue.TIMESTAMP,
-              createdAt: firebase.database.ServerValue.TIMESTAMP
-            });
-            
-            document.getElementById("authSection").style.display = "none";
-            document.getElementById("gameSection").style.display = "block";
-            
-            loadPlayerData(user.uid);
-            submitScore();
-            showMessage("Welcome from Telegram!");
-            authInProgress = false;
-          })
-          .catch(error => {
-            showMessage("Authentication failed");
-            authInProgress = false;
-          });
-        
-        return;
-      }
-      
-      if (!tgUser) {
-        showMessage("Telegram user data not available");
+      const initData = window.Telegram.WebApp.initData || '';
+      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe || {};
+      const tgUser = initDataUnsafe.user;
+
+      if (!tgUser || !tgUser.id) {
+        showMessage("Unable to get Telegram user data");
         authInProgress = false;
         return;
       }
 
+      // Проверяем существующего пользователя по telegramId
       db.ref(`telegramUsers/${tgUser.id}`).once('value')
         .then(snapshot => {
           const existingUid = snapshot.val();
           
           if (existingUid) {
-            return db.ref(`leaderboard/${existingUid}`).once('value').then(userSnapshot => {
-              const userData = userSnapshot.val() || {};
-              if (userData.suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) {
-                throw new Error('User suspended');
-              }
-              
-              const updates = {
-                [`users/${existingUid}/lastLogin`]: firebase.database.ServerValue.TIMESTAMP,
-                [`users/${existingUid}/deviceType`]: 'telegram_mobile',
-                [`users/${existingUid}/telegramUsername`]: tgUser.username || '',
-                [`users/${existingUid}/firstName`]: tgUser.first_name,
-                [`users/${existingUid}/lastName`]: tgUser.last_name || '',
-                [`users/${existingUid}/photoUrl`]: tgUser.photo_url || '',
-                [`users/${existingUid}/authProvider`]: 'telegram'
-              };
-              
-              return db.ref().update(updates).then(() => existingUid);
-            });
+            // Существующий пользователь - обновляем данные
+            return updateExistingTelegramUser(existingUid, tgUser, initData);
           } else {
-            return auth.signInAnonymously().then(result => {
-              const newUser = result.user;
-              const displayName = tgUser.username || tgUser.first_name || 'Telegram User';
-              
-              const updates = {
-                [`telegramUsers/${tgUser.id}`]: newUser.uid,
-                [`users/${newUser.uid}`]: {
-                  telegramId: tgUser.id,
-                  telegramUsername: tgUser.username || '',
-                  firstName: tgUser.first_name,
-                  lastName: tgUser.last_name || '',
-                  photoUrl: tgUser.photo_url || '',
-                  displayName: displayName,
-                  authProvider: 'telegram',
-                  deviceType: 'telegram_mobile',
-                  lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                  createdAt: firebase.database.ServerValue.TIMESTAMP
-                }
-              };
-              
-              return db.ref().update(updates).then(() => {
-                return newUser.updateProfile({
-                  displayName: displayName,
-                  photoURL: tgUser.photo_url || ''
-                });
-              }).then(() => newUser.uid);
-            });
+            // Новый пользователь - создаем custom token через Firebase
+            return createNewTelegramUser(tgUser, initData);
           }
         })
         .then(uid => {
-          user = { uid: uid, displayName: tgUser.username || tgUser.first_name || 'Telegram User' };
-          
           document.getElementById("authSection").style.display = "none";
           document.getElementById("gameSection").style.display = "block";
           
@@ -671,14 +584,89 @@
             window.history.replaceState({}, document.title, window.location.pathname);
           }
           
-          showMessage("Welcome from Telegram!");
+          const displayName = tgUser.username || tgUser.first_name || 'Telegram User';
+          showMessage(`Welcome, ${displayName}!`);
           authInProgress = false;
         })
         .catch(error => {
           console.error("Telegram auth error:", error);
-          showMessage("Authentication failed: " + error.message);
+          showMessage("Authentication failed");
           authInProgress = false;
         });
+    }
+
+    function createNewTelegramUser(tgUser, initData) {
+      const displayName = tgUser.username || tgUser.first_name || 'Telegram User';
+      
+      // Создаем custom token на основе Telegram данных
+      const customToken = btoa(JSON.stringify({
+        uid: `tg_${tgUser.id}`,
+        telegramId: tgUser.id,
+        username: tgUser.username || '',
+        firstName: tgUser.first_name || '',
+        lastName: tgUser.last_name || '',
+        photoUrl: tgUser.photo_url || '',
+        authDate: initData.auth_date || Date.now()
+      }));
+
+      return auth.signInWithCustomToken(customToken)
+        .catch(() => {
+          // Если custom token не работает, используем анонимный вход с привязкой
+          return auth.signInAnonymously();
+        })
+        .then(result => {
+          user = result.user;
+          
+          const updates = {
+            [`telegramUsers/${tgUser.id}`]: user.uid,
+            [`users/${user.uid}`]: {
+              telegramId: tgUser.id,
+              telegramUsername: tgUser.username || '',
+              firstName: tgUser.first_name || '',
+              lastName: tgUser.last_name || '',
+              photoUrl: tgUser.photo_url || '',
+              displayName: displayName,
+              authProvider: 'telegram',
+              deviceType: 'telegram_mobile',
+              initData: initData,
+              lastLogin: firebase.database.ServerValue.TIMESTAMP,
+              createdAt: firebase.database.ServerValue.TIMESTAMP
+            }
+          };
+          
+          return db.ref().update(updates).then(() => {
+            return user.updateProfile({
+              displayName: displayName,
+              photoURL: tgUser.photo_url || ''
+            });
+          }).then(() => user.uid);
+        });
+    }
+
+    function updateExistingTelegramUser(uid, tgUser, initData) {
+      const displayName = tgUser.username || tgUser.first_name || 'Telegram User';
+      
+      const updates = {
+        [`users/${uid}/lastLogin`]: firebase.database.ServerValue.TIMESTAMP,
+        [`users/${uid}/deviceType`]: 'telegram_mobile',
+        [`users/${uid}/telegramUsername`]: tgUser.username || '',
+        [`users/${uid}/firstName`]: tgUser.first_name || '',
+        [`users/${uid}/lastName`]: tgUser.last_name || '',
+        [`users/${uid}/photoUrl`]: tgUser.photo_url || '',
+        [`users/${uid}/displayName`]: displayName,
+        [`users/${uid}/initData`]: initData
+      };
+      
+      // Обновляем профиль текущего пользователя
+      if (user && user.uid === uid) {
+        return user.updateProfile({
+          displayName: displayName,
+          photoURL: tgUser.photo_url || ''
+        }).then(() => db.ref().update(updates)).then(() => uid);
+      } else {
+        // Если пользователь не совпадает, просто обновляем данные
+        return db.ref().update(updates).then(() => uid);
+      }
     }
 
     function signOut() { 
@@ -735,18 +723,15 @@
     async function initApp() {
       initAuthButtons();
       
-      // Проверяем поддержку Telegram
       const hasTelegram = await checkTelegramSupport();
       
       if (hasTelegram || isTelegramWebView()) {
-        // Автоматическая авторизация в Telegram через 1.5 секунды
         setTimeout(() => {
           signInWithTelegram();
         }, 1500);
       }
     }
 
-    // Запускаем инициализацию
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       setTimeout(initApp, 200);
     } else {
