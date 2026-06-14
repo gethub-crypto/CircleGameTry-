@@ -19,14 +19,8 @@
     .click-button:active { transform: translateY(0); }
     .click-button:disabled { background: #555; cursor: not-allowed; transform: none; }
     
-    .fa-google { 
-      margin-right: 8px;
-      color: #4285f4;
-    }
-    .fa-telegram-plane { 
-      margin-right: 8px;
-      color: #0088cc;
-    }
+    .fa-google { margin-right: 8px; }
+    .fa-telegram-plane { margin-right: 8px; }
     
     .game-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px; position: relative; z-index: 10; }
     #profilePanel { background-color: #1a1a1a; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px #00c3ff; width: 220px; text-align: left; transition: all 0.3s ease; position: relative; overflow: hidden; }
@@ -42,7 +36,6 @@
     .main-content { max-width: 1200px; margin: 0 auto; padding: 20px; }
     h1 { margin: 20px 0; font-size: 2.5em; text-shadow: 0 0 10px #00c3ff; }
     
-    /* Главный контейнер кнопок */
     #mainButtonContainer { 
       display: flex; justify-content: center; align-items: center; 
       margin: 40px auto; position: relative; 
@@ -294,7 +287,7 @@
       return !!(window.Telegram?.WebApp);
     }
 
-    // Инициализация кнопок авторизации
+    // Инициализация кнопок авторизации в зависимости от платформы
     function initAuthButtons() {
       const googleBtn = document.getElementById('googleSignInBtn');
       const telegramBtn = document.getElementById('telegramSignInBtn');
@@ -303,9 +296,11 @@
       if (!authSection || authSection.style.display === 'none') return;
       
       if (isTelegramWebView()) {
+        // Если в Telegram - показываем только Telegram кнопку
         if (googleBtn) googleBtn.style.display = 'none';
         if (telegramBtn) telegramBtn.style.display = 'inline-block';
       } else {
+        // Если обычный браузер/ПК - показываем только Google кнопку
         if (googleBtn) googleBtn.style.display = 'inline-block';
         if (telegramBtn) telegramBtn.style.display = 'none';
       }
@@ -469,7 +464,7 @@
 
     function loadPlayerData(uid) { db.ref("leaderboard/" + uid).once("value").then(snapshot => { const data = snapshot.val(); if (!data) return; score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; autoclickActive = data.autoclickActive || false; autoclickEndTime = data.autoclickEndTime || 0; autoclickerLevel = data.autoclickerLevel || 1; suspiciousFlags = data.suspiciousFlags || 0; if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { showMessage('🚫 Suspended'); signOut(); return; } if (autoclickActive && autoclickEndTime > Date.now()) { const rem = autoclickEndTime - Date.now(); const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); if (offlineSec > 0) { const offlineTok = Math.floor(offlineSec * clickPower * 0.5); if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline`)); startAutoclicker(rem, false); } } else if (autoclickActive) stopAutoclicker(); updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); renderAchievements(); updateClickPowerCostText(); updateAutoclickerShop(); startScoreListener(); startBonusTimer(); startOnlineTimer(); checkWeeklyReset(); }); db.ref("achievements/" + uid).once("value").then(s => { if (s.val()) { achievements = s.val(); renderAchievements(); } }); }
 
-    // Авторизация через Google
+    // Авторизация через Google (для ПК/браузера)
     function signInWithGoogle() { 
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
         .then(r => { 
@@ -487,7 +482,7 @@
         .catch(() => showMessage("Sign-in failed.")); 
     }
 
-    // Авторизация через Telegram
+    // Авторизация через Telegram (для Telegram WebView)
     function signInWithTelegram() {
       if (!window.Telegram?.WebApp) {
         showMessage("Please open from Telegram");
@@ -505,6 +500,8 @@
         .then(result => {
           user = result.user;
           
+          const displayName = tgUser.username || tgUser.first_name || 'Telegram User';
+          
           // Сохраняем связь Telegram ID с Firebase UID
           const userData = {
             telegramId: tgUser.id,
@@ -516,9 +513,6 @@
             lastLogin: firebase.database.ServerValue.TIMESTAMP
           };
 
-          const displayName = tgUser.username || tgUser.first_name || 'Telegram User';
-
-          // Обновляем профиль пользователя
           return Promise.all([
             user.updateProfile({
               displayName: displayName,
@@ -562,7 +556,7 @@
         onlineTime = 0; 
         document.getElementById("gameSection").style.display = "none";
         document.getElementById("authSection").style.display = "block";
-        initAuthButtons();
+        initAuthButtons(); // Показываем правильную кнопку после выхода
         updateCounterDisplay(); 
         updateClickPowerBar(); 
         updateProfilePanel(); 
@@ -578,6 +572,7 @@
     profilePanel.addEventListener('click', function(e) { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A') return; if (isMobileOrTablet()) this.classList.toggle('expanded'); });
     window.addEventListener('resize', () => { if (isMobileOrTablet()) profilePanel.classList.remove('expanded'); else profilePanel.classList.add('expanded'); });
 
+    // Обработчик изменения состояния авторизации
     auth.onAuthStateChanged(cu => { 
       if (cu) { 
         user = cu; 
@@ -591,7 +586,7 @@
         document.getElementById("bonusTimer").innerText = "Sign in to claim";
         document.getElementById("gameSection").style.display = "none";
         document.getElementById("authSection").style.display = "block";
-        initAuthButtons();
+        initAuthButtons(); // Показываем правильную кнопку
       } 
     });
 
@@ -602,15 +597,13 @@
 
     let mi = 0; const me = document.getElementById("motiveText"); setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1) % motivationalPhrases.length; me.innerText = motivationalPhrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
     
-    // Инициализация при загрузке
-    document.addEventListener('DOMContentLoaded', function() {
-      initAuthButtons();
-      
-      // Если в Telegram - автоматически пробуем авторизоваться
-      if (isTelegramWebView()) {
-        setTimeout(() => signInWithTelegram(), 500);
-      }
-    });
+    // Инициализация при загрузке страницы
+    initAuthButtons();
+    
+    // Автоматическая авторизация в Telegram
+    if (isTelegramWebView()) {
+      setTimeout(() => signInWithTelegram(), 500);
+    }
     
     window.gameAPI = { activateDualClick, deactivateDualClick };
   </script>
