@@ -18,6 +18,16 @@
     .click-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 195, 255, 0.4); }
     .click-button:active { transform: translateY(0); }
     .click-button:disabled { background: #555; cursor: not-allowed; transform: none; }
+    
+    .fa-google { 
+      margin-right: 8px;
+      color: #4285f4;
+    }
+    .fa-telegram-plane { 
+      margin-right: 8px;
+      color: #0088cc;
+    }
+    
     .game-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px; position: relative; z-index: 10; }
     #profilePanel { background-color: #1a1a1a; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px #00c3ff; width: 220px; text-align: left; transition: all 0.3s ease; position: relative; overflow: hidden; }
     #profilePanel div { margin: 8px 0; font-size: 14px; }
@@ -166,7 +176,12 @@
     <div id="playerLevelContainer"><div id="levelMessage" style="display:none;color:gold;font-weight:bold;margin-top:5px;"></div></div>
     <h1>Crypto Clicker 💰</h1>
     <div id="authSection">
-      <button class="click-button" onclick="signInWithGoogle()">Sign in with Google</button>
+      <button class="click-button" id="googleSignInBtn" onclick="signInWithGoogle()">
+        <i class="fab fa-google"></i> Sign in with Google
+      </button>
+      <button class="click-button" id="telegramSignInBtn" onclick="signInWithTelegram()" style="display: none;">
+        <i class="fab fa-telegram-plane"></i> Sign in with Telegram
+      </button>
       <div id="motiveText">Click — earn tokens.</div>
     </div>
     <div id="gameSection" style="display:none;">
@@ -224,6 +239,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -272,6 +288,28 @@
       "Top farmers are waiting for you!", "Level up — earn even more tokens!", "Crypto wealth starts with a single click.",
       "Skip signing in — miss the rewards!"
     ];
+
+    // Определение Telegram WebView
+    function isTelegramWebView() {
+      return !!(window.Telegram?.WebApp);
+    }
+
+    // Инициализация кнопок авторизации
+    function initAuthButtons() {
+      const googleBtn = document.getElementById('googleSignInBtn');
+      const telegramBtn = document.getElementById('telegramSignInBtn');
+      const authSection = document.getElementById('authSection');
+      
+      if (!authSection || authSection.style.display === 'none') return;
+      
+      if (isTelegramWebView()) {
+        if (googleBtn) googleBtn.style.display = 'none';
+        if (telegramBtn) telegramBtn.style.display = 'inline-block';
+      } else {
+        if (googleBtn) googleBtn.style.display = 'inline-block';
+        if (telegramBtn) telegramBtn.style.display = 'none';
+      }
+    }
 
     function cleanupAllTimers() {
       if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
@@ -431,8 +469,107 @@
 
     function loadPlayerData(uid) { db.ref("leaderboard/" + uid).once("value").then(snapshot => { const data = snapshot.val(); if (!data) return; score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; autoclickActive = data.autoclickActive || false; autoclickEndTime = data.autoclickEndTime || 0; autoclickerLevel = data.autoclickerLevel || 1; suspiciousFlags = data.suspiciousFlags || 0; if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { showMessage('🚫 Suspended'); signOut(); return; } if (autoclickActive && autoclickEndTime > Date.now()) { const rem = autoclickEndTime - Date.now(); const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); if (offlineSec > 0) { const offlineTok = Math.floor(offlineSec * clickPower * 0.5); if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline`)); startAutoclicker(rem, false); } } else if (autoclickActive) stopAutoclicker(); updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); renderAchievements(); updateClickPowerCostText(); updateAutoclickerShop(); startScoreListener(); startBonusTimer(); startOnlineTimer(); checkWeeklyReset(); }); db.ref("achievements/" + uid).once("value").then(s => { if (s.val()) { achievements = s.val(); renderAchievements(); } }); }
 
-    function signInWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(r => { user = r.user; document.getElementById("authSection").style.display = "none"; document.getElementById("gameSection").style.display = "block"; loadPlayerData(user.uid); submitScore(); const ref = new URLSearchParams(window.location.search).get('ref'); if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); } }).catch(() => showMessage("Sign-in failed.")); }
-    function signOut() { stopOnlineTimer(); stopScoreListener(); cleanupAllTimers(); if (user && suspiciousFlags > 0) db.ref("leaderboard/" + user.uid).update({ suspiciousFlags, lastUpdate: Date.now() }).catch(() => {}); if (user && autoclickActive) db.ref("leaderboard/" + user.uid).update({ autoclickActive: true, autoclickEndTime, lastUpdate: Date.now() }).catch(() => {}); auth.signOut().then(() => { user = null; score = 0; clickPower = 1; autoclickEndTime = 0; onlineTime = 0; document.getElementById("authSection").style.display = "block"; document.getElementById("gameSection").style.display = "none"; updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); showMessage("Signed out."); }); }
+    // Авторизация через Google
+    function signInWithGoogle() { 
+      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+        .then(r => { 
+          user = r.user; 
+          document.getElementById("authSection").style.display = "none"; 
+          document.getElementById("gameSection").style.display = "block"; 
+          loadPlayerData(user.uid); 
+          submitScore(); 
+          const ref = new URLSearchParams(window.location.search).get('ref'); 
+          if (ref) { 
+            saveReferrer(ref); 
+            window.history.replaceState({}, document.title, window.location.pathname); 
+          } 
+        })
+        .catch(() => showMessage("Sign-in failed.")); 
+    }
+
+    // Авторизация через Telegram
+    function signInWithTelegram() {
+      if (!window.Telegram?.WebApp) {
+        showMessage("Please open from Telegram");
+        return;
+      }
+
+      const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+      if (!tgUser) {
+        showMessage("Telegram user data not available");
+        return;
+      }
+
+      // Используем анонимную авторизацию с привязкой к Telegram ID
+      auth.signInAnonymously()
+        .then(result => {
+          user = result.user;
+          
+          // Сохраняем связь Telegram ID с Firebase UID
+          const userData = {
+            telegramId: tgUser.id,
+            telegramUsername: tgUser.username || '',
+            firstName: tgUser.first_name,
+            lastName: tgUser.last_name || '',
+            photoUrl: tgUser.photo_url || '',
+            authProvider: 'telegram',
+            lastLogin: firebase.database.ServerValue.TIMESTAMP
+          };
+
+          const displayName = tgUser.username || tgUser.first_name || 'Telegram User';
+
+          // Обновляем профиль пользователя
+          return Promise.all([
+            user.updateProfile({
+              displayName: displayName,
+              photoURL: tgUser.photo_url || ''
+            }),
+            db.ref(`users/${user.uid}`).update(userData),
+            db.ref(`telegramUsers/${tgUser.id}`).set(user.uid)
+          ]);
+        })
+        .then(() => {
+          document.getElementById("authSection").style.display = "none";
+          document.getElementById("gameSection").style.display = "block";
+          loadPlayerData(user.uid);
+          submitScore();
+          
+          const ref = new URLSearchParams(window.location.search).get('ref');
+          if (ref) {
+            saveReferrer(ref);
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+          
+          showMessage("Welcome from Telegram!");
+        })
+        .catch(error => {
+          console.error("Telegram auth error:", error);
+          showMessage("Authentication failed");
+        });
+    }
+
+    function signOut() { 
+      stopOnlineTimer(); 
+      stopScoreListener(); 
+      cleanupAllTimers(); 
+      if (user && suspiciousFlags > 0) db.ref("leaderboard/" + user.uid).update({ suspiciousFlags, lastUpdate: Date.now() }).catch(() => {}); 
+      if (user && autoclickActive) db.ref("leaderboard/" + user.uid).update({ autoclickActive: true, autoclickEndTime, lastUpdate: Date.now() }).catch(() => {}); 
+      auth.signOut().then(() => { 
+        user = null; 
+        score = 0; 
+        clickPower = 1; 
+        autoclickEndTime = 0; 
+        onlineTime = 0; 
+        document.getElementById("gameSection").style.display = "none";
+        document.getElementById("authSection").style.display = "block";
+        initAuthButtons();
+        updateCounterDisplay(); 
+        updateClickPowerBar(); 
+        updateProfilePanel(); 
+        showMessage("Signed out."); 
+      }); 
+    }
+
     function saveReferrer(ruid) { if (!user || !ruid || isProcessingReferrer) return; isProcessingReferrer = true; db.ref(`leaderboard/${user.uid}`).once('value').then(s => { if (s.val()?.referral_bonus_claimed) { isProcessingReferrer = false; return; } db.ref(`leaderboard/${ruid}`).once('value').then(rs => { if (!rs.exists()) { isProcessingReferrer = false; return; } db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+50); showMessage('+50 referral!'); db.ref(`leaderboard/${user.uid}`).update({ referrer_uid: ruid, referral_bonus_claimed: true, lastUpdate: Date.now() }); db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now(), tokens_earned: 0, reward_claimed: false }); submitScore(); isProcessingReferrer = false; }); }); }
 
     const profilePanel = document.getElementById('profilePanel');
@@ -441,7 +578,22 @@
     profilePanel.addEventListener('click', function(e) { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A') return; if (isMobileOrTablet()) this.classList.toggle('expanded'); });
     window.addEventListener('resize', () => { if (isMobileOrTablet()) profilePanel.classList.remove('expanded'); else profilePanel.classList.add('expanded'); });
 
-    auth.onAuthStateChanged(cu => { if (cu) { user = cu; document.getElementById("authSection").style.display = "none"; document.getElementById("gameSection").style.display = "block"; loadPlayerData(user.uid); startBonusTimer(); } else { if (bonusTimerInterval) clearInterval(bonusTimerInterval); document.getElementById("claimBonusBtn").disabled = true; document.getElementById("bonusTimer").innerText = "Sign in to claim"; } });
+    auth.onAuthStateChanged(cu => { 
+      if (cu) { 
+        user = cu; 
+        document.getElementById("authSection").style.display = "none"; 
+        document.getElementById("gameSection").style.display = "block"; 
+        loadPlayerData(user.uid); 
+        startBonusTimer(); 
+      } else { 
+        if (bonusTimerInterval) clearInterval(bonusTimerInterval); 
+        document.getElementById("claimBonusBtn").disabled = true; 
+        document.getElementById("bonusTimer").innerText = "Sign in to claim";
+        document.getElementById("gameSection").style.display = "none";
+        document.getElementById("authSection").style.display = "block";
+        initAuthButtons();
+      } 
+    });
 
     db.ref("leaderboard").on("value", s => { if (currentTab !== "overall") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td></tr>`).join(''); });
     db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.rewardClaimed ? getRewardForRank(i+1)+' (Claimed)' : getRewardForRank(i+1)}</td></tr>`).join(''); });
@@ -449,6 +601,17 @@
     setInterval(() => { if (user) { updateProfilePanel(); if (score > 0) submitScore(); } }, 1000);
 
     let mi = 0; const me = document.getElementById("motiveText"); setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1) % motivationalPhrases.length; me.innerText = motivationalPhrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
+    
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+      initAuthButtons();
+      
+      // Если в Telegram - автоматически пробуем авторизоваться
+      if (isTelegramWebView()) {
+        setTimeout(() => signInWithTelegram(), 500);
+      }
+    });
+    
     window.gameAPI = { activateDualClick, deactivateDualClick };
   </script>
 </body>
