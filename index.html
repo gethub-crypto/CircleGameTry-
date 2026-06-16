@@ -280,10 +280,23 @@
           window.Telegram.WebApp.ready();
           window.Telegram.WebApp.expand();
           
-          // Применяем цвета темы Telegram если доступны
-          if (window.Telegram.WebApp.backgroundColor) {
-            document.body.style.backgroundColor = window.Telegram.WebApp.backgroundColor;
-          }
+          // Принудительно устанавливаем темную тему
+          window.Telegram.WebApp.setHeaderColor('#0f0f0f');
+          window.Telegram.WebApp.setBackgroundColor('#0f0f0f');
+          
+          // Устанавливаем фон для body
+          document.body.style.backgroundColor = '#0f0f0f';
+          document.body.style.setProperty('background-color', '#0f0f0f', 'important');
+          
+          // Применяем темную тему ко всем элементам через CSS переменные
+          document.documentElement.style.setProperty('--tg-theme-bg-color', '#0f0f0f');
+          document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', '#1a1a1a');
+          document.documentElement.style.setProperty('--tg-theme-text-color', '#ffffff');
+          document.documentElement.style.setProperty('--tg-theme-hint-color', '#888888');
+          document.documentElement.style.setProperty('--tg-theme-link-color', '#00ffa6');
+          document.documentElement.style.setProperty('--tg-theme-button-color', '#00c3ff');
+          document.documentElement.style.setProperty('--tg-theme-button-text-color', '#000000');
+          
         } catch (e) {
           console.log('Telegram WebApp setup:', e);
         }
@@ -457,10 +470,25 @@
       }
     }
 
+    // Синхронизация времени с сервером
+    async function syncServerTime() {
+      try {
+        const snapshot = await db.ref('.info/serverTimeOffset').once('value');
+        const offset = snapshot.val() || 0;
+        return Date.now() + offset;
+      } catch (error) {
+        console.error('Time sync error:', error);
+        return Date.now();
+      }
+    }
+
     // Запуск игры после авторизации
-    function startGameAfterAuth() {
+    async function startGameAfterAuth() {
       document.getElementById('authSection').style.display = 'none';
       document.getElementById('gameSection').style.display = 'block';
+      
+      // Синхронизируем время с сервером
+      await syncServerTime();
       
       loadPlayerData(user.uid);
       submitScore();
@@ -474,6 +502,7 @@
       
       // Запускаем таймеры
       startBonusTimer();
+      startBonusListener();
       startOnlineTimer();
       checkWeeklyReset();
     }
@@ -541,6 +570,7 @@
       if (tempBoostTimeout) { clearTimeout(tempBoostTimeout); tempBoostTimeout = null; }
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
       if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; }
+      if (user) { db.ref(`hourlyBonus/${user.uid}`).off('value'); }
     }
     window.addEventListener('beforeunload', cleanupAllTimers);
     window.addEventListener('pagehide', cleanupAllTimers);
@@ -683,8 +713,102 @@
     function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
     function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); } }
 
-    function startBonusTimer() { if (bonusTimerInterval) clearInterval(bonusTimerInterval); bonusTimerInterval = setInterval(() => { if (!user) return; db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { const d = s.val() || { lastClaim: 0 }, tr = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); if (tr <= 0) { document.getElementById("claimBonusBtn").disabled = false; document.getElementById("bonusTimer").innerText = "Claim now!"; } else { document.getElementById("claimBonusBtn").disabled = true; const h = Math.floor(tr/3600000), m = Math.floor((tr%3600000)/60000), sec = Math.floor((tr%60000)/1000); document.getElementById("bonusTimer").innerText = `Next: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; } }); }, 1000); }
-    function claimHourlyBonus() { if (!user) return showMessage("Sign in.", true); db.ref(`hourlyBonus/${user.uid}`).once("value").then(s => { const d = s.val() || { lastClaim: 0 }; if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { const rw = Math.floor(Math.random()*191)+10; db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw).then(() => { showMessage(`✅ +${rw} tokens!`, true); db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now() }); document.getElementById("claimBonusBtn").disabled = true; startBonusTimer(); }); } else showMessage("Not ready!", true); }); }
+    // Слушатель изменений бонуса
+    function startBonusListener() {
+      if (!user) return;
+      db.ref(`hourlyBonus/${user.uid}`).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.lastClaim) {
+          startBonusTimer();
+        }
+      });
+    }
+
+    // Исправленный таймер бонуса с серверной синхронизацией
+    function startBonusTimer() {
+      if (bonusTimerInterval) clearInterval(bonusTimerInterval);
+      
+      bonusTimerInterval = setInterval(async () => {
+        if (!user) return;
+        
+        try {
+          // Используем серверное время Firebase
+          const serverTimeSnapshot = await db.ref('.info/serverTimeOffset').once('value');
+          const serverTimeOffset = serverTimeSnapshot.val() || 0;
+          const serverTime = Date.now() + serverTimeOffset;
+          
+          // Получаем данные бонуса
+          const snapshot = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+          const data = snapshot.val() || { lastClaim: 0 };
+          
+          // Рассчитываем время до следующего бонуса используя серверное время
+          const timeSinceLastClaim = serverTime - data.lastClaim;
+          const timeRemaining = Math.max(0, 3600000 - timeSinceLastClaim);
+          
+          if (timeRemaining <= 0) {
+            document.getElementById("claimBonusBtn").disabled = false;
+            document.getElementById("bonusTimer").innerText = "Claim now!";
+          } else {
+            document.getElementById("claimBonusBtn").disabled = true;
+            const h = Math.floor(timeRemaining / 3600000);
+            const m = Math.floor((timeRemaining % 3600000) / 60000);
+            const sec = Math.floor((timeRemaining % 60000) / 1000);
+            document.getElementById("bonusTimer").innerText = 
+              `Next: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+          }
+        } catch (error) {
+          console.error('Bonus timer error:', error);
+        }
+      }, 1000);
+    }
+
+    // Исправленная функция получения бонуса
+    async function claimHourlyBonus() {
+      if (!user) return showMessage("Sign in.", true);
+      
+      try {
+        // Получаем серверное время
+        const serverTimeSnapshot = await db.ref('.info/serverTimeOffset').once('value');
+        const serverTimeOffset = serverTimeSnapshot.val() || 0;
+        const serverTime = Date.now() + serverTimeOffset;
+        
+        // Получаем данные бонуса
+        const snapshot = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+        const data = snapshot.val() || { lastClaim: 0 };
+        
+        const timeSinceLastClaim = serverTime - data.lastClaim;
+        
+        if (timeSinceLastClaim >= 3600000 || !data.lastClaim) {
+          const reward = Math.floor(Math.random() * 191) + 10;
+          
+          // Используем транзакцию для атомарного обновления
+          await db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
+            return (currentScore || 0) + reward;
+          });
+          
+          // Сохраняем время получения бонуса (серверное время)
+          await db.ref(`hourlyBonus/${user.uid}`).set({
+            lastClaim: serverTime,
+            lastClaimDevice: isTelegramMiniApp ? 'telegram' : (isMobileDevice ? 'mobile' : 'desktop'),
+            lastClaimTimestamp: firebase.database.ServerValue.TIMESTAMP
+          });
+          
+          showMessage(`✅ +${reward} tokens!`, true);
+          document.getElementById("claimBonusBtn").disabled = true;
+          
+          // Принудительно обновляем таймер
+          startBonusTimer();
+          
+        } else {
+          const remaining = Math.ceil((3600000 - timeSinceLastClaim) / 60000);
+          showMessage(`Not ready! ${remaining} min remaining`, true);
+        }
+      } catch (error) {
+        console.error('Claim bonus error:', error);
+        showMessage('Error claiming bonus. Try again.', true);
+      }
+    }
+
     function startOnlineTimer() { if (onlineTimer) return; onlineTimer = setInterval(() => { if (user) { onlineTime++; updateTaskProgress("onlineTime", 1); if (onlineTime % 60 === 0) db.ref(`leaderboard/${user.uid}`).update({ onlineTime, lastUpdate: Date.now() }); } }, 1000); }
     function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
 
@@ -693,7 +817,7 @@
     function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
     function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
 
-    function loadPlayerData(uid) { db.ref("leaderboard/" + uid).once("value").then(snapshot => { const data = snapshot.val(); if (!data) return; score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; autoclickActive = data.autoclickActive || false; autoclickEndTime = data.autoclickEndTime || 0; autoclickerLevel = data.autoclickerLevel || 1; suspiciousFlags = data.suspiciousFlags || 0; if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { showMessage('🚫 Suspended'); signOut(); return; } if (autoclickActive && autoclickEndTime > Date.now()) { const rem = autoclickEndTime - Date.now(); const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); if (offlineSec > 0) { const offlineTok = Math.floor(offlineSec * clickPower * 0.5); if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline`)); startAutoclicker(rem, false); } } else if (autoclickActive) stopAutoclicker(); updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); renderAchievements(); updateClickPowerCostText(); updateAutoclickerShop(); startScoreListener(); startBonusTimer(); startOnlineTimer(); checkWeeklyReset(); }); db.ref("achievements/" + uid).once("value").then(s => { if (s.val()) { achievements = s.val(); renderAchievements(); } }); }
+    function loadPlayerData(uid) { db.ref("leaderboard/" + uid).once("value").then(snapshot => { const data = snapshot.val(); if (!data) return; score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; autoclickActive = data.autoclickActive || false; autoclickEndTime = data.autoclickEndTime || 0; autoclickerLevel = data.autoclickerLevel || 1; suspiciousFlags = data.suspiciousFlags || 0; if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { showMessage('🚫 Suspended'); signOut(); return; } if (autoclickActive && autoclickEndTime > Date.now()) { const rem = autoclickEndTime - Date.now(); const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); if (offlineSec > 0) { const offlineTok = Math.floor(offlineSec * clickPower * 0.5); if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline`)); startAutoclicker(rem, false); } } else if (autoclickActive) stopAutoclicker(); updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); renderAchievements(); updateClickPowerCostText(); updateAutoclickerShop(); startScoreListener(); startBonusTimer(); startBonusListener(); startOnlineTimer(); checkWeeklyReset(); }); db.ref("achievements/" + uid).once("value").then(s => { if (s.val()) { achievements = s.val(); renderAchievements(); } }); }
 
     // Модифицированная функция выхода
     async function signOut() {
