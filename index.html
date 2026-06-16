@@ -210,7 +210,7 @@
         <h2 style="margin-top:20px;">⚡ Autoclickers</h2>
         <div id="settings">
           <h3>Autoclicker Level: <span id="autoclickerLevel">1</span> / 20</h3>
-          <p id="autoclickerDurationValue">Duration: <span id="timeLeft">60</span>s</p>
+          <p id="autoclickerDurationValue">Duration: <span id="timeLeft">1:00</span></p>
           <p id="autoclickerUpgradeCost">Upgrade Cost: 100 Tokens + 10 💎</p>
           <button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width:100%;">Upgrade Autoclicker</button>
           <button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width:100%;margin-top:5px;">Activate Free Autoclicker</button>
@@ -501,7 +501,7 @@
     let miniGameActive = false, miniGameClicks = 0, miniGameTimer = null;
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
-    let scoreListener = null, dualClickActive = false;
+    let scoreListener = null, dualClickActive = false, lastClickTime = 0;
 
     const MAX_CLICK_POWER = 100; let suspiciousFlags = 0; const MAX_SUSPICIOUS_FLAGS = 5;
     const maxAutoclickerDuration = 4 * 60 * 60 * 1000; const OFFLINE_LIMIT = 4 * 60 * 60 * 1000;
@@ -528,6 +528,19 @@
       "Top farmers are waiting for you!", "Level up — earn even more tokens!", "Crypto wealth starts with a single click.",
       "Skip signing in — miss the rewards!"
     ];
+
+    // Вспомогательная функция форматирования времени из секунд
+    function formatTimeFromSeconds(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      if (hours > 0) {
+        return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      } else {
+        return `${minutes}:${String(seconds).padStart(2, '0')}`;
+      }
+    }
 
     function cleanupAllTimers() {
       if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
@@ -569,8 +582,19 @@
 
     function updateProfilePanel() {
       document.getElementById('profileClickPower').innerText = Math.min(clickPower, 8);
-      if (autoclickActive) { const rem = Math.max(0, autoclickEndTime - Date.now()); document.getElementById('profileAutoclick').innerText = `Active: ${Math.floor(rem/60000)}:${String(Math.floor((rem%60000)/1000)).padStart(2,'0')}`; }
-      else document.getElementById('profileAutoclick').innerText = 'Inactive';
+      
+      // Исправленное отображение времени автокликера
+      if (autoclickActive) {
+        const rem = Math.max(0, autoclickEndTime - Date.now());
+        const hours = Math.floor(rem / 3600000);
+        const minutes = Math.floor((rem % 3600000) / 60000);
+        const seconds = Math.floor((rem % 60000) / 1000);
+        const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        document.getElementById('profileAutoclick').innerText = `Active: ${timeString}`;
+      } else {
+        document.getElementById('profileAutoclick').innerText = 'Inactive';
+      }
+      
       let lv = 1; for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) lv = i + 2; else break; }
       document.getElementById('playerLevel').innerText = lv; document.getElementById('profileTokens').innerText = score;
       
@@ -582,12 +606,30 @@
       if (user) db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; });
       const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.innerText = 'Max level!'; lm.classList.add('show'); } else lm.classList.remove('show');
     }
+    
     function updateClickPowerBar() { document.getElementById("clickPowerDisplay").innerText = clickPower; document.getElementById("clickPowerBar").style.width = Math.min((clickPower / 8) * 100, 100) + "%"; updateClickPowerCostText(); }
     function updateClickPowerCostText() { const ct = document.getElementById('clickPowerCostText'); if (ct) ct.textContent = clickPower >= 8 ? "💪 Click Power: MAX LEVEL" : `💪 Click Power +1 (Cost: ${getClickPowerUpgradeCost()})`; }
+    
     function updateAutoclickerShop() {
       document.getElementById("autoclickerLevel").innerText = autoclickerLevel;
-      const ds = Math.floor(getAutoclickerDuration() / 1000);
-      document.getElementById("autoclickerDurationValue").innerText = ds >= 3600 ? `${Math.floor(ds/3600)}h ${Math.floor((ds%3600)/60)}m` : ds >= 60 ? `${Math.floor(ds/60)}m ${ds%60}s` : `${ds}s`;
+      
+      // Исправленное отображение длительности
+      const durationMs = getAutoclickerDuration();
+      const hours = Math.floor(durationMs / 3600000);
+      const minutes = Math.floor((durationMs % 3600000) / 60000);
+      const seconds = Math.floor((durationMs % 60000) / 1000);
+      
+      let durationString;
+      if (hours > 0) {
+        durationString = `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      } else if (minutes > 0) {
+        durationString = `${minutes}:${String(seconds).padStart(2, '0')}`;
+      } else {
+        durationString = `${seconds}s`;
+      }
+      
+      document.getElementById("autoclickerDurationValue").innerHTML = `Duration: <span id="timeLeft">${durationString}</span>`;
+      
       const ub = document.getElementById("upgradeAutoclickerBtn"), fb = document.getElementById("activateFreeAutoclickerBtn");
       if (autoclickerLevel >= 20) { document.getElementById("autoclickerUpgradeCost").innerText = "Autoclicker: MAX LEVEL"; ub.disabled = true; }
       else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade Cost: ${c.tokens} Tokens + ${c.crystals} 💎`; ub.disabled = false; }
@@ -625,7 +667,14 @@
     }
 
     function clickToken(event) {
-      if (!user || isAnimating) return; isAnimating = true;
+      if (!user || isAnimating) return;
+      
+      // Rate limiting
+      const now = Date.now();
+      if (now - lastClickTime < 50) return;
+      lastClickTime = now;
+      
+      isAnimating = true;
       const mr = getMaxReasonableClickPower();
       if (clickPower > mr) { flagSuspiciousActivity('highClickPower', { clickPower, mr }); isAnimating = false; return; }
       if (event) { const rect = event.target.getBoundingClientRect(); spawnScorePopup(rect.left + rect.width/2 - 20, rect.top, clickPower); }
@@ -637,8 +686,35 @@
 
     function boostClickPowerTemporarily(amount, duration) { if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) { showMessage("Boost active!"); return; } originalClickPower = clickPower; clickPower = Math.min(clickPower + amount, MAX_CLICK_POWER); tempBoostEndTime = Date.now() + duration; showMessage(`Boost: +${amount} power`); if (user) db.ref("leaderboard/" + user.uid).update({ tempBoostActive: true, tempBoostEndTime, tempBoostOriginalClickPower: originalClickPower, tempBoostAmount: amount, lastUpdate: Date.now() }); if (tempBoostTimeout) clearTimeout(tempBoostTimeout); tempBoostTimeout = setTimeout(() => { clickPower = originalClickPower; showMessage("Boost ended"); updateClickPowerBar(); updateProfilePanel(); submitScore(); tempBoostTimeout = null; tempBoostEndTime = 0; }, duration); }
     function autoclickTick() { if (!user) { stopAutoclicker(); return; } clickToken(); }
-    function startAutoclicker(duration, extendTime = false) { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } if (autoclickActive) { const rem = Math.max(0, autoclickEndTime - Date.now()); if (rem <= 0) stopAutoclicker(); autoclickEndTime = extendTime ? Date.now() + rem + duration : Date.now() + duration; } else { autoclickActive = true; autoclickEndTime = Date.now() + duration; } autoclickInterval = setInterval(autoclickTick, 1000); setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now()); autoclickerUses++; updateTaskProgress("autoclickerMaster", 1); updateProfilePanel(); submitScore(); if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: true, autoclickEndTime, lastUpdate: Date.now() }).catch(() => {}); }
-    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); submitScore(); if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: false, autoclickEndTime: 0, lastUpdate: Date.now() }).catch(() => {}); }
+    
+    function startAutoclicker(duration, extendTime = false) { 
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } 
+      if (autoclickActive) { 
+        const rem = Math.max(0, autoclickEndTime - Date.now()); 
+        if (rem <= 0) stopAutoclicker(); 
+        autoclickEndTime = extendTime ? Date.now() + rem + duration : Date.now() + duration; 
+      } else { 
+        autoclickActive = true; 
+        autoclickEndTime = Date.now() + duration; 
+      } 
+      autoclickInterval = setInterval(autoclickTick, 1000); 
+      setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now()); 
+      autoclickerUses++; 
+      updateTaskProgress("autoclickerMaster", 1); 
+      updateProfilePanel(); 
+      submitScore(); 
+      if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: true, autoclickEndTime, lastUpdate: Date.now() }).catch(() => {}); 
+    }
+    
+    function stopAutoclicker() { 
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } 
+      autoclickActive = false; 
+      autoclickEndTime = 0; 
+      updateProfilePanel(); 
+      submitScore(); 
+      if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: false, autoclickEndTime: 0, lastUpdate: Date.now() }).catch(() => {}); 
+    }
+    
     function activateFreeAutoclicker() { if (autoclickActive) showMessage("Already active!"); else { startAutoclicker(getAutoclickerDuration()); updateAutoclickerShop(); } }
 
     function buyUpgrade(type) { if (type === "clickPower") { if (clickPower >= 8) { showMessage("Max level!"); return; } const cost = getClickPowerUpgradeCost(); db.ref(`leaderboard/${user.uid}/score`).transaction(cs => { const ns = (cs || 0) - cost; return ns < 0 ? undefined : ns; }).then(tr => { if (tr.committed) { clickPower++; updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); submitScore(); showMessage("Click Power upgraded!"); } else showMessage("Not enough tokens."); }); } }
@@ -646,8 +722,127 @@
     function buyLuckySpin(tc = 300, cc = 10) { if (!user) return showMessage("Sign in."); db.ref(`luckySpin/${user.uid}`).once("value").then(s => { const sd = s.val() || { spinsToday: 0, lastSpinDate: "" }, today = new Date().toDateString(); let st = sd.lastSpinDate === today ? sd.spinsToday : 0; if (st >= 3) return showMessage("Daily limit!"); if (score < tc || crystals < cc) return showMessage("Not enough!"); db.ref(`leaderboard/${user.uid}`).transaction(d => ((d.score||0)>=tc && (d.crystals||0)>=cc) ? {...d, score: d.score - tc, crystals: d.crystals - cc} : undefined).then(r => { if (r.committed) { crystals = r.snapshot.val().crystals; db.ref(`luckySpin/${user.uid}`).update({ spinsToday: st+1, lastSpinDate: today }); const rand = Math.random(); if (rand < 0.4) { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+Math.floor(500+Math.random()*1500)); showMessage('+tokens!'); } else if (rand < 0.7) { crystals += Math.floor(10+Math.random()*20); showMessage('+💎!'); updateProfilePanel(); } else if (rand < 0.85) boostClickPowerTemporarily(clickPower, 300000); else startAutoclicker(600000, true); submitScore(); } }); }); }
     function buySuperAutoclicker(mult, dur, tc, cc) { if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) return showMessage("Already active!"); if (!user) return showMessage("Sign in."); if (score < tc || crystals < cc) return showMessage("Not enough!"); db.ref(`leaderboard/${user.uid}`).transaction(d => ((d.score||0)>=tc && (d.crystals||0)>=cc) ? {...d, score: d.score - tc, crystals: d.crystals - cc, superAutoclicker:{active:true, multiplier:mult, endTime:Date.now()+dur}} : undefined).then(r => { if (r.committed) { crystals = r.snapshot.val().crystals; superAutoclicker = { active: true, multiplier: mult, endTime: Date.now() + dur }; if (superAutoclickInterval) clearInterval(superAutoclickInterval); superAutoclickInterval = setInterval(() => { if (!user) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; return; } db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0) + clickPower * mult); submitScore(); }, 1000); setTimeout(() => { if (superAutoclickInterval) clearInterval(superAutoclickInterval); superAutoclicker = { active: false, multiplier: 1, endTime: 0 }; showMessage("Super ended!"); }, dur); showMessage(`Super x${mult} activated!`); updateProfilePanel(); submitScore(); } }); }
 
-    function renderTasks() { if (isRenderingTasks) return; isRenderingTasks = true; const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; } list.innerHTML = "Loading..."; if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; } db.ref(`tasks/${user.uid}`).once("value").then(s => { const td = s.val() || {}, today = new Date().toDateString(), sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), wn = getWeekNumber(), ew = wn % 2 === 0; const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; }); list.innerHTML = ""; at.forEach(task => { let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false }; const rk = task.period === "weekly" ? sow : today; if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); } const div = document.createElement("div"); if (tdd.completed || tdd.completions >= 1) div.innerHTML = `<span style="color:#00ffa6;">✅ ${task.description} - Done!</span>`; else { const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, cc = p >= g; if (task.id === "subscribeTwitter") div.innerHTML = `${task.description}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; else if (task.id === "miniGameChallenge" || task.id === "onlineTime") div.innerHTML = `${task.description}: ${p}/${g}<br><small>Reward: ${rt}</small>`; else div.innerHTML = `${task.description}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; } list.appendChild(div); }); isRenderingTasks = false; }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; }); }
-    function updateTaskProgress(taskId, inc) { if (!user) return; const task = dailyTasks.find(t => t.id === taskId); if (!task) return; if (task.alternate) { const wn = getWeekNumber(), ew = wn % 2 === 0; if (task.id==="autoclickerMaster"&&!ew) return; if (task.id==="collectBigTokens"&&ew) return; } const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today; db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { let td = s.val() || { progress: 0, lastReset: rk, completions: 0, completed: false }; if (td.lastReset !== rk) td = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; if (td.completed || td.completions >= 1) return; const np = Math.min((td.progress||0) + inc, td.goal || task.goal); if (np !== td.progress) { td.progress = np; db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{}); } }).catch(()=>{}); }
+    function renderTasks() { 
+      if (isRenderingTasks) return; 
+      isRenderingTasks = true; 
+      const list = document.getElementById("tasksList"); 
+      if (!list) { isRenderingTasks = false; return; } 
+      list.innerHTML = "Loading..."; 
+      if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; } 
+      
+      db.ref(`tasks/${user.uid}`).once("value").then(s => { 
+        const td = s.val() || {}, 
+              today = new Date().toDateString(), 
+              sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), 
+              wn = getWeekNumber(), 
+              ew = wn % 2 === 0; 
+        
+        const at = dailyTasks.filter(t => { 
+          if (!t.alternate) return true; 
+          if (t.id==="autoclickerMaster"&&ew) return true; 
+          if (t.id==="collectBigTokens"&&!ew) return true; 
+          return false; 
+        }); 
+        
+        list.innerHTML = ""; 
+        
+        at.forEach(task => { 
+          let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false }; 
+          const rk = task.period === "weekly" ? sow : today; 
+          
+          if (tdd.lastReset !== rk) { 
+            tdd = { 
+              progress: 0, 
+              lastReset: rk, 
+              completions: 0, 
+              completed: false, 
+              ...(task.goalOptions && { 
+                goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], 
+                reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] 
+              }) 
+            }; 
+            db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); 
+          } 
+          
+          const div = document.createElement("div"); 
+          
+          if (tdd.completed || tdd.completions >= 1) {
+            div.innerHTML = `<span style="color:#00ffa6;">✅ ${task.description} - Done!</span>`; 
+          } else { 
+            const g = tdd.goal || task.goal, 
+                  p = tdd.progress || 0, 
+                  rw = tdd.reward || task.reward, 
+                  rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, 
+                  cc = p >= g; 
+            
+            if (task.id === "subscribeTwitter") {
+              div.innerHTML = `${task.description}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; 
+            } else if (task.id === "onlineTime") {
+              // Форматируем прогресс и цель в ЧЧ:ММ:СС
+              const progressTime = formatTimeFromSeconds(p);
+              const goalTime = formatTimeFromSeconds(g);
+              div.innerHTML = `${task.description}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`; 
+            } else if (task.id === "miniGameChallenge") {
+              div.innerHTML = `${task.description}: ${p}/${g}<br><small>Reward: ${rt}</small>`; 
+            } else {
+              div.innerHTML = `${task.description}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; 
+            }
+          } 
+          list.appendChild(div); 
+        }); 
+        isRenderingTasks = false; 
+      }).catch(() => { 
+        list.innerHTML = "Error."; 
+        isRenderingTasks = false; 
+      }); 
+    }
+    
+    function updateTaskProgress(taskId, inc) { 
+      if (!user) return; 
+      const task = dailyTasks.find(t => t.id === taskId); 
+      if (!task) return; 
+      if (task.alternate) { 
+        const wn = getWeekNumber(), ew = wn % 2 === 0; 
+        if (task.id==="autoclickerMaster"&&!ew) return; 
+        if (task.id==="collectBigTokens"&&ew) return; 
+      } 
+      
+      const now = new Date(), 
+            today = now.toDateString(), 
+            sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), 
+            rk = task.period === "weekly" ? sow : today; 
+      
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { 
+        let td = s.val() || { progress: 0, lastReset: rk, completions: 0, completed: false }; 
+        
+        if (td.lastReset !== rk) {
+          td = { 
+            progress: 0, 
+            lastReset: rk, 
+            completions: 0, 
+            completed: false, 
+            ...(task.goalOptions && { 
+              goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], 
+              reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] 
+            }) 
+          }; 
+        }
+        
+        if (td.completed || td.completions >= 1) return; 
+        
+        const np = Math.min((td.progress||0) + inc, td.goal || task.goal); 
+        if (np !== td.progress) { 
+          td.progress = np; 
+          db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{});
+          
+          // Если это задание на время онлайн - обновляем отображение
+          if (taskId === "onlineTime") {
+            renderTasks();
+          }
+        } 
+      }).catch(()=>{}); 
+    }
+    
     function claimTask(taskId) { if (!user) return showMessage("Sign in."); db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); const g = td.goal || task.goal; if ((td.progress||0) >= g) { const rw = td.reward || task.reward; if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); } else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); } else { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw); showMessage(`✅ +${rw} tokens!`); } db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); submitScore(); renderTasks(); }); } else showMessage(`${td.progress}/${g}`); }); }
     function completeTwitterTask(taskId) { if (!user) return showMessage("Sign in."); db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+task.reward); showMessage(`✅ +${task.reward} tokens!`); submitScore(); renderTasks(); }); }); }
 
@@ -679,7 +874,7 @@
     function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
     function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); } }
 
-    // ===== НОВАЯ СИСТЕМА ОНЛАЙН-ТАЙМЕРА =====
+    // ===== СИСТЕМА ОНЛАЙН-ТАЙМЕРА =====
     
     function startOnlineTimer() {
       if (onlineTimer) return;
@@ -693,26 +888,13 @@
           return;
         }
         
-        // Проверка активности страницы
-        if (!isPageActive) {
-          return;
-        }
+        if (!isPageActive) return;
+        if (document.hidden || document.visibilityState !== 'visible') return;
+        if (typeof document.hasFocus === 'function' && !document.hasFocus()) return;
         
-        // Проверка видимости
-        if (document.hidden || document.visibilityState !== 'visible') {
-          return;
-        }
-        
-        // Проверка фокуса (может не работать на некоторых мобильных)
-        if (typeof document.hasFocus === 'function' && !document.hasFocus()) {
-          return;
-        }
-        
-        // Защита от заморозки таймера
         const now = Date.now();
         const elapsed = now - lastOnlinePing;
         
-        // На мобильных устройствах браузер может "замораживать" таймеры
         if (elapsed > 3000 || elapsed < 900) {
           lastOnlinePing = now;
           return;
@@ -741,14 +923,12 @@
     function updatePageActivity() {
       const wasActive = isPageActive;
       
-      // Проверяем все условия активности
       isPageActive = (
         document.visibilityState === 'visible' &&
         !document.hidden &&
         (typeof document.hasFocus !== 'function' || document.hasFocus())
       );
       
-      // Если состояние изменилось
       if (wasActive !== isPageActive) {
         if (isPageActive) {
           lastOnlinePing = Date.now();
@@ -762,70 +942,27 @@
       }
     }
 
-    // Обработчики видимости и фокуса для всех устройств
     document.addEventListener('visibilitychange', updatePageActivity);
+    window.addEventListener('focus', () => { lastOnlinePing = Date.now(); updatePageActivity(); });
+    window.addEventListener('blur', () => { stopOnlineTimer(); isPageActive = false; lastOnlinePing = Date.now(); });
+    document.addEventListener('resume', () => { lastOnlinePing = Date.now(); updatePageActivity(); });
+    document.addEventListener('pause', () => { stopOnlineTimer(); isPageActive = false; });
+    window.addEventListener('pageshow', (event) => { if (event.persisted) { lastOnlinePing = Date.now(); updatePageActivity(); } });
+    window.addEventListener('pagehide', () => { stopOnlineTimer(); isPageActive = false; });
 
-    window.addEventListener('focus', () => {
-      lastOnlinePing = Date.now();
-      updatePageActivity();
-    });
-
-    window.addEventListener('blur', () => {
-      stopOnlineTimer();
-      isPageActive = false;
-      lastOnlinePing = Date.now();
-    });
-
-    // Дополнительные обработчики для мобильных устройств
-    document.addEventListener('resume', () => {
-      lastOnlinePing = Date.now();
-      updatePageActivity();
-    });
-
-    document.addEventListener('pause', () => {
-      stopOnlineTimer();
-      isPageActive = false;
-    });
-
-    // Для iOS Safari
-    window.addEventListener('pageshow', (event) => {
-      if (event.persisted) {
-        lastOnlinePing = Date.now();
-        updatePageActivity();
-      }
-    });
-
-    window.addEventListener('pagehide', () => {
-      stopOnlineTimer();
-      isPageActive = false;
-    });
-
-    // Обработчик для Telegram Mini App
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
-      
-      tg.onEvent('viewportChanged', () => {
-        if (tg.isExpanded) {
-          updatePageActivity();
-        }
-      });
-      
+      tg.onEvent('viewportChanged', () => { if (tg.isExpanded) { updatePageActivity(); } });
       tg.ready();
     }
 
-    // Инициализация при загрузке
-    document.addEventListener('DOMContentLoaded', () => {
-      updatePageActivity();
-    });
-
-    // Периодическая проверка активности (защита от багов)
+    document.addEventListener('DOMContentLoaded', () => { updatePageActivity(); });
+    
     setInterval(() => {
       if (user && isPageActive && !onlineTimer) {
         updatePageActivity();
       }
     }, 5000);
-
-    // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
 
     function startBonusListener() {
       if (!user) return;
