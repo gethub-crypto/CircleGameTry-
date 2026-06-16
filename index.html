@@ -256,39 +256,28 @@
 
     // ===== ГИБРИДНАЯ АВТОРИЗАЦИЯ =====
     
-    // Определение среды выполнения
     const isTelegramMiniApp = !!(window.Telegram?.WebApp?.initData);
     const isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
 
-    // Настройка UI авторизации
     function setupAuthUI() {
       const authButtons = document.getElementById('authButtons');
       
       if (isTelegramMiniApp) {
-        // Telegram Mini App - автоматическая авторизация
         authButtons.innerHTML = `
           <div class="auth-loading">
             <i class="fab fa-telegram"></i> Authenticating via Telegram...
           </div>
         `;
         
-        // Автоматический вход с небольшой задержкой для инициализации
         setTimeout(() => signInWithTelegram(), 500);
         
-        // Настройка Telegram Mini App
         try {
           window.Telegram.WebApp.ready();
           window.Telegram.WebApp.expand();
-          
-          // Принудительно устанавливаем темную тему
           window.Telegram.WebApp.setHeaderColor('#0f0f0f');
           window.Telegram.WebApp.setBackgroundColor('#0f0f0f');
-          
-          // Устанавливаем фон для body
           document.body.style.backgroundColor = '#0f0f0f';
           document.body.style.setProperty('background-color', '#0f0f0f', 'important');
-          
-          // Применяем темную тему ко всем элементам через CSS переменные
           document.documentElement.style.setProperty('--tg-theme-bg-color', '#0f0f0f');
           document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', '#1a1a1a');
           document.documentElement.style.setProperty('--tg-theme-text-color', '#ffffff');
@@ -296,13 +285,11 @@
           document.documentElement.style.setProperty('--tg-theme-link-color', '#00ffa6');
           document.documentElement.style.setProperty('--tg-theme-button-color', '#00c3ff');
           document.documentElement.style.setProperty('--tg-theme-button-text-color', '#000000');
-          
         } catch (e) {
           console.log('Telegram WebApp setup:', e);
         }
         
       } else {
-        // Обычный браузер - показываем Google Sign-In
         authButtons.innerHTML = `
           <button class="click-button" onclick="signInWithGoogle()" style="font-size: 16px; padding: 15px 30px;">
             <i class="fab fa-google"></i> Sign in with Google
@@ -314,7 +301,6 @@
       }
     }
 
-    // Авторизация через Telegram
     async function signInWithTelegram() {
       try {
         const tg = window.Telegram.WebApp;
@@ -325,7 +311,6 @@
           return;
         }
         
-        // Ищем существующего пользователя по Telegram ID
         const snapshot = await db.ref('users')
           .orderByChild('auth_methods/tg_user_id')
           .equalTo(tgUser.id)
@@ -334,7 +319,6 @@
         let uid;
         
         if (snapshot.exists()) {
-          // Существующий пользователь - обновляем данные
           const users = snapshot.val();
           uid = Object.keys(users)[0];
           
@@ -348,7 +332,6 @@
           });
           
         } else {
-          // Новый пользователь - создаем профиль
           const newUserRef = db.ref('users').push();
           uid = newUserRef.key;
           
@@ -369,7 +352,6 @@
             last_device: isMobileDevice ? 'mobile' : 'desktop'
           });
           
-          // Создаем запись в leaderboard
           await db.ref(`leaderboard/${uid}`).set({
             id: uid,
             name: tgUser.first_name || 'Player',
@@ -380,14 +362,12 @@
           });
         }
         
-        // Устанавливаем пользователя для игры
         user = { 
           uid, 
           displayName: tgUser.first_name || 'Player',
           photoURL: tgUser.photo_url || ''
         };
         
-        // Запускаем игру
         startGameAfterAuth();
         
       } catch (error) {
@@ -396,14 +376,12 @@
       }
     }
 
-    // Авторизация через Google
     async function signInWithGoogle() {
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.addScope('profile');
         provider.addScope('email');
         
-        // Для мобильных устройств используем редирект вместо попапа
         if (isMobileDevice) {
           await auth.signInWithRedirect(provider);
         } else {
@@ -416,7 +394,6 @@
       }
     }
 
-    // Обработка редиректа для мобильных устройств
     auth.getRedirectResult().then(async (result) => {
       if (result?.user) {
         await handleGoogleUser(result.user);
@@ -428,14 +405,12 @@
       }
     });
 
-    // Обработка Google пользователя
     async function handleGoogleUser(googleUser) {
       try {
         const userRef = db.ref(`users/${googleUser.uid}`);
         const snapshot = await userRef.once('value');
         
         if (!snapshot.exists()) {
-          // Создаем нового пользователя
           await userRef.set({
             auth_methods: {
               tg_user_id: null,
@@ -452,7 +427,6 @@
             last_device: isMobileDevice ? 'mobile' : 'desktop'
           });
         } else {
-          // Обновляем существующего пользователя
           await userRef.update({
             display_name: googleUser.displayName || 'Player',
             photo_url: googleUser.photoURL || '',
@@ -470,7 +444,6 @@
       }
     }
 
-    // Синхронизация времени с сервером
     async function syncServerTime() {
       try {
         const snapshot = await db.ref('.info/serverTimeOffset').once('value');
@@ -482,32 +455,27 @@
       }
     }
 
-    // Запуск игры после авторизации
     async function startGameAfterAuth() {
       document.getElementById('authSection').style.display = 'none';
       document.getElementById('gameSection').style.display = 'block';
       
-      // Синхронизируем время с сервером
       await syncServerTime();
       
       loadPlayerData(user.uid);
       submitScore();
       
-      // Проверяем реферальную ссылку
       const ref = new URLSearchParams(window.location.search).get('ref');
       if (ref) {
         saveReferrer(ref);
         window.history.replaceState({}, document.title, window.location.pathname);
       }
       
-      // Запускаем таймеры
       startBonusTimer();
       startBonusListener();
       startOnlineTimer();
       checkWeeklyReset();
     }
 
-    // Отображение ошибки авторизации
     function showAuthError(message) {
       const authButtons = document.getElementById('authButtons');
       authButtons.innerHTML = `
@@ -520,7 +488,6 @@
       `;
     }
 
-    // Инициализация UI при загрузке
     setupAuthUI();
 
     // ===== ОСНОВНОЙ КОД ИГРЫ =====
@@ -532,7 +499,7 @@
     let tempBoostTimeout = null, originalClickPower = null, tempBoostEndTime = 0;
     let isRenderingTasks = false, bonusTimerInterval = null, isAnimating = false, isProcessingReferrer = false;
     let miniGameActive = false, miniGameClicks = 0, miniGameTimer = null;
-    let onlineTime = 0, onlineTimer = null;
+    let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
     let scoreListener = null, dualClickActive = false;
 
@@ -607,7 +574,6 @@
       let lv = 1; for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) lv = i + 2; else break; }
       document.getElementById('playerLevel').innerText = lv; document.getElementById('profileTokens').innerText = score;
       
-      // Показываем платформу входа
       const platform = isTelegramMiniApp ? '📱 Telegram' : (isMobileDevice ? '📱 Google' : '💻 Google');
       document.getElementById('profileName').innerHTML = `${user?.displayName || 'Anonymous'} <small style="color:#888;font-size:10px;">${platform}</small>`;
       
@@ -713,7 +679,154 @@
     function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
     function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); } }
 
-    // Слушатель изменений бонуса
+    // ===== НОВАЯ СИСТЕМА ОНЛАЙН-ТАЙМЕРА =====
+    
+    function startOnlineTimer() {
+      if (onlineTimer) return;
+      if (!isPageActive) return;
+      
+      lastOnlinePing = Date.now();
+      
+      onlineTimer = setInterval(() => {
+        if (!user) {
+          stopOnlineTimer();
+          return;
+        }
+        
+        // Проверка активности страницы
+        if (!isPageActive) {
+          return;
+        }
+        
+        // Проверка видимости
+        if (document.hidden || document.visibilityState !== 'visible') {
+          return;
+        }
+        
+        // Проверка фокуса (может не работать на некоторых мобильных)
+        if (typeof document.hasFocus === 'function' && !document.hasFocus()) {
+          return;
+        }
+        
+        // Защита от заморозки таймера
+        const now = Date.now();
+        const elapsed = now - lastOnlinePing;
+        
+        // На мобильных устройствах браузер может "замораживать" таймеры
+        if (elapsed > 3000 || elapsed < 900) {
+          lastOnlinePing = now;
+          return;
+        }
+        
+        lastOnlinePing = now;
+        onlineTime++;
+        updateTaskProgress("onlineTime", 1);
+        
+        if (onlineTime % 60 === 0) {
+          db.ref(`leaderboard/${user.uid}`).update({ 
+            onlineTime, 
+            lastUpdate: now 
+          });
+        }
+      }, 1000);
+    }
+
+    function stopOnlineTimer() {
+      if (onlineTimer) {
+        clearInterval(onlineTimer);
+        onlineTimer = null;
+      }
+    }
+
+    function updatePageActivity() {
+      const wasActive = isPageActive;
+      
+      // Проверяем все условия активности
+      isPageActive = (
+        document.visibilityState === 'visible' &&
+        !document.hidden &&
+        (typeof document.hasFocus !== 'function' || document.hasFocus())
+      );
+      
+      // Если состояние изменилось
+      if (wasActive !== isPageActive) {
+        if (isPageActive) {
+          lastOnlinePing = Date.now();
+          if (user && !onlineTimer) {
+            startOnlineTimer();
+          }
+        } else {
+          stopOnlineTimer();
+          lastOnlinePing = Date.now();
+        }
+      }
+    }
+
+    // Обработчики видимости и фокуса для всех устройств
+    document.addEventListener('visibilitychange', updatePageActivity);
+
+    window.addEventListener('focus', () => {
+      lastOnlinePing = Date.now();
+      updatePageActivity();
+    });
+
+    window.addEventListener('blur', () => {
+      stopOnlineTimer();
+      isPageActive = false;
+      lastOnlinePing = Date.now();
+    });
+
+    // Дополнительные обработчики для мобильных устройств
+    document.addEventListener('resume', () => {
+      lastOnlinePing = Date.now();
+      updatePageActivity();
+    });
+
+    document.addEventListener('pause', () => {
+      stopOnlineTimer();
+      isPageActive = false;
+    });
+
+    // Для iOS Safari
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) {
+        lastOnlinePing = Date.now();
+        updatePageActivity();
+      }
+    });
+
+    window.addEventListener('pagehide', () => {
+      stopOnlineTimer();
+      isPageActive = false;
+    });
+
+    // Обработчик для Telegram Mini App
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      
+      tg.onEvent('viewportChanged', () => {
+        if (tg.isExpanded) {
+          updatePageActivity();
+        }
+      });
+      
+      tg.ready();
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', () => {
+      updatePageActivity();
+    });
+
+    // Периодическая проверка активности (защита от багов)
+    setInterval(() => {
+      if (user && isPageActive && !onlineTimer) {
+        updatePageActivity();
+      }
+    }, 5000);
+
+    // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+
     function startBonusListener() {
       if (!user) return;
       db.ref(`hourlyBonus/${user.uid}`).on('value', (snapshot) => {
@@ -724,7 +837,6 @@
       });
     }
 
-    // Исправленный таймер бонуса с серверной синхронизацией
     function startBonusTimer() {
       if (bonusTimerInterval) clearInterval(bonusTimerInterval);
       
@@ -732,16 +844,13 @@
         if (!user) return;
         
         try {
-          // Используем серверное время Firebase
           const serverTimeSnapshot = await db.ref('.info/serverTimeOffset').once('value');
           const serverTimeOffset = serverTimeSnapshot.val() || 0;
           const serverTime = Date.now() + serverTimeOffset;
           
-          // Получаем данные бонуса
           const snapshot = await db.ref(`hourlyBonus/${user.uid}`).once('value');
           const data = snapshot.val() || { lastClaim: 0 };
           
-          // Рассчитываем время до следующего бонуса используя серверное время
           const timeSinceLastClaim = serverTime - data.lastClaim;
           const timeRemaining = Math.max(0, 3600000 - timeSinceLastClaim);
           
@@ -762,17 +871,14 @@
       }, 1000);
     }
 
-    // Исправленная функция получения бонуса
     async function claimHourlyBonus() {
       if (!user) return showMessage("Sign in.", true);
       
       try {
-        // Получаем серверное время
         const serverTimeSnapshot = await db.ref('.info/serverTimeOffset').once('value');
         const serverTimeOffset = serverTimeSnapshot.val() || 0;
         const serverTime = Date.now() + serverTimeOffset;
         
-        // Получаем данные бонуса
         const snapshot = await db.ref(`hourlyBonus/${user.uid}`).once('value');
         const data = snapshot.val() || { lastClaim: 0 };
         
@@ -781,12 +887,10 @@
         if (timeSinceLastClaim >= 3600000 || !data.lastClaim) {
           const reward = Math.floor(Math.random() * 191) + 10;
           
-          // Используем транзакцию для атомарного обновления
           await db.ref(`leaderboard/${user.uid}/score`).transaction(currentScore => {
             return (currentScore || 0) + reward;
           });
           
-          // Сохраняем время получения бонуса (серверное время)
           await db.ref(`hourlyBonus/${user.uid}`).set({
             lastClaim: serverTime,
             lastClaimDevice: isTelegramMiniApp ? 'telegram' : (isMobileDevice ? 'mobile' : 'desktop'),
@@ -796,7 +900,6 @@
           showMessage(`✅ +${reward} tokens!`, true);
           document.getElementById("claimBonusBtn").disabled = true;
           
-          // Принудительно обновляем таймер
           startBonusTimer();
           
         } else {
@@ -809,9 +912,6 @@
       }
     }
 
-    function startOnlineTimer() { if (onlineTimer) return; onlineTimer = setInterval(() => { if (user) { onlineTime++; updateTaskProgress("onlineTime", 1); if (onlineTime % 60 === 0) db.ref(`leaderboard/${user.uid}`).update({ onlineTime, lastUpdate: Date.now() }); } }, 1000); }
-    function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
-
     function showTab(tab) { currentTab = tab; if (tab === "overall") { document.getElementById("overallTabBtn").classList.add("active"); document.getElementById("weeklyTabBtn").classList.remove("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; } else { document.getElementById("overallTabBtn").classList.remove("active"); document.getElementById("weeklyTabBtn").classList.add("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; } }
     function updateWeeklyScore() { if (user) db.ref(`weeklyLeaderboard/${getWeekKey()}/${user.uid}`).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, lastUpdate: Date.now() }); }
     function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
@@ -819,7 +919,6 @@
 
     function loadPlayerData(uid) { db.ref("leaderboard/" + uid).once("value").then(snapshot => { const data = snapshot.val(); if (!data) return; score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; autoclickActive = data.autoclickActive || false; autoclickEndTime = data.autoclickEndTime || 0; autoclickerLevel = data.autoclickerLevel || 1; suspiciousFlags = data.suspiciousFlags || 0; if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { showMessage('🚫 Suspended'); signOut(); return; } if (autoclickActive && autoclickEndTime > Date.now()) { const rem = autoclickEndTime - Date.now(); const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); if (offlineSec > 0) { const offlineTok = Math.floor(offlineSec * clickPower * 0.5); if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline`)); startAutoclicker(rem, false); } } else if (autoclickActive) stopAutoclicker(); updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); renderAchievements(); updateClickPowerCostText(); updateAutoclickerShop(); startScoreListener(); startBonusTimer(); startBonusListener(); startOnlineTimer(); checkWeeklyReset(); }); db.ref("achievements/" + uid).once("value").then(s => { if (s.val()) { achievements = s.val(); renderAchievements(); } }); }
 
-    // Модифицированная функция выхода
     async function signOut() {
       stopOnlineTimer();
       stopScoreListener();
@@ -842,7 +941,6 @@
         }
       }
       
-      // Для Telegram Mini App - закрываем
       if (isTelegramMiniApp) {
         try {
           window.Telegram.WebApp.close();
@@ -852,7 +950,6 @@
         return;
       }
       
-      // Для Google - стандартный выход
       await auth.signOut();
       user = null;
       score = 0;
@@ -868,7 +965,7 @@
       updateProfilePanel();
       showMessage("Signed out.");
       
-      setupAuthUI(); // Показываем правильные кнопки
+      setupAuthUI();
     }
 
     function saveReferrer(ruid) { if (!user || !ruid || isProcessingReferrer) return; isProcessingReferrer = true; db.ref(`leaderboard/${user.uid}`).once('value').then(s => { if (s.val()?.referral_bonus_claimed) { isProcessingReferrer = false; return; } db.ref(`leaderboard/${ruid}`).once('value').then(rs => { if (!rs.exists()) { isProcessingReferrer = false; return; } db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+50); showMessage('+50 referral!'); db.ref(`leaderboard/${user.uid}`).update({ referrer_uid: ruid, referral_bonus_claimed: true, lastUpdate: Date.now() }); db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now(), tokens_earned: 0, reward_claimed: false }); submitScore(); isProcessingReferrer = false; }); }); }
@@ -879,15 +976,12 @@
     profilePanel.addEventListener('click', function(e) { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A') return; if (isMobileOrTablet()) this.classList.toggle('expanded'); });
     window.addEventListener('resize', () => { if (isMobileOrTablet()) profilePanel.classList.remove('expanded'); else profilePanel.classList.add('expanded'); });
 
-    // Модифицированный слушатель состояния авторизации
     auth.onAuthStateChanged((currentUser) => {
       if (currentUser && !isTelegramMiniApp) {
-        // Только для Google авторизации
         if (!user) {
           handleGoogleUser(currentUser);
         }
       } else if (!currentUser && !isTelegramMiniApp) {
-        // Выход из системы
         if (bonusTimerInterval) clearInterval(bonusTimerInterval);
         document.getElementById("claimBonusBtn").disabled = true;
         document.getElementById("bonusTimer").innerText = "Sign in to claim";
