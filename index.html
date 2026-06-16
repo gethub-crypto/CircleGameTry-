@@ -542,6 +542,29 @@
       }
     }
 
+    // Обновление только отображения времени онлайн (без перерисовки всей панели)
+    function updateOnlineTimeDisplay(progress) {
+      const tasksList = document.getElementById("tasksList");
+      if (!tasksList || !tasksList.children.length) return;
+      
+      const taskElements = tasksList.children;
+      for (let i = 0; i < taskElements.length; i++) {
+        const element = taskElements[i];
+        if (element.hasAttribute('data-task-id') && element.getAttribute('data-task-id') === 'onlineTime') {
+          const task = dailyTasks.find(t => t.id === "onlineTime");
+          if (!task) return;
+          
+          const goal = task.goal;
+          const progressTime = formatTimeFromSeconds(progress);
+          const goalTime = formatTimeFromSeconds(goal);
+          const reward = task.reward;
+          
+          element.innerHTML = `Stay online for 30 minutes: ${progressTime} / ${goalTime}<br><small>Reward: ${reward} 💎</small>`;
+          break;
+        }
+      }
+    }
+
     function cleanupAllTimers() {
       if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
@@ -583,7 +606,6 @@
     function updateProfilePanel() {
       document.getElementById('profileClickPower').innerText = Math.min(clickPower, 8);
       
-      // Исправленное отображение времени автокликера
       if (autoclickActive) {
         const rem = Math.max(0, autoclickEndTime - Date.now());
         const hours = Math.floor(rem / 3600000);
@@ -613,7 +635,6 @@
     function updateAutoclickerShop() {
       document.getElementById("autoclickerLevel").innerText = autoclickerLevel;
       
-      // Исправленное отображение длительности
       const durationMs = getAutoclickerDuration();
       const hours = Math.floor(durationMs / 3600000);
       const minutes = Math.floor((durationMs % 3600000) / 60000);
@@ -669,7 +690,6 @@
     function clickToken(event) {
       if (!user || isAnimating) return;
       
-      // Rate limiting
       const now = Date.now();
       if (now - lastClickTime < 50) return;
       lastClickTime = now;
@@ -778,10 +798,10 @@
             if (task.id === "subscribeTwitter") {
               div.innerHTML = `${task.description}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; 
             } else if (task.id === "onlineTime") {
-              // Форматируем прогресс и цель в ЧЧ:ММ:СС
               const progressTime = formatTimeFromSeconds(p);
               const goalTime = formatTimeFromSeconds(g);
-              div.innerHTML = `${task.description}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`; 
+              div.innerHTML = `${task.description}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`;
+              div.setAttribute('data-task-id', 'onlineTime');
             } else if (task.id === "miniGameChallenge") {
               div.innerHTML = `${task.description}: ${p}/${g}<br><small>Reward: ${rt}</small>`; 
             } else {
@@ -835,9 +855,9 @@
           td.progress = np; 
           db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{});
           
-          // Если это задание на время онлайн - обновляем отображение
+          // Обновляем только текст времени онлайн без перерисовки всей панели
           if (taskId === "onlineTime") {
-            renderTasks();
+            updateOnlineTimeDisplay(np);
           }
         } 
       }).catch(()=>{}); 
