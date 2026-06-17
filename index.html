@@ -554,10 +554,13 @@
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
     let scoreListener = null, dualClickActive = false, lastClickTime = 0;
-    let serverClickPower = 1; // Хранит проверенное значение с сервера
+    let serverClickPower = 1;
 
     const MAX_CLICK_POWER = 100; let suspiciousFlags = 0; const MAX_SUSPICIOUS_FLAGS = 5;
     const maxAutoclickerDuration = 4 * 60 * 60 * 1000; const OFFLINE_LIMIT = 4 * 60 * 60 * 1000;
+    const MAX_MINI_GAMES_PER_DAY = 10;
+    const MINI_GAME_ENTRY_FEE = 100;
+    const MINI_GAME_REWARD = 500;
 
     const allAchievements = {
       superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
@@ -582,7 +585,6 @@
       "Skip signing in — miss the rewards!"
     ];
 
-    // Вспомогательная функция форматирования времени из секунд
     function formatTimeFromSeconds(totalSeconds) {
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -595,7 +597,6 @@
       }
     }
 
-    // Обновление только отображения времени онлайн (без перерисовки всей панели)
     function updateOnlineTimeDisplay(progress) {
       const tasksList = document.getElementById("tasksList");
       if (!tasksList || !tasksList.children.length) return;
@@ -677,13 +678,10 @@
       } 
     }
 
-    // ===== ИСПОЛЬЗОВАНИЕ CLOUD FUNCTIONS ДЛЯ ЗАЩИЩЕННЫХ ОПЕРАЦИЙ =====
-    
     async function safeAddScore(amount) {
       if (!user) throw new Error('Not authenticated');
       
       try {
-        // Используем Cloud Function для безопасного добавления очков
         const addScore = functions.httpsCallable('addScore');
         const result = await addScore({ 
           amount: amount,
@@ -695,13 +693,11 @@
         return result.data;
       } catch (error) {
         console.error('Safe score add error:', error);
-        // Fallback на прямую запись с дополнительной валидацией
         return await fallbackScoreAdd(amount);
       }
     }
     
     async function fallbackScoreAdd(amount) {
-      // Валидация перед записью
       if (amount > MAX_CLICK_POWER * 2) {
         flagSuspiciousActivity('largeScoreAdd', { amount });
         return false;
@@ -710,7 +706,6 @@
       const snapshot = await db.ref(`leaderboard/${user.uid}/score`).once('value');
       const currentScore = snapshot.val() || 0;
       
-      // Проверка на слишком быстрый рост
       if (amount > 1000 && suspiciousFlags < 2) {
         const recentSnapshot = await db.ref(`clicks/${user.uid}`)
           .orderByChild('timestamp')
@@ -729,11 +724,9 @@
         }
       }
       
-      // Запись с проверкой
       const result = await db.ref(`leaderboard/${user.uid}/score`)
         .transaction(cs => (cs || 0) + amount);
       
-      // Логирование
       await db.ref(`clicks/${user.uid}`).push({
         amount,
         timestamp: Date.now(),
@@ -768,11 +761,9 @@
       } 
     }
 
-    // ===== ЗАЩИЩЕННЫЙ КЛИК =====
     async function clickToken(event) {
       if (!user || isAnimating) return;
       
-      // Проверка rate limiter
       if (!rateLimiter.canClick()) {
         showMessage('Slow down!');
         return;
@@ -784,7 +775,6 @@
       
       isAnimating = true;
       
-      // Проверка clickPower на соответствие серверному значению
       if (clickPower > serverClickPower * 2) {
         flagSuspiciousActivity('clickPowerMismatch', { 
           client: clickPower, 
@@ -807,7 +797,6 @@
         spawnScorePopup(rect.left + rect.width/2 - 20, rect.top, clickPower); 
       }
       
-      // Используем безопасное добавление очков
       const success = await safeAddScore(clickPower);
       
       if (success) { 
@@ -835,7 +824,7 @@
       } 
       originalClickPower = clickPower; 
       clickPower = Math.min(clickPower + amount, MAX_CLICK_POWER); 
-      serverClickPower = clickPower; // Синхронизируем с серверным значением
+      serverClickPower = clickPower;
       tempBoostEndTime = Date.now() + duration; 
       showMessage(`Boost: +${amount} power`); 
       if (user) db.ref("leaderboard/" + user.uid).update({ 
@@ -872,9 +861,8 @@
       } else { 
         autoclickActive = true; 
         autoclickEndTime = Date.now() + duration; 
-      } 
+      }
       
-      // Проверка максимальной длительности
       if (autoclickEndTime - Date.now() > maxAutoclickerDuration + 60000) {
         flagSuspiciousActivity('longAutoclicker', { duration: autoclickEndTime - Date.now() });
         autoclickEndTime = Date.now() + maxAutoclickerDuration;
@@ -1080,7 +1068,12 @@
     function togglePanel(pn) {
       const panel = document.getElementById(pn); if (!panel) return;
       const io = panel.classList.contains('open');
-      if (miniGameActive) endMiniGame(false);
+      
+      // Останавливаем мини-игру, если она активна
+      if (miniGameActive) {
+        endMiniGame(false, true);
+      }
+      
       document.getElementById("miniGamePanel").style.display = "none";
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
       document.getElementById('shopBtn').innerHTML = 'Shop ▼'; 
@@ -1283,39 +1276,131 @@
     }
 
     function startMiniGame() { 
-      if (score < 1000) return showMessage("Need 1000!");
-      if (miniGameActive) endMiniGame(false);
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
-      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
-      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-      miniGameActive = true; miniGameClicks = 0; 
-      document.getElementById("miniGamePanel").style.display = "block"; 
-      document.getElementById("miniGameClicks").innerText = 0; 
-      let tl = 10; document.getElementById("miniGameTimer").innerText = tl; 
-      if (miniGameTimer) clearInterval(miniGameTimer);
-      miniGameTimer = setInterval(() => { tl--; document.getElementById("miniGameTimer").innerText = tl; if (tl <= 0) endMiniGame(true); }, 1000); 
+      if (!user) return showMessage("Sign in to play!");
+      if (score < MINI_GAME_ENTRY_FEE) return showMessage(`Need ${MINI_GAME_ENTRY_FEE} tokens to play!`);
+      if (miniGameActive) return showMessage("Mini-game already active!");
+      
+      // Проверяем лимит игр на сегодня
+      const today = new Date().toDateString();
+      db.ref(`miniGameLimit/${user.uid}`).once('value').then(s => {
+        const data = s.val() || { gamesPlayed: 0, lastReset: today };
+        
+        // Сбрасываем счётчик если новый день
+        if (data.lastReset !== today) {
+          data.gamesPlayed = 0;
+          data.lastReset = today;
+        }
+        
+        // Проверяем лимит
+        if (data.gamesPlayed >= MAX_MINI_GAMES_PER_DAY) {
+          showMessage(`Daily limit reached! (${MAX_MINI_GAMES_PER_DAY} games)`);
+          return;
+        }
+        
+        // Закрываем все панели
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+        document.getElementById('shopBtn').innerHTML = 'Shop ▼';
+        document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
+        document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+        
+        // Списываем плату за вход
+        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
+          const currentScore = cs || 0;
+          if (currentScore < MINI_GAME_ENTRY_FEE) return undefined;
+          return currentScore - MINI_GAME_ENTRY_FEE;
+        }).then(result => {
+          if (!result.committed) {
+            showMessage("Failed to start mini-game!");
+            return;
+          }
+          
+          // Увеличиваем счётчик игр
+          data.gamesPlayed++;
+          db.ref(`miniGameLimit/${user.uid}`).set(data);
+          
+          // Запускаем мини-игру
+          miniGameActive = true; 
+          miniGameClicks = 0; 
+          document.getElementById("miniGamePanel").style.display = "block"; 
+          document.getElementById("miniGameClicks").innerText = "0"; 
+          
+          let timeLeft = 10; 
+          document.getElementById("miniGameTimer").innerText = timeLeft; 
+          
+          if (miniGameTimer) clearInterval(miniGameTimer);
+          
+          miniGameTimer = setInterval(() => { 
+            timeLeft--; 
+            document.getElementById("miniGameTimer").innerText = timeLeft; 
+            if (timeLeft <= 0) {
+              endMiniGame(false, false);
+            }
+          }, 1000);
+          
+          const gamesLeft = MAX_MINI_GAMES_PER_DAY - data.gamesPlayed;
+          showMessage(`Mini-game started! -${MINI_GAME_ENTRY_FEE} tokens (${gamesLeft} games left today)`);
+          updateProfilePanel();
+          submitScore();
+        }).catch(error => {
+          console.error("Mini-game start error:", error);
+          showMessage("Error starting mini-game!");
+        });
+      });
     }
     
     function miniGameClick() { 
-      if (miniGameActive) { 
-        miniGameClicks++; 
-        document.getElementById("miniGameClicks").innerText = miniGameClicks; 
-        if (miniGameClicks >= 50) endMiniGame(true); 
+      if (!miniGameActive) return; 
+      if (!user) {
+        endMiniGame(false, true);
+        return;
+      }
+      
+      miniGameClicks++; 
+      document.getElementById("miniGameClicks").innerText = miniGameClicks; 
+      
+      if (miniGameClicks >= 50) {
+        endMiniGame(true, false);
       } 
     }
     
-    function endMiniGame(success = false) { 
+    function endMiniGame(won = false, leftManually = false) { 
       if (!miniGameActive) return;
-      clearInterval(miniGameTimer); miniGameActive = false; miniGameTimer = null;
+      
+      clearInterval(miniGameTimer); 
+      miniGameActive = false; 
+      miniGameTimer = null;
+      
       document.getElementById("miniGamePanel").style.display = "none"; 
-      if (success) { 
-        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+500); 
-        showMessage("+500 tokens!"); 
-        updateTaskProgress("miniGameChallenge", 1); 
-        submitScore(); 
-      } else showMessage("Mini-game closed!"); 
-      updateProfilePanel(); 
+      
+      if (!user) {
+        showMessage("Mini-game ended!");
+        return;
+      }
+      
+      if (won) { 
+        // Игрок победил - начисляем 500 токенов (чистая прибыль 400)
+        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
+          return (cs || 0) + MINI_GAME_REWARD;
+        }).then(() => {
+          showMessage(`🎉 Victory! +${MINI_GAME_REWARD} tokens! (Profit: +${MINI_GAME_REWARD - MINI_GAME_ENTRY_FEE})`);
+          updateTaskProgress("miniGameChallenge", 1); 
+          submitScore(); 
+          updateProfilePanel(); 
+        }).catch(error => {
+          console.error("Mini-game reward error:", error);
+          showMessage("Error giving reward!");
+        });
+        
+      } else if (leftManually) { 
+        // Игрок сам вышел из игры
+        showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
+        updateProfilePanel();
+        
+      } else { 
+        // Время вышло - игрок проиграл
+        showMessage(`⏰ Time's up! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
+        updateProfilePanel();
+      }
     }
 
     function checkAchievements() { 
@@ -1352,7 +1437,7 @@
         d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; 
         d.style.backgroundColor = a ? '#00ffa6' : '#222'; 
         d.style.color = a ? '#000' : '#fff'; 
-        d.textContent = ''; // Безопасная очистка
+        d.textContent = '';
         const nameEl = document.createElement('strong');
         nameEl.textContent = ac.name;
         const descEl = document.createElement('br');
@@ -1367,8 +1452,6 @@
       } 
     }
 
-    // ===== СИСТЕМА ОНЛАЙН-ТАЙМЕРА =====
-    
     function startOnlineTimer() {
       if (onlineTimer) return;
       if (!isPageActive) return;
@@ -1554,7 +1637,7 @@
         score = data.score || 0; 
         crystals = data.crystals || 0; 
         clickPower = data.clickPower || 1; 
-        serverClickPower = data.clickPower || 1; // Синхронизируем серверное значение
+        serverClickPower = data.clickPower || 1;
         autoclickActive = data.autoclickActive || false; 
         autoclickEndTime = data.autoclickEndTime || 0; 
         autoclickerLevel = data.autoclickerLevel || 1; 
