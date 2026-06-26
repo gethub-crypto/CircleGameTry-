@@ -114,20 +114,55 @@
       100% { opacity: 0; transform: translate(var(--dx100), -90px) scale(1.5) rotate(var(--rot100)); }
     }
 
-    /* Стили для МОНЕТИЗАЦИИ */
-    .monetization-section {
+    /* Стили для меню монетизации в панели */
+    .monetization-tabs {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;
-      margin: 20px auto;
-      max-width: 900px;
+      gap: 8px;
+      margin-bottom: 20px;
     }
+    .monet-tab-button {
+      padding: 10px 18px;
+      background: #2a2a2a;
+      color: #fff;
+      border: 1px solid #00c3ff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .monet-tab-button:hover {
+      background: #333;
+    }
+    .monet-tab-button.active {
+      background: linear-gradient(135deg, #00c3ff, #00ffa6);
+      color: #000;
+      font-weight: bold;
+      border-color: transparent;
+    }
+    .monet-tab-button.premium-tab {
+      border-color: #ffd700;
+      color: #ffd700;
+    }
+    .monet-tab-button.premium-tab.active {
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      color: #000;
+    }
+    .monet-tab-content {
+      display: none;
+    }
+    .monet-tab-content.active {
+      display: block;
+    }
+
+    /* Карточки внутри меню */
     .monet-card {
       background: #1a1a1a;
       padding: 20px;
       border-radius: 12px;
-      width: 250px;
+      max-width: 400px;
+      margin: 10px auto;
       box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
       text-align: center;
       transition: all 0.3s ease;
@@ -184,35 +219,6 @@
       color: #00ffa6;
       margin-right: 8px;
     }
-    .ad-boost-btn {
-      background: linear-gradient(135deg, #ff6b6b, #ff8e53) !important;
-      animation: glowPulse 2s infinite;
-    }
-    @keyframes glowPulse {
-      0% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
-      50% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.8); }
-      100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
-    }
-    .ad-boost-active {
-      background: linear-gradient(135deg, #00ffa6, #00c3ff) !important;
-      animation: none;
-      box-shadow: 0 0 20px #00ffa6 !important;
-    }
-    .ad-boost-timer {
-      font-size: 12px;
-      color: #ffd700;
-      margin-top: 5px;
-    }
-    .premium-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #ffd700, #ffaa00);
-      color: #000;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: bold;
-      margin-left: 5px;
-    }
     .battle-pass-progress {
       background: #222;
       border-radius: 8px;
@@ -223,7 +229,7 @@
     .battle-pass-progress-bar {
       height: 100%;
       background: linear-gradient(90deg, #a855f7, #6366f1);
-      width: 0%;
+      width: 35%;
       transition: width 0.3s ease;
     }
     .monet-card .rewards-preview {
@@ -257,8 +263,9 @@
       .tab-button { border-radius: 0; font-size: 13px; }
       #leaderboardTable { font-size: 11px; }
       .score-popup { font-size: 16px; }
-      .monetization-section { flex-direction: column; align-items: center; }
-      .monet-card { width: 90%; max-width: 350px; }
+      .monetization-tabs { gap: 5px; }
+      .monet-tab-button { padding: 8px 12px; font-size: 12px; }
+      .monet-card { max-width: 100%; }
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     
@@ -272,7 +279,6 @@
       .main-click-button { width: 220px; height: 220px; }
       .main-click-button .icon { font-size: 80px; }
       .score-popup { font-size: 24px; }
-      .monet-card { width: 270px; }
     }
   </style>
 </head>
@@ -318,73 +324,14 @@
       <div id="counter">Tokens: 0</div>
       <div id="message"></div>
       
-      <!-- ===== БЛОК МОНЕТИЗАЦИИ ===== -->
-      <div class="monetization-section" id="monetizationSection">
-        <!-- Ad Boost -->
-        <div class="monet-card" id="adBoostCard">
-          <h3>📺 Ad Boost</h3>
-          <p style="color:#ccc;">Watch ad → <strong>x2 Click Power</strong> for 30 min</p>
-          <button class="click-button ad-boost-btn" id="adBoostBtn" onclick="activateAdBoost()">
-            ▶ Watch Ad (Free)
-          </button>
-          <div class="ad-boost-timer" id="adBoostTimer" style="display:none;">
-            Boost active: <span id="adBoostTimeLeft">30:00</span>
-          </div>
-          <p style="font-size:10px; color:#666; margin-top:8px;">Powered by EffectiveCPM</p>
-        </div>
-        
-        <!-- Premium (вынесен отдельно) -->
-        <div class="monet-card premium" id="premiumCard">
-          <h3>⭐ Premium</h3>
-          <div class="price">$4.99<span style="font-size:14px;">/month</span></div>
-          <div class="feature-list">
-            <div><i class="fas fa-check"></i> +1 Crystal per hour</div>
-            <div><i class="fas fa-check"></i> Remove all ads</div>
-            <div><i class="fas fa-check"></i> Exclusive badge</div>
-            <div><i class="fas fa-check"></i> Priority support</div>
-          </div>
-          <button class="click-button" id="premiumBtn" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">
-            👑 Subscribe
-          </button>
-        </div>
-        
-        <!-- Battle Pass -->
-        <div class="monet-card" id="battlePassCard">
-          <h3>🎫 Battle Pass</h3>
-          <div class="price">$9.99<span style="font-size:14px;">/season</span></div>
-          <p style="color:#a855f7; font-size:13px;">Monthly exclusive skins + crystals</p>
-          <div class="battle-pass-progress">
-            <div class="battle-pass-progress-bar" id="battlePassProgressBar" style="width:35%;"></div>
-          </div>
-          <p style="font-size:11px; color:#888;">Season progress: 35/100</p>
-          <div class="rewards-preview">
-            <span>🎨</span>
-            <span>💎</span>
-            <span>🏆</span>
-            <span>✨</span>
-          </div>
-          <button class="click-button" id="battlePassBtn" onclick="showComingSoon('Battle Pass')" style="background: linear-gradient(135deg, #a855f7, #6366f1); width:100%;">
-            🚀 Get Battle Pass
-          </button>
-        </div>
-        
-        <!-- Instant Autoclick -->
-        <div class="monet-card" id="instantAutoclickCard" style="width:100%; max-width:350px;">
-          <h3>⚡ Instant Autoclick</h3>
-          <p style="color:#ccc;">Buy <strong>1 hour</strong> of autoclicker for crystals</p>
-          <div class="price" style="color:#00ffa6;">50 💎</div>
-          <button class="click-button" id="instantAutoclickBtn" onclick="buyInstantAutoclick()">
-            ⚡ Activate (1 hour)
-          </button>
-        </div>
-      </div>
-      
       <div id="buttonGroup">
         <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
         <button class="click-button" id="achievementsBtn" onclick="togglePanel('achievements')">🏆 Achievements ▼</button>
         <button class="click-button" id="tasksBtn" onclick="togglePanel('tasks')">📋 Tasks ▼</button>
+        <button class="click-button" id="boostersBtn" onclick="togglePanel('boosters')">🚀 Boosters ▼</button>
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
       </div>
+
       <div id="shop" class="panel">
         <h2>🛒 Upgrades</h2>
         <p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p>
@@ -399,13 +346,75 @@
           <button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width:100%;">Upgrade Autoclicker</button>
           <button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width:100%;margin-top:5px;">Activate Free Autoclicker</button>
         </div>
-        <h2 style="margin-top:20px;">🎮 Boosters</h2>
+        <h2 style="margin-top:20px;">🎮 Game Boosters</h2>
         <div id="autoclickerShop" style="margin-top:15px;">
           <div class="booster-card"><h3>🎰 Lucky Spin</h3><p>Random reward (Cost: 300 tokens + 10 💎)</p><button class="click-button" onclick="buyLuckySpin(300,10)">Spin!</button></div>
           <div class="booster-card"><h3>🚀 Super x5</h3><p>x5 Power for 2 min (Cost: 500 + 15 💎)</p><button class="click-button" onclick="buySuperAutoclicker(5,120000,500,15)">Buy x5</button></div>
           <div class="booster-card"><h3>🚀 Super x10</h3><p>x10 Power for 2 min (Cost: 1000 + 35 💎)</p><button class="click-button" onclick="buySuperAutoclicker(10,120000,1000,35)">Buy x10</button></div>
         </div>
       </div>
+
+      <!-- НОВОЕ МЕНЮ: Boosters & Premium -->
+      <div id="boosters" class="panel">
+        <h2 style="margin-bottom: 15px;">🚀 Boosters & Premium</h2>
+        
+        <!-- Табы внутри меню -->
+        <div class="monetization-tabs">
+          <button class="monet-tab-button active" onclick="switchMonetTab('instant')">⚡ Instant Autoclick</button>
+          <button class="monet-tab-button premium-tab" onclick="switchMonetTab('premium')">⭐ Premium</button>
+          <button class="monet-tab-button" onclick="switchMonetTab('battlepass')">🎫 Battle Pass</button>
+        </div>
+
+        <!-- Контент табов -->
+        <div class="monet-tab-content active" id="monetTab-instant">
+          <div class="monet-card">
+            <h3>⚡ Instant Autoclick</h3>
+            <p style="color:#ccc;">Buy <strong>1 hour</strong> of autoclicker for crystals</p>
+            <div class="price" style="color:#00ffa6;">50 💎</div>
+            <button class="click-button" id="instantAutoclickBtn" onclick="buyInstantAutoclick()" style="width:100%;">
+              ⚡ Activate (1 hour)
+            </button>
+          </div>
+        </div>
+
+        <div class="monet-tab-content" id="monetTab-premium">
+          <div class="monet-card premium">
+            <h3>⭐ Premium</h3>
+            <div class="price">$4.99<span style="font-size:14px;">/month</span></div>
+            <div class="feature-list">
+              <div><i class="fas fa-check"></i> +1 Crystal per hour</div>
+              <div><i class="fas fa-check"></i> Exclusive badge</div>
+              <div><i class="fas fa-check"></i> Priority support</div>
+              <div><i class="fas fa-check"></i> Future benefits</div>
+            </div>
+            <button class="click-button" id="premiumBtn" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">
+              👑 Subscribe
+            </button>
+          </div>
+        </div>
+
+        <div class="monet-tab-content" id="monetTab-battlepass">
+          <div class="monet-card">
+            <h3>🎫 Battle Pass</h3>
+            <div class="price">$9.99<span style="font-size:14px;">/season</span></div>
+            <p style="color:#a855f7; font-size:13px;">Monthly exclusive skins + crystals</p>
+            <div class="battle-pass-progress">
+              <div class="battle-pass-progress-bar" id="battlePassProgressBar"></div>
+            </div>
+            <p style="font-size:11px; color:#888;">Season progress: 35/100</p>
+            <div class="rewards-preview">
+              <span>🎨</span>
+              <span>💎</span>
+              <span>🏆</span>
+              <span>✨</span>
+            </div>
+            <button class="click-button" id="battlePassBtn" onclick="showComingSoon('Battle Pass')" style="background: linear-gradient(135deg, #a855f7, #6366f1); width:100%;">
+              🚀 Get Battle Pass
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div id="achievements" class="panel"><h2>🏆 Achievements</h2><div id="achievementsList"></div></div>
       <div id="tasks" class="panel"><h2>📋 Daily Tasks</h2><div id="tasksList"></div></div>
       <div id="miniGamePanel" style="display:none;margin-top:20px;background:#1a1a1a;padding:20px;border-radius:12px;box-shadow:0 0 10px #00c3ff;">
@@ -491,15 +500,7 @@
     }
 
     // ===== ПЕРЕМЕННЫЕ МОНЕТИЗАЦИИ =====
-    let adBoostActive = false;
-    let adBoostEndTime = 0;
-    let adBoostInterval = null;
-    let isPremium = false;
-    let hasBattlePass = false;
-
-    const AD_BOOST_DURATION = 30 * 60 * 1000; // 30 минут
-    const AD_BOOST_MULTIPLIER = 2;
-    const INSTANT_AUTOCLICK_COST = 50; // кристаллов
+    const INSTANT_AUTOCLICK_COST = 50;
     const INSTANT_AUTOCLICK_DURATION = 60 * 60 * 1000; // 1 час
 
     // ===== ГИБРИДНАЯ АВТОРИЗАЦИЯ =====
@@ -752,7 +753,7 @@
     let scoreListener = null, dualClickActive = false, lastClickTime = 0;
     let serverClickPower = 1;
 
-    const MAX_CLICK_POWER = 100; let suspiciousFlags = 0; const MAX_SUSPICIOUS_FLAGS = 5;
+    const MAX_CLICK_POWER = 8; let suspiciousFlags = 0; const MAX_SUSPICIOUS_FLAGS = 5;
     const maxAutoclickerDuration = 4 * 60 * 60 * 1000; const OFFLINE_LIMIT = 4 * 60 * 60 * 1000;
     const MAX_MINI_GAMES_PER_DAY = 10;
     const MINI_GAME_ENTRY_FEE = 100;
@@ -784,173 +785,29 @@
     // ===== ФУНКЦИИ МОНЕТИЗАЦИИ =====
 
     /**
-     * Активирует Ad Boost: x2 Click Power на 30 минут
-     * Использует смарт-линк EffectiveCPM или открывает рекламу
+     * Переключение табов в меню Boosters
      */
-    function activateAdBoost() {
-      if (!user) {
-        showMessage('Sign in to use Ad Boost!');
-        return;
+    function switchMonetTab(tabName) {
+      // Убираем active со всех табов
+      document.querySelectorAll('.monet-tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.monet-tab-content').forEach(content => content.classList.remove('active'));
+      
+      // Активируем выбранный таб
+      const targetContent = document.getElementById(`monetTab-${tabName}`);
+      if (targetContent) {
+        targetContent.classList.add('active');
       }
       
-      if (adBoostActive) {
-        const remaining = Math.max(0, adBoostEndTime - Date.now());
-        const minutes = Math.floor(remaining / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
-        showMessage(`Ad Boost already active! ${minutes}:${String(seconds).padStart(2, '0')} remaining`);
-        return;
-      }
-      
-      // Открываем рекламу через смарт-линк EffectiveCPM
-      const adLink = 'https://www.effectivecpmnetwork.com/fi7bnefix?key=5a3d8d03414fa033d097fed7146d0903';
-      
-      // Показываем сообщение пользователю
-      showMessage('📺 Opening ad... Please watch to activate boost!');
-      
-      // Открываем рекламу в новом окне/вкладке
-      const adWindow = window.open(adLink, '_blank', 'width=800,height=600');
-      
-      // Если окно заблокировано, пробуем открыть в текущем окне (для Telegram Mini App)
-      if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
-        // В Telegram Mini App используем window.location или если есть Telegram WebApp - открываем ссылку
-        if (window.Telegram?.WebApp?.openLink) {
-          window.Telegram.WebApp.openLink(adLink);
-        } else if (window.Telegram?.WebApp?.openTelegramLink) {
-          // Альтернативный метод для Telegram
-          window.location.href = adLink;
-          // Возвращаемся обратно после небольшой задержки
-          setTimeout(() => {
-            window.history.back();
-          }, 500);
-        } else {
-          window.open(adLink, '_self');
+      // Подсвечиваем кнопку
+      const buttons = document.querySelectorAll('.monet-tab-button');
+      buttons.forEach(btn => {
+        if ((tabName === 'premium' && btn.classList.contains('premium-tab')) ||
+            (tabName !== 'premium' && btn.textContent.toLowerCase().includes(tabName))) {
+          btn.classList.add('active');
         }
-        
-        // Даем буст даже если окно не открылось (для удобства пользователей в Telegram)
-        setTimeout(() => {
-          applyAdBoost();
-        }, 3000);
-      } else {
-        // Для десктопа - даем буст сразу после открытия окна
-        setTimeout(() => {
-          applyAdBoost();
-        }, 2000);
-      }
-    }
-    
-    /**
-     * Применяет эффект Ad Boost
-     */
-    function applyAdBoost() {
-      if (!user) return;
-      
-      // Сохраняем оригинальный Click Power если еще не сохранен
-      if (!adBoostActive) {
-        originalClickPower = clickPower;
-      }
-      
-      adBoostActive = true;
-      adBoostEndTime = Date.now() + AD_BOOST_DURATION;
-      
-      // Применяем множитель
-      clickPower = Math.min(originalClickPower * AD_BOOST_MULTIPLIER, MAX_CLICK_POWER);
-      serverClickPower = clickPower;
-      
-      // Обновляем UI
-      const adBoostBtn = document.getElementById('adBoostBtn');
-      adBoostBtn.textContent = '🔥 x2 Active!';
-      adBoostBtn.classList.add('ad-boost-active');
-      adBoostBtn.classList.remove('ad-boost-btn');
-      
-      const adBoostTimer = document.getElementById('adBoostTimer');
-      adBoostTimer.style.display = 'block';
-      
-      // Запускаем таймер обратного отсчета
-      if (adBoostInterval) clearInterval(adBoostInterval);
-      adBoostInterval = setInterval(updateAdBoostTimer, 1000);
-      
-      showMessage('🔥 x2 Click Power activated for 30 minutes!');
-      updateClickPowerBar();
-      updateProfilePanel();
-      submitScore();
-      
-      // Сохраняем в Firebase
-      db.ref(`leaderboard/${user.uid}`).update({
-        adBoostActive: true,
-        adBoostEndTime: adBoostEndTime,
-        adBoostOriginalPower: originalClickPower,
-        lastUpdate: Date.now()
       });
     }
-    
-    /**
-     * Обновляет таймер Ad Boost
-     */
-    function updateAdBoostTimer() {
-      if (!adBoostActive) {
-        if (adBoostInterval) {
-          clearInterval(adBoostInterval);
-          adBoostInterval = null;
-        }
-        return;
-      }
-      
-      const now = Date.now();
-      const remaining = Math.max(0, adBoostEndTime - now);
-      
-      if (remaining <= 0) {
-        deactivateAdBoost();
-        return;
-      }
-      
-      const minutes = Math.floor(remaining / 60000);
-      const seconds = Math.floor((remaining % 60000) / 1000);
-      document.getElementById('adBoostTimeLeft').textContent = 
-        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-    
-    /**
-     * Деактивирует Ad Boost
-     */
-    function deactivateAdBoost() {
-      adBoostActive = false;
-      adBoostEndTime = 0;
-      
-      if (adBoostInterval) {
-        clearInterval(adBoostInterval);
-        adBoostInterval = null;
-      }
-      
-      // Возвращаем оригинальный Click Power
-      if (originalClickPower) {
-        clickPower = originalClickPower;
-        serverClickPower = originalClickPower;
-        originalClickPower = null;
-      }
-      
-      // Обновляем UI
-      const adBoostBtn = document.getElementById('adBoostBtn');
-      adBoostBtn.textContent = '▶ Watch Ad (Free)';
-      adBoostBtn.classList.add('ad-boost-btn');
-      adBoostBtn.classList.remove('ad-boost-active');
-      
-      document.getElementById('adBoostTimer').style.display = 'none';
-      
-      showMessage('Ad Boost expired! Watch another ad to reactivate.');
-      updateClickPowerBar();
-      updateProfilePanel();
-      submitScore();
-      
-      // Обновляем Firebase
-      if (user) {
-        db.ref(`leaderboard/${user.uid}`).update({
-          adBoostActive: false,
-          adBoostEndTime: 0,
-          lastUpdate: Date.now()
-        });
-      }
-    }
-    
+
     /**
      * Покупка Instant Autoclicker за кристаллы
      */
@@ -965,7 +822,6 @@
         return;
       }
       
-      // Списываем кристаллы
       db.ref(`leaderboard/${user.uid}`).transaction(data => {
         if ((data.crystals || 0) >= INSTANT_AUTOCLICK_COST) {
           return { ...data, crystals: data.crystals - INSTANT_AUTOCLICK_COST };
@@ -974,10 +830,7 @@
       }).then(result => {
         if (result.committed) {
           crystals = result.snapshot.val().crystals || 0;
-          
-          // Активируем автокликер на 1 час
           startAutoclicker(INSTANT_AUTOCLICK_DURATION, true);
-          
           showMessage(`⚡ Instant Autoclick activated for 1 hour! -${INSTANT_AUTOCLICK_COST} 💎`);
           updateProfilePanel();
           updateAutoclickerShop();
@@ -994,7 +847,6 @@
     function showComingSoon(feature) {
       showMessage(`🚧 ${feature} is coming soon! Payment system is being integrated.`);
       
-      // Можно добавить аналитику здесь
       if (user) {
         db.ref(`analytics/coming_soon_clicks`).push({
           uid: user.uid,
@@ -1045,7 +897,6 @@
       if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
       if (tempBoostTimeout) { clearTimeout(tempBoostTimeout); tempBoostTimeout = null; }
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
-      if (adBoostInterval) { clearInterval(adBoostInterval); adBoostInterval = null; }
       if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; }
       if (user) { db.ref(`hourlyBonus/${user.uid}`).off('value'); }
     }
@@ -1071,7 +922,7 @@
       else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); }
     }
 
-    function getMaxReasonableClickPower() { let mp = clickPower; if (dualClickActive) mp *= 2; if (superAutoclicker.active) mp *= superAutoclicker.multiplier; if (adBoostActive) mp *= AD_BOOST_MULTIPLIER; return Math.min(mp * 1.5, MAX_CLICK_POWER); }
+    function getMaxReasonableClickPower() { let mp = clickPower; if (dualClickActive) mp *= 2; if (superAutoclicker.active) mp *= superAutoclicker.multiplier; return Math.min(mp * 1.5, MAX_CLICK_POWER); }
     function flagSuspiciousActivity(type, details) { 
       suspiciousFlags++; 
       const w = document.getElementById('antiCheatWarning'); 
@@ -1387,7 +1238,7 @@
               crystals += Math.floor(10+Math.random()*20); 
               showMessage('+💎!'); 
               updateProfilePanel(); 
-            } else if (rand < 0.85) boostClickPowerTemporarily(clickPower, 300000); 
+            } else if (rand < 0.85) boostClickPowerTemporarily(2, 300000); 
             else startAutoclicker(600000, true); 
             submitScore(); 
           } 
@@ -1489,7 +1340,6 @@
       const panel = document.getElementById(pn); if (!panel) return;
       const io = panel.classList.contains('open');
       
-      // Останавливаем мини-игру, если она активна
       if (miniGameActive) {
         endMiniGame(false, true);
       }
@@ -1499,11 +1349,13 @@
       document.getElementById('shopBtn').innerHTML = 'Shop ▼'; 
       document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼'; 
       document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+      document.getElementById('boostersBtn').innerHTML = '🚀 Boosters ▼';
       if (!io) { 
         panel.classList.add('open'); 
         if (pn === 'shop') document.getElementById('shopBtn').innerHTML = 'Shop ▲'; 
         else if (pn === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); } 
-        else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); } 
+        else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); }
+        else if (pn === 'boosters') { document.getElementById('boostersBtn').innerHTML = '🚀 Boosters ▲'; }
       }
     }
 
@@ -1700,30 +1552,26 @@
       if (score < MINI_GAME_ENTRY_FEE) return showMessage(`Need ${MINI_GAME_ENTRY_FEE} tokens to play!`);
       if (miniGameActive) return showMessage("Mini-game already active!");
       
-      // Проверяем лимит игр на сегодня
       const today = new Date().toDateString();
       db.ref(`miniGameLimit/${user.uid}`).once('value').then(s => {
         const data = s.val() || { gamesPlayed: 0, lastReset: today };
         
-        // Сбрасываем счётчик если новый день
         if (data.lastReset !== today) {
           data.gamesPlayed = 0;
           data.lastReset = today;
         }
         
-        // Проверяем лимит
         if (data.gamesPlayed >= MAX_MINI_GAMES_PER_DAY) {
           showMessage(`Daily limit reached! (${MAX_MINI_GAMES_PER_DAY} games)`);
           return;
         }
         
-        // Закрываем все панели
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
         document.getElementById('shopBtn').innerHTML = 'Shop ▼';
         document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
         document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+        document.getElementById('boostersBtn').innerHTML = '🚀 Boosters ▼';
         
-        // Списываем плату за вход
         db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
           const currentScore = cs || 0;
           if (currentScore < MINI_GAME_ENTRY_FEE) return undefined;
@@ -1734,11 +1582,9 @@
             return;
           }
           
-          // Увеличиваем счётчик игр
           data.gamesPlayed++;
           db.ref(`miniGameLimit/${user.uid}`).set(data);
           
-          // Запускаем мини-игру
           miniGameActive = true; 
           miniGameClicks = 0; 
           document.getElementById("miniGamePanel").style.display = "block"; 
@@ -1798,7 +1644,6 @@
       }
       
       if (won) { 
-        // Игрок победил - начисляем 500 токенов (чистая прибыль 400)
         db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
           return (cs || 0) + MINI_GAME_REWARD;
         }).then(() => {
@@ -1810,14 +1655,10 @@
           console.error("Mini-game reward error:", error);
           showMessage("Error giving reward!");
         });
-        
       } else if (leftManually) { 
-        // Игрок сам вышел из игры
         showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
         updateProfilePanel();
-        
       } else { 
-        // Время вышло - игрок проиграл
         showMessage(`⏰ Time's up! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
         updateProfilePanel();
       }
@@ -2048,7 +1889,7 @@
     function showTab(tab) { currentTab = tab; if (tab === "overall") { document.getElementById("overallTabBtn").classList.add("active"); document.getElementById("weeklyTabBtn").classList.remove("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; } else { document.getElementById("overallTabBtn").classList.remove("active"); document.getElementById("weeklyTabBtn").classList.add("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; } }
     function updateWeeklyScore() { if (user) db.ref(`weeklyLeaderboard/${getWeekKey()}/${user.uid}`).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, lastUpdate: Date.now() }); }
     function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
-    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, adBoostActive, adBoostEndTime, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
+    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
 
     function loadPlayerData(uid) { 
       db.ref("leaderboard/" + uid).once("value").then(snapshot => { 
@@ -2062,28 +1903,6 @@
         autoclickEndTime = data.autoclickEndTime || 0; 
         autoclickerLevel = data.autoclickerLevel || 1; 
         suspiciousFlags = data.suspiciousFlags || 0;
-        
-        // Загружаем состояние Ad Boost
-        if (data.adBoostActive && data.adBoostEndTime > Date.now()) {
-          adBoostActive = true;
-          adBoostEndTime = data.adBoostEndTime;
-          originalClickPower = data.adBoostOriginalPower || clickPower;
-          clickPower = Math.min(originalClickPower * AD_BOOST_MULTIPLIER, MAX_CLICK_POWER);
-          serverClickPower = clickPower;
-          
-          // Обновляем UI
-          const adBoostBtn = document.getElementById('adBoostBtn');
-          adBoostBtn.textContent = '🔥 x2 Active!';
-          adBoostBtn.classList.add('ad-boost-active');
-          adBoostBtn.classList.remove('ad-boost-btn');
-          document.getElementById('adBoostTimer').style.display = 'block';
-          
-          if (adBoostInterval) clearInterval(adBoostInterval);
-          adBoostInterval = setInterval(updateAdBoostTimer, 1000);
-        } else if (data.adBoostActive) {
-          // Буст истек
-          deactivateAdBoost();
-        }
         
         if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { 
           showMessage('🚫 Suspended'); 
@@ -2124,11 +1943,6 @@
       stopScoreListener();
       cleanupAllTimers();
       
-      // Деактивируем Ad Boost при выходе
-      if (adBoostActive) {
-        deactivateAdBoost();
-      }
-      
       if (user) {
         if (suspiciousFlags > 0) {
           await db.ref("leaderboard/" + user.uid).update({ 
@@ -2162,8 +1976,6 @@
       serverClickPower = 1;
       autoclickEndTime = 0;
       onlineTime = 0;
-      adBoostActive = false;
-      adBoostEndTime = 0;
       
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
