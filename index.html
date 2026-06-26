@@ -254,11 +254,10 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // ===== ГИБРИДНАЯ АВТОРИЗАЦИЯ (FIXED) =====
+    // ===== ГИБРИДНАЯ АВТОРИЗАЦИЯ =====
     
     const isTelegramMiniApp = !!(window.Telegram?.WebApp?.initData);
     const isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
-    let authInitialized = false;
 
     function setupAuthUI() {
       const authButtons = document.getElementById('authButtons');
@@ -298,70 +297,7 @@
           <div class="auth-platform">
             ${isMobileDevice ? '📱 Mobile browser' : '💻 Desktop browser'}
           </div>
-          <div id="authError" style="color: #ff5555; margin-top: 10px; display: none;"></div>
         `;
-      }
-    }
-
-    // Initialize auth state listener FIRST
-    auth.onAuthStateChanged(async (currentUser) => {
-      if (authInitialized) return; // Prevent multiple initializations
-      
-      if (currentUser && !isTelegramMiniApp) {
-        authInitialized = true;
-        console.log('Auth state changed - user detected:', currentUser.uid);
-        
-        // Check if we're returning from a redirect
-        const isRedirect = sessionStorage.getItem('googleAuthRedirect') === 'true';
-        sessionStorage.removeItem('googleAuthRedirect');
-        
-        try {
-          await handleGoogleUser(currentUser);
-          console.log('Google user handled successfully');
-        } catch (error) {
-          console.error('Error handling Google user:', error);
-          showAuthError('Failed to complete authentication. Please try again.');
-          authInitialized = false;
-        }
-      } else if (!currentUser && !isTelegramMiniApp) {
-        // User is signed out
-        if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-        document.getElementById("claimBonusBtn").disabled = true;
-        document.getElementById("bonusTimer").innerText = "Sign in to claim";
-        
-        // Show auth section if game was previously shown
-        if (document.getElementById('gameSection').style.display === 'block') {
-          document.getElementById("authSection").style.display = "block";
-          document.getElementById("gameSection").style.display = "none";
-        }
-      }
-    });
-
-    // Handle redirect result on page load
-    async function handleRedirectResult() {
-      try {
-        const result = await auth.getRedirectResult();
-        if (result?.user) {
-          console.log('Redirect result - user:', result.user.uid);
-          await handleGoogleUser(result.user);
-          return true;
-        }
-        return false;
-      } catch (error) {
-        console.error('Redirect auth error:', error.code, error.message);
-        
-        // Handle specific error cases
-        if (error.code === 'auth/account-exists-with-different-credential') {
-          showAuthError('An account already exists with this email. Please use the same sign-in method.');
-        } else if (error.code === 'auth/popup-closed-by-user') {
-          // User closed popup - no need to show error
-          console.log('Popup closed by user');
-        } else if (error.code === 'auth/cancelled-popup-request') {
-          console.log('Popup request cancelled');
-        } else {
-          showAuthError('Authentication failed. Please try again.');
-        }
-        return false;
       }
     }
 
@@ -374,8 +310,6 @@
           showAuthError('Could not get Telegram user data. Please try again.');
           return;
         }
-        
-        console.log('Telegram user:', tgUser.id);
         
         const snapshot = await db.ref('users')
           .orderByChild('auth_methods/tg_user_id')
@@ -434,7 +368,7 @@
           photoURL: tgUser.photo_url || ''
         };
         
-        await startGameAfterAuth();
+        startGameAfterAuth();
         
       } catch (error) {
         console.error('Telegram auth error:', error);
@@ -443,56 +377,40 @@
     }
 
     async function signInWithGoogle() {
-      const errorDiv = document.getElementById('authError');
-      if (errorDiv) errorDiv.style.display = 'none';
-      
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.addScope('profile');
         provider.addScope('email');
         
-        // Set custom parameters for better mobile experience
-        provider.setCustomParameters({
-          prompt: 'select_account'
-        });
-        
         if (isMobileDevice) {
-          // Use redirect for mobile
-          sessionStorage.setItem('googleAuthRedirect', 'true');
           await auth.signInWithRedirect(provider);
-          // No return - page will redirect
         } else {
-          // Use popup for desktop
           const result = await auth.signInWithPopup(provider);
-          console.log('Popup sign-in successful:', result.user.uid);
-          // handleGoogleUser will be called by onAuthStateChanged
+          await handleGoogleUser(result.user);
         }
       } catch (error) {
-        console.error('Google sign-in error:', error.code, error.message);
-        
-        if (error.code === 'auth/popup-blocked') {
-          showAuthError('Popup was blocked. Please allow popups for this site.');
-        } else if (error.code === 'auth/popup-closed-by-user') {
-          // User closed the popup, don't show error
-          console.log('User closed popup');
-        } else if (error.code === 'auth/cancelled-popup-request') {
-          console.log('Popup cancelled');
-        } else if (error.code === 'auth/network-request-failed') {
-          showAuthError('Network error. Please check your connection.');
-        } else {
-          showAuthError('Sign-in failed. Please try again.');
-        }
+        console.error('Google sign-in error:', error);
+        showAuthError('Sign-in failed. Please try again.');
       }
     }
 
+    auth.getRedirectResult().then(async (result) => {
+      if (result?.user) {
+        await handleGoogleUser(result.user);
+      }
+    }).catch((error) => {
+      console.error('Redirect auth error:', error);
+      if (error.code !== 'auth/account-exists-with-different-credential') {
+        showAuthError('Authentication failed. Please try again.');
+      }
+    });
+
     async function handleGoogleUser(googleUser) {
       try {
-        console.log('Handling Google user:', googleUser.uid);
         const userRef = db.ref(`users/${googleUser.uid}`);
         const snapshot = await userRef.once('value');
         
         if (!snapshot.exists()) {
-          console.log('Creating new user profile');
           await userRef.set({
             auth_methods: {
               tg_user_id: null,
@@ -509,7 +427,6 @@
             last_device: isMobileDevice ? 'mobile' : 'desktop'
           });
         } else {
-          console.log('Updating existing user profile');
           await userRef.update({
             display_name: googleUser.displayName || 'Player',
             photo_url: googleUser.photoURL || '',
@@ -518,15 +435,12 @@
           });
         }
         
-        // Update user state
         user = googleUser;
-        
-        // Start the game
-        await startGameAfterAuth();
+        startGameAfterAuth();
         
       } catch (error) {
-        console.error('Handle Google user error:', error.code, error.message);
-        throw error; // Re-throw to be caught by onAuthStateChanged
+        console.error('Handle Google user error:', error);
+        showAuthError('Failed to setup user profile.');
       }
     }
 
@@ -542,7 +456,6 @@
     }
 
     async function startGameAfterAuth() {
-      console.log('Starting game after auth');
       document.getElementById('authSection').style.display = 'none';
       document.getElementById('gameSection').style.display = 'block';
       
@@ -564,36 +477,18 @@
     }
 
     function showAuthError(message) {
-      const errorDiv = document.getElementById('authError');
-      if (errorDiv) {
-        errorDiv.textContent = '❌ ' + message;
-        errorDiv.style.display = 'block';
-      } else {
-        const authButtons = document.getElementById('authButtons');
-        authButtons.innerHTML = `
-          <div class="auth-error">
-            ❌ ${message}
-          </div>
-          <button class="click-button" onclick="location.reload()" style="margin-top: 10px;">
-            🔄 Retry
-          </button>
-        `;
-      }
+      const authButtons = document.getElementById('authButtons');
+      authButtons.innerHTML = `
+        <div class="auth-error">
+          ❌ ${message}
+        </div>
+        <button class="click-button" onclick="location.reload()" style="margin-top: 10px;">
+          🔄 Retry
+        </button>
+      `;
     }
 
-    // Initialize auth UI and check for redirect result
-    (async function initialize() {
-      setupAuthUI();
-      
-      // Check if we're returning from a redirect (only for non-Telegram)
-      if (!isTelegramMiniApp) {
-        const hasRedirect = await handleRedirectResult();
-        if (hasRedirect) {
-          console.log('Successfully processed redirect');
-          authInitialized = true;
-        }
-      }
-    })();
+    setupAuthUI();
 
     // ===== ОСНОВНОЙ КОД ИГРЫ =====
     
@@ -1237,6 +1132,18 @@
     if (isMobileOrTablet()) profilePanel.classList.remove('expanded'); else profilePanel.classList.add('expanded');
     profilePanel.addEventListener('click', function(e) { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A') return; if (isMobileOrTablet()) this.classList.toggle('expanded'); });
     window.addEventListener('resize', () => { if (isMobileOrTablet()) profilePanel.classList.remove('expanded'); else profilePanel.classList.add('expanded'); });
+
+    auth.onAuthStateChanged((currentUser) => {
+      if (currentUser && !isTelegramMiniApp) {
+        if (!user) {
+          handleGoogleUser(currentUser);
+        }
+      } else if (!currentUser && !isTelegramMiniApp) {
+        if (bonusTimerInterval) clearInterval(bonusTimerInterval);
+        document.getElementById("claimBonusBtn").disabled = true;
+        document.getElementById("bonusTimer").innerText = "Sign in to claim";
+      }
+    });
 
     db.ref("leaderboard").on("value", s => { if (currentTab !== "overall") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td></tr>`).join(''); });
     db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.rewardClaimed ? getRewardForRank(i+1)+' (Claimed)' : getRewardForRank(i+1)}</td></tr>`).join(''); });
