@@ -65,6 +65,67 @@
     #tasksList div { margin-bottom: 10px; padding: 10px; border: 1px solid #00c3ff; border-radius: 8px; background-color: #222; }
     #autoclickerShop { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
     .booster-card { background: #1a1a1a; padding: 20px; border-radius: 12px; width: 220px; box-shadow: 0 0 10px #00c3ff; text-align: center; }
+    .booster-card.premium {
+      border: 2px solid #ffd700;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a1a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .booster-card.premium::before {
+      content: "BEST VALUE";
+      position: absolute;
+      top: 10px;
+      right: -30px;
+      background: #ffd700;
+      color: #000;
+      padding: 3px 30px;
+      font-size: 10px;
+      font-weight: bold;
+      transform: rotate(45deg);
+    }
+    .booster-card.premium h3 {
+      color: #ffd700;
+      font-size: 22px;
+    }
+    .booster-card .price {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #00c3ff;
+    }
+    .booster-card .feature-list {
+      text-align: left;
+      margin: 15px 0;
+      font-size: 13px;
+      color: #ccc;
+    }
+    .booster-card .feature-list div {
+      margin: 5px 0;
+    }
+    .booster-card .feature-list i {
+      color: #00ffa6;
+      margin-right: 8px;
+    }
+    .battle-pass-progress {
+      background: #222;
+      border-radius: 8px;
+      height: 8px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .battle-pass-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #a855f7, #6366f1);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .booster-card .rewards-preview {
+      display: flex;
+      justify-content: space-around;
+      font-size: 24px;
+      margin: 10px 0;
+    }
     #settings { background: #2a2a2a; padding: 20px; border-radius: 8px; width: 320px; margin: 15px auto !important; box-shadow: 0 0 10px #00c3ff; text-align: center; }
     #leaderboardContainer { max-width: 800px; margin: 20px auto; background: #1a1a1a; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0, 195, 255, 0.3); }
     .tabs { display: flex; justify-content: flex-start; margin-bottom: -1px; }
@@ -114,106 +175,6 @@
       100% { opacity: 0; transform: translate(var(--dx100), -90px) scale(1.5) rotate(var(--rot100)); }
     }
 
-    /* Стили для МОНЕТИЗАЦИИ (без рекламы) */
-    .monetization-section {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin: 20px auto;
-      max-width: 900px;
-    }
-    .monet-card {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 12px;
-      width: 250px;
-      box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
-      text-align: center;
-      transition: all 0.3s ease;
-      border: 1px solid #333;
-    }
-    .monet-card:hover {
-      box-shadow: 0 0 25px rgba(0, 195, 255, 0.4);
-      transform: translateY(-3px);
-    }
-    .monet-card.premium {
-      border: 2px solid #ffd700;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a1a 100%);
-      position: relative;
-      overflow: hidden;
-    }
-    .monet-card.premium::before {
-      content: "BEST VALUE";
-      position: absolute;
-      top: 10px;
-      right: -30px;
-      background: #ffd700;
-      color: #000;
-      padding: 3px 30px;
-      font-size: 10px;
-      font-weight: bold;
-      transform: rotate(45deg);
-    }
-    .monet-card h3 {
-      color: #00ffa6;
-      margin-bottom: 12px;
-      font-size: 20px;
-    }
-    .monet-card.premium h3 {
-      color: #ffd700;
-      font-size: 22px;
-    }
-    .monet-card .price {
-      font-size: 24px;
-      font-weight: bold;
-      margin: 10px 0;
-      color: #00c3ff;
-    }
-    .monet-card .feature-list {
-      text-align: left;
-      margin: 15px 0;
-      font-size: 13px;
-      color: #ccc;
-    }
-    .monet-card .feature-list div {
-      margin: 5px 0;
-    }
-    .monet-card .feature-list i {
-      color: #00ffa6;
-      margin-right: 8px;
-    }
-    .premium-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #ffd700, #ffaa00);
-      color: #000;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: bold;
-      margin-left: 5px;
-    }
-    .battle-pass-progress {
-      background: #222;
-      border-radius: 8px;
-      height: 8px;
-      margin: 10px 0;
-      overflow: hidden;
-    }
-    .battle-pass-progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #a855f7, #6366f1);
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-    .monet-card .rewards-preview {
-      display: flex;
-      justify-content: space-around;
-      font-size: 24px;
-      margin: 10px 0;
-    }
-
     @media (max-width: 1023px) {
       body { padding: 10px; }
       h1 { font-size: 1.6em; margin: 10px 0; }
@@ -238,8 +199,6 @@
       .tab-button { border-radius: 0; font-size: 13px; }
       #leaderboardTable { font-size: 11px; }
       .score-popup { font-size: 16px; }
-      .monetization-section { flex-direction: column; align-items: center; }
-      .monet-card { width: 90%; max-width: 350px; }
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     
@@ -253,7 +212,6 @@
       .main-click-button { width: 220px; height: 220px; }
       .main-click-button .icon { font-size: 80px; }
       .score-popup { font-size: 24px; }
-      .monet-card { width: 270px; }
     }
   </style>
 </head>
@@ -299,55 +257,6 @@
       <div id="counter">Tokens: 0</div>
       <div id="message"></div>
       
-      <!-- ===== БЛОК МОНЕТИЗАЦИИ (БЕЗ РЕКЛАМЫ) ===== -->
-      <div class="monetization-section" id="monetizationSection">
-        
-        <!-- Premium (вынесен отдельно) -->
-        <div class="monet-card premium" id="premiumCard">
-          <h3>⭐ Premium</h3>
-          <div class="price">$4.99<span style="font-size:14px;">/month</span></div>
-          <div class="feature-list">
-            <div><i class="fas fa-check"></i> +1 Crystal per hour</div>
-            <div><i class="fas fa-check"></i> Remove all ads</div>
-            <div><i class="fas fa-check"></i> Exclusive badge</div>
-            <div><i class="fas fa-check"></i> Priority support</div>
-          </div>
-          <button class="click-button" id="premiumBtn" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">
-            👑 Subscribe
-          </button>
-        </div>
-        
-        <!-- Battle Pass -->
-        <div class="monet-card" id="battlePassCard">
-          <h3>🎫 Battle Pass</h3>
-          <div class="price">$9.99<span style="font-size:14px;">/season</span></div>
-          <p style="color:#a855f7; font-size:13px;">Monthly exclusive skins + crystals</p>
-          <div class="battle-pass-progress">
-            <div class="battle-pass-progress-bar" id="battlePassProgressBar" style="width:35%;"></div>
-          </div>
-          <p style="font-size:11px; color:#888;">Season progress: 35/100</p>
-          <div class="rewards-preview">
-            <span>🎨</span>
-            <span>💎</span>
-            <span>🏆</span>
-            <span>✨</span>
-          </div>
-          <button class="click-button" id="battlePassBtn" onclick="showComingSoon('Battle Pass')" style="background: linear-gradient(135deg, #a855f7, #6366f1); width:100%;">
-            🚀 Get Battle Pass
-          </button>
-        </div>
-        
-        <!-- Instant Autoclick -->
-        <div class="monet-card" id="instantAutoclickCard" style="width:100%; max-width:350px;">
-          <h3>⚡ Instant Autoclick</h3>
-          <p style="color:#ccc;">Buy <strong>1 hour</strong> of autoclicker for crystals</p>
-          <div class="price" style="color:#00ffa6;">50 💎</div>
-          <button class="click-button" id="instantAutoclickBtn" onclick="buyInstantAutoclick()">
-            ⚡ Activate (1 hour)
-          </button>
-        </div>
-      </div>
-      
       <div id="buttonGroup">
         <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
         <button class="click-button" id="achievementsBtn" onclick="togglePanel('achievements')">🏆 Achievements ▼</button>
@@ -370,8 +279,58 @@
         </div>
         <h2 style="margin-top:20px;">🎮 Boosters</h2>
         <div id="autoclickerShop" style="margin-top:15px;">
+          <!-- Premium -->
+          <div class="booster-card premium">
+            <h3>⭐ Premium</h3>
+            <div class="price">$4.99<span style="font-size:14px;">/month</span></div>
+            <div class="feature-list">
+              <div><i class="fas fa-check"></i> +1 Crystal per hour</div>
+              <div><i class="fas fa-check"></i> Remove all ads</div>
+              <div><i class="fas fa-check"></i> Exclusive badge</div>
+              <div><i class="fas fa-check"></i> Priority support</div>
+            </div>
+            <button class="click-button" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">
+              👑 Subscribe
+            </button>
+          </div>
+          
+          <!-- Battle Pass -->
+          <div class="booster-card">
+            <h3>🎫 Battle Pass</h3>
+            <div class="price">$9.99<span style="font-size:14px;">/season</span></div>
+            <p style="color:#a855f7; font-size:13px;">Monthly exclusive skins + crystals</p>
+            <div class="battle-pass-progress">
+              <div class="battle-pass-progress-bar" id="battlePassProgressBar" style="width:35%;"></div>
+            </div>
+            <p style="font-size:11px; color:#888;">Season progress: 35/100</p>
+            <div class="rewards-preview">
+              <span>🎨</span>
+              <span>💎</span>
+              <span>🏆</span>
+              <span>✨</span>
+            </div>
+            <button class="click-button" onclick="showComingSoon('Battle Pass')" style="background: linear-gradient(135deg, #a855f7, #6366f1); width:100%;">
+              🚀 Get Battle Pass
+            </button>
+          </div>
+          
+          <!-- Instant Autoclick -->
+          <div class="booster-card">
+            <h3>⚡ Instant Autoclick</h3>
+            <p style="color:#ccc;">Buy <strong>1 hour</strong> of autoclicker for crystals</p>
+            <div class="price" style="color:#00ffa6;">50 💎</div>
+            <button class="click-button" onclick="buyInstantAutoclick()">
+              ⚡ Activate (1 hour)
+            </button>
+          </div>
+          
+          <!-- Lucky Spin -->
           <div class="booster-card"><h3>🎰 Lucky Spin</h3><p>Random reward (Cost: 300 tokens + 10 💎)</p><button class="click-button" onclick="buyLuckySpin(300,10)">Spin!</button></div>
+          
+          <!-- Super x5 -->
           <div class="booster-card"><h3>🚀 Super x5</h3><p>x5 Power for 2 min (Cost: 500 + 15 💎)</p><button class="click-button" onclick="buySuperAutoclicker(5,120000,500,15)">Buy x5</button></div>
+          
+          <!-- Super x10 -->
           <div class="booster-card"><h3>🚀 Super x10</h3><p>x10 Power for 2 min (Cost: 1000 + 35 💎)</p><button class="click-button" onclick="buySuperAutoclicker(10,120000,1000,35)">Buy x10</button></div>
         </div>
       </div>
@@ -459,7 +418,7 @@
       return Math.abs(hash).toString(36);
     }
 
-    // ===== ПЕРЕМЕННЫЕ МОНЕТИЗАЦИИ (БЕЗ РЕКЛАМЫ) =====
+    // ===== ПЕРЕМЕННЫЕ МОНЕТИЗАЦИИ =====
     let isPremium = false;
     let hasBattlePass = false;
 
@@ -745,7 +704,7 @@
       "Skip signing in — miss the rewards!"
     ];
 
-    // ===== ФУНКЦИИ МОНЕТИЗАЦИИ (БЕЗ РЕКЛАМЫ) =====
+    // ===== ФУНКЦИИ МОНЕТИЗАЦИИ =====
     
     /**
      * Покупка Instant Autoclicker за кристаллы
@@ -790,7 +749,6 @@
     function showComingSoon(feature) {
       showMessage(`🚧 ${feature} is coming soon! Payment system is being integrated.`);
       
-      // Можно добавить аналитику здесь
       if (user) {
         db.ref(`analytics/coming_soon_clicks`).push({
           uid: user.uid,
@@ -1284,7 +1242,6 @@
       const panel = document.getElementById(pn); if (!panel) return;
       const io = panel.classList.contains('open');
       
-      // Останавливаем мини-игру, если она активна
       if (miniGameActive) {
         endMiniGame(false, true);
       }
@@ -1495,30 +1452,25 @@
       if (score < MINI_GAME_ENTRY_FEE) return showMessage(`Need ${MINI_GAME_ENTRY_FEE} tokens to play!`);
       if (miniGameActive) return showMessage("Mini-game already active!");
       
-      // Проверяем лимит игр на сегодня
       const today = new Date().toDateString();
       db.ref(`miniGameLimit/${user.uid}`).once('value').then(s => {
         const data = s.val() || { gamesPlayed: 0, lastReset: today };
         
-        // Сбрасываем счётчик если новый день
         if (data.lastReset !== today) {
           data.gamesPlayed = 0;
           data.lastReset = today;
         }
         
-        // Проверяем лимит
         if (data.gamesPlayed >= MAX_MINI_GAMES_PER_DAY) {
           showMessage(`Daily limit reached! (${MAX_MINI_GAMES_PER_DAY} games)`);
           return;
         }
         
-        // Закрываем все панели
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
         document.getElementById('shopBtn').innerHTML = 'Shop ▼';
         document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
         document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
         
-        // Списываем плату за вход
         db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
           const currentScore = cs || 0;
           if (currentScore < MINI_GAME_ENTRY_FEE) return undefined;
@@ -1529,11 +1481,9 @@
             return;
           }
           
-          // Увеличиваем счётчик игр
           data.gamesPlayed++;
           db.ref(`miniGameLimit/${user.uid}`).set(data);
           
-          // Запускаем мини-игру
           miniGameActive = true; 
           miniGameClicks = 0; 
           document.getElementById("miniGamePanel").style.display = "block"; 
@@ -1593,7 +1543,6 @@
       }
       
       if (won) { 
-        // Игрок победил - начисляем 500 токенов (чистая прибыль 400)
         db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
           return (cs || 0) + MINI_GAME_REWARD;
         }).then(() => {
@@ -1607,12 +1556,10 @@
         });
         
       } else if (leftManually) { 
-        // Игрок сам вышел из игры
         showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
         updateProfilePanel();
         
       } else { 
-        // Время вышло - игрок проиграл
         showMessage(`⏰ Time's up! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
         updateProfilePanel();
       }
