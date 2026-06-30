@@ -114,7 +114,7 @@
       100% { opacity: 0; transform: translate(var(--dx100), -90px) scale(1.5) rotate(var(--rot100)); }
     }
 
-    /* Стили для МОНЕТИЗАЦИИ */
+    /* Стили для МОНЕТИЗАЦИИ (без рекламы) */
     .monetization-section {
       display: flex;
       flex-wrap: wrap;
@@ -183,25 +183,6 @@
     .monet-card .feature-list i {
       color: #00ffa6;
       margin-right: 8px;
-    }
-    .ad-boost-btn {
-      background: linear-gradient(135deg, #ff6b6b, #ff8e53) !important;
-      animation: glowPulse 2s infinite;
-    }
-    @keyframes glowPulse {
-      0% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
-      50% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.8); }
-      100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
-    }
-    .ad-boost-active {
-      background: linear-gradient(135deg, #00ffa6, #00c3ff) !important;
-      animation: none;
-      box-shadow: 0 0 20px #00ffa6 !important;
-    }
-    .ad-boost-timer {
-      font-size: 12px;
-      color: #ffd700;
-      margin-top: 5px;
     }
     .premium-badge {
       display: inline-block;
@@ -318,20 +299,8 @@
       <div id="counter">Tokens: 0</div>
       <div id="message"></div>
       
-      <!-- ===== БЛОК МОНЕТИЗАЦИИ ===== -->
+      <!-- ===== БЛОК МОНЕТИЗАЦИИ (БЕЗ РЕКЛАМЫ) ===== -->
       <div class="monetization-section" id="monetizationSection">
-        <!-- Ad Boost -->
-        <div class="monet-card" id="adBoostCard">
-          <h3>📺 Ad Boost</h3>
-          <p style="color:#ccc;">Watch ad → <strong>x2 Click Power</strong> for 30 min</p>
-          <button class="click-button ad-boost-btn" id="adBoostBtn" onclick="activateAdBoost()">
-            ▶ Watch Ad (Free)
-          </button>
-          <div class="ad-boost-timer" id="adBoostTimer" style="display:none;">
-            Boost active: <span id="adBoostTimeLeft">30:00</span>
-          </div>
-          <p style="font-size:10px; color:#666; margin-top:8px;">Powered by EffectiveCPM</p>
-        </div>
         
         <!-- Premium (вынесен отдельно) -->
         <div class="monet-card premium" id="premiumCard">
@@ -490,15 +459,10 @@
       return Math.abs(hash).toString(36);
     }
 
-    // ===== ПЕРЕМЕННЫЕ МОНЕТИЗАЦИИ =====
-    let adBoostActive = false;
-    let adBoostEndTime = 0;
-    let adBoostInterval = null;
+    // ===== ПЕРЕМЕННЫЕ МОНЕТИЗАЦИИ (БЕЗ РЕКЛАМЫ) =====
     let isPremium = false;
     let hasBattlePass = false;
 
-    const AD_BOOST_DURATION = 30 * 60 * 1000; // 30 минут
-    const AD_BOOST_MULTIPLIER = 2;
     const INSTANT_AUTOCLICK_COST = 50; // кристаллов
     const INSTANT_AUTOCLICK_DURATION = 60 * 60 * 1000; // 1 час
 
@@ -781,175 +745,7 @@
       "Skip signing in — miss the rewards!"
     ];
 
-    // ===== ФУНКЦИИ МОНЕТИЗАЦИИ =====
-
-    /**
-     * Активирует Ad Boost: x2 Click Power на 30 минут
-     * Использует смарт-линк EffectiveCPM или открывает рекламу
-     */
-    function activateAdBoost() {
-      if (!user) {
-        showMessage('Sign in to use Ad Boost!');
-        return;
-      }
-      
-      if (adBoostActive) {
-        const remaining = Math.max(0, adBoostEndTime - Date.now());
-        const minutes = Math.floor(remaining / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
-        showMessage(`Ad Boost already active! ${minutes}:${String(seconds).padStart(2, '0')} remaining`);
-        return;
-      }
-      
-      // Открываем рекламу через смарт-линк EffectiveCPM
-      const adLink = 'https://www.effectivecpmnetwork.com/fi7bnefix?key=5a3d8d03414fa033d097fed7146d0903';
-      
-      // Показываем сообщение пользователю
-      showMessage('📺 Opening ad... Please watch to activate boost!');
-      
-      // Открываем рекламу в новом окне/вкладке
-      const adWindow = window.open(adLink, '_blank', 'width=800,height=600');
-      
-      // Если окно заблокировано, пробуем открыть в текущем окне (для Telegram Mini App)
-      if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
-        // В Telegram Mini App используем window.location или если есть Telegram WebApp - открываем ссылку
-        if (window.Telegram?.WebApp?.openLink) {
-          window.Telegram.WebApp.openLink(adLink);
-        } else if (window.Telegram?.WebApp?.openTelegramLink) {
-          // Альтернативный метод для Telegram
-          window.location.href = adLink;
-          // Возвращаемся обратно после небольшой задержки
-          setTimeout(() => {
-            window.history.back();
-          }, 500);
-        } else {
-          window.open(adLink, '_self');
-        }
-        
-        // Даем буст даже если окно не открылось (для удобства пользователей в Telegram)
-        setTimeout(() => {
-          applyAdBoost();
-        }, 3000);
-      } else {
-        // Для десктопа - даем буст сразу после открытия окна
-        setTimeout(() => {
-          applyAdBoost();
-        }, 2000);
-      }
-    }
-    
-    /**
-     * Применяет эффект Ad Boost
-     */
-    function applyAdBoost() {
-      if (!user) return;
-      
-      // Сохраняем оригинальный Click Power если еще не сохранен
-      if (!adBoostActive) {
-        originalClickPower = clickPower;
-      }
-      
-      adBoostActive = true;
-      adBoostEndTime = Date.now() + AD_BOOST_DURATION;
-      
-      // Применяем множитель
-      clickPower = Math.min(originalClickPower * AD_BOOST_MULTIPLIER, MAX_CLICK_POWER);
-      serverClickPower = clickPower;
-      
-      // Обновляем UI
-      const adBoostBtn = document.getElementById('adBoostBtn');
-      adBoostBtn.textContent = '🔥 x2 Active!';
-      adBoostBtn.classList.add('ad-boost-active');
-      adBoostBtn.classList.remove('ad-boost-btn');
-      
-      const adBoostTimer = document.getElementById('adBoostTimer');
-      adBoostTimer.style.display = 'block';
-      
-      // Запускаем таймер обратного отсчета
-      if (adBoostInterval) clearInterval(adBoostInterval);
-      adBoostInterval = setInterval(updateAdBoostTimer, 1000);
-      
-      showMessage('🔥 x2 Click Power activated for 30 minutes!');
-      updateClickPowerBar();
-      updateProfilePanel();
-      submitScore();
-      
-      // Сохраняем в Firebase
-      db.ref(`leaderboard/${user.uid}`).update({
-        adBoostActive: true,
-        adBoostEndTime: adBoostEndTime,
-        adBoostOriginalPower: originalClickPower,
-        lastUpdate: Date.now()
-      });
-    }
-    
-    /**
-     * Обновляет таймер Ad Boost
-     */
-    function updateAdBoostTimer() {
-      if (!adBoostActive) {
-        if (adBoostInterval) {
-          clearInterval(adBoostInterval);
-          adBoostInterval = null;
-        }
-        return;
-      }
-      
-      const now = Date.now();
-      const remaining = Math.max(0, adBoostEndTime - now);
-      
-      if (remaining <= 0) {
-        deactivateAdBoost();
-        return;
-      }
-      
-      const minutes = Math.floor(remaining / 60000);
-      const seconds = Math.floor((remaining % 60000) / 1000);
-      document.getElementById('adBoostTimeLeft').textContent = 
-        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-    
-    /**
-     * Деактивирует Ad Boost
-     */
-    function deactivateAdBoost() {
-      adBoostActive = false;
-      adBoostEndTime = 0;
-      
-      if (adBoostInterval) {
-        clearInterval(adBoostInterval);
-        adBoostInterval = null;
-      }
-      
-      // Возвращаем оригинальный Click Power
-      if (originalClickPower) {
-        clickPower = originalClickPower;
-        serverClickPower = originalClickPower;
-        originalClickPower = null;
-      }
-      
-      // Обновляем UI
-      const adBoostBtn = document.getElementById('adBoostBtn');
-      adBoostBtn.textContent = '▶ Watch Ad (Free)';
-      adBoostBtn.classList.add('ad-boost-btn');
-      adBoostBtn.classList.remove('ad-boost-active');
-      
-      document.getElementById('adBoostTimer').style.display = 'none';
-      
-      showMessage('Ad Boost expired! Watch another ad to reactivate.');
-      updateClickPowerBar();
-      updateProfilePanel();
-      submitScore();
-      
-      // Обновляем Firebase
-      if (user) {
-        db.ref(`leaderboard/${user.uid}`).update({
-          adBoostActive: false,
-          adBoostEndTime: 0,
-          lastUpdate: Date.now()
-        });
-      }
-    }
+    // ===== ФУНКЦИИ МОНЕТИЗАЦИИ (БЕЗ РЕКЛАМЫ) =====
     
     /**
      * Покупка Instant Autoclicker за кристаллы
@@ -1045,7 +841,6 @@
       if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
       if (tempBoostTimeout) { clearTimeout(tempBoostTimeout); tempBoostTimeout = null; }
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
-      if (adBoostInterval) { clearInterval(adBoostInterval); adBoostInterval = null; }
       if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; }
       if (user) { db.ref(`hourlyBonus/${user.uid}`).off('value'); }
     }
@@ -1071,7 +866,7 @@
       else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); }
     }
 
-    function getMaxReasonableClickPower() { let mp = clickPower; if (dualClickActive) mp *= 2; if (superAutoclicker.active) mp *= superAutoclicker.multiplier; if (adBoostActive) mp *= AD_BOOST_MULTIPLIER; return Math.min(mp * 1.5, MAX_CLICK_POWER); }
+    function getMaxReasonableClickPower() { let mp = clickPower; if (dualClickActive) mp *= 2; if (superAutoclicker.active) mp *= superAutoclicker.multiplier; return Math.min(mp * 1.5, MAX_CLICK_POWER); }
     function flagSuspiciousActivity(type, details) { 
       suspiciousFlags++; 
       const w = document.getElementById('antiCheatWarning'); 
@@ -2048,7 +1843,7 @@
     function showTab(tab) { currentTab = tab; if (tab === "overall") { document.getElementById("overallTabBtn").classList.add("active"); document.getElementById("weeklyTabBtn").classList.remove("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; } else { document.getElementById("overallTabBtn").classList.remove("active"); document.getElementById("weeklyTabBtn").classList.add("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; } }
     function updateWeeklyScore() { if (user) db.ref(`weeklyLeaderboard/${getWeekKey()}/${user.uid}`).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, lastUpdate: Date.now() }); }
     function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
-    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, adBoostActive, adBoostEndTime, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
+    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
 
     function loadPlayerData(uid) { 
       db.ref("leaderboard/" + uid).once("value").then(snapshot => { 
@@ -2062,28 +1857,6 @@
         autoclickEndTime = data.autoclickEndTime || 0; 
         autoclickerLevel = data.autoclickerLevel || 1; 
         suspiciousFlags = data.suspiciousFlags || 0;
-        
-        // Загружаем состояние Ad Boost
-        if (data.adBoostActive && data.adBoostEndTime > Date.now()) {
-          adBoostActive = true;
-          adBoostEndTime = data.adBoostEndTime;
-          originalClickPower = data.adBoostOriginalPower || clickPower;
-          clickPower = Math.min(originalClickPower * AD_BOOST_MULTIPLIER, MAX_CLICK_POWER);
-          serverClickPower = clickPower;
-          
-          // Обновляем UI
-          const adBoostBtn = document.getElementById('adBoostBtn');
-          adBoostBtn.textContent = '🔥 x2 Active!';
-          adBoostBtn.classList.add('ad-boost-active');
-          adBoostBtn.classList.remove('ad-boost-btn');
-          document.getElementById('adBoostTimer').style.display = 'block';
-          
-          if (adBoostInterval) clearInterval(adBoostInterval);
-          adBoostInterval = setInterval(updateAdBoostTimer, 1000);
-        } else if (data.adBoostActive) {
-          // Буст истек
-          deactivateAdBoost();
-        }
         
         if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { 
           showMessage('🚫 Suspended'); 
@@ -2124,11 +1897,6 @@
       stopScoreListener();
       cleanupAllTimers();
       
-      // Деактивируем Ad Boost при выходе
-      if (adBoostActive) {
-        deactivateAdBoost();
-      }
-      
       if (user) {
         if (suspiciousFlags > 0) {
           await db.ref("leaderboard/" + user.uid).update({ 
@@ -2162,8 +1930,6 @@
       serverClickPower = 1;
       autoclickEndTime = 0;
       onlineTime = 0;
-      adBoostActive = false;
-      adBoostEndTime = 0;
       
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
