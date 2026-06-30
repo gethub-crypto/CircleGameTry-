@@ -114,6 +114,125 @@
       100% { opacity: 0; transform: translate(var(--dx100), -90px) scale(1.5) rotate(var(--rot100)); }
     }
 
+    /* Стили для МОНЕТИЗАЦИИ */
+    .monetization-section {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px auto;
+      max-width: 900px;
+    }
+    .monet-card {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      width: 250px;
+      box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid #333;
+    }
+    .monet-card:hover {
+      box-shadow: 0 0 25px rgba(0, 195, 255, 0.4);
+      transform: translateY(-3px);
+    }
+    .monet-card.premium {
+      border: 2px solid #ffd700;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a1a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .monet-card.premium::before {
+      content: "BEST VALUE";
+      position: absolute;
+      top: 10px;
+      right: -30px;
+      background: #ffd700;
+      color: #000;
+      padding: 3px 30px;
+      font-size: 10px;
+      font-weight: bold;
+      transform: rotate(45deg);
+    }
+    .monet-card h3 {
+      color: #00ffa6;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+    .monet-card.premium h3 {
+      color: #ffd700;
+      font-size: 22px;
+    }
+    .monet-card .price {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #00c3ff;
+    }
+    .monet-card .feature-list {
+      text-align: left;
+      margin: 15px 0;
+      font-size: 13px;
+      color: #ccc;
+    }
+    .monet-card .feature-list div {
+      margin: 5px 0;
+    }
+    .monet-card .feature-list i {
+      color: #00ffa6;
+      margin-right: 8px;
+    }
+    .ad-boost-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ff8e53) !important;
+      animation: glowPulse 2s infinite;
+    }
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
+      50% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.8); }
+      100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
+    }
+    .ad-boost-active {
+      background: linear-gradient(135deg, #00ffa6, #00c3ff) !important;
+      animation: none;
+      box-shadow: 0 0 20px #00ffa6 !important;
+    }
+    .ad-boost-timer {
+      font-size: 12px;
+      color: #ffd700;
+      margin-top: 5px;
+    }
+    .premium-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .battle-pass-progress {
+      background: #222;
+      border-radius: 8px;
+      height: 8px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .battle-pass-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #a855f7, #6366f1);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .monet-card .rewards-preview {
+      display: flex;
+      justify-content: space-around;
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
     @media (max-width: 1023px) {
       body { padding: 10px; }
       h1 { font-size: 1.6em; margin: 10px 0; }
@@ -138,6 +257,8 @@
       .tab-button { border-radius: 0; font-size: 13px; }
       #leaderboardTable { font-size: 11px; }
       .score-popup { font-size: 16px; }
+      .monetization-section { flex-direction: column; align-items: center; }
+      .monet-card { width: 90%; max-width: 350px; }
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     
@@ -151,6 +272,7 @@
       .main-click-button { width: 220px; height: 220px; }
       .main-click-button .icon { font-size: 80px; }
       .score-popup { font-size: 24px; }
+      .monet-card { width: 270px; }
     }
   </style>
 </head>
@@ -195,6 +317,68 @@
       </div>
       <div id="counter">Tokens: 0</div>
       <div id="message"></div>
+      
+      <!-- ===== БЛОК МОНЕТИЗАЦИИ ===== -->
+      <div class="monetization-section" id="monetizationSection">
+        <!-- Ad Boost -->
+        <div class="monet-card" id="adBoostCard">
+          <h3>📺 Ad Boost</h3>
+          <p style="color:#ccc;">Watch ad → <strong>x2 Click Power</strong> for 30 min</p>
+          <button class="click-button ad-boost-btn" id="adBoostBtn" onclick="activateAdBoost()">
+            ▶ Watch Ad (Free)
+          </button>
+          <div class="ad-boost-timer" id="adBoostTimer" style="display:none;">
+            Boost active: <span id="adBoostTimeLeft">30:00</span>
+          </div>
+          <p style="font-size:10px; color:#666; margin-top:8px;">Powered by EffectiveCPM</p>
+        </div>
+        
+        <!-- Premium (вынесен отдельно) -->
+        <div class="monet-card premium" id="premiumCard">
+          <h3>⭐ Premium</h3>
+          <div class="price">$4.99<span style="font-size:14px;">/month</span></div>
+          <div class="feature-list">
+            <div><i class="fas fa-check"></i> +1 Crystal per hour</div>
+            <div><i class="fas fa-check"></i> Remove all ads</div>
+            <div><i class="fas fa-check"></i> Exclusive badge</div>
+            <div><i class="fas fa-check"></i> Priority support</div>
+          </div>
+          <button class="click-button" id="premiumBtn" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">
+            👑 Subscribe
+          </button>
+        </div>
+        
+        <!-- Battle Pass -->
+        <div class="monet-card" id="battlePassCard">
+          <h3>🎫 Battle Pass</h3>
+          <div class="price">$9.99<span style="font-size:14px;">/season</span></div>
+          <p style="color:#a855f7; font-size:13px;">Monthly exclusive skins + crystals</p>
+          <div class="battle-pass-progress">
+            <div class="battle-pass-progress-bar" id="battlePassProgressBar" style="width:35%;"></div>
+          </div>
+          <p style="font-size:11px; color:#888;">Season progress: 35/100</p>
+          <div class="rewards-preview">
+            <span>🎨</span>
+            <span>💎</span>
+            <span>🏆</span>
+            <span>✨</span>
+          </div>
+          <button class="click-button" id="battlePassBtn" onclick="showComingSoon('Battle Pass')" style="background: linear-gradient(135deg, #a855f7, #6366f1); width:100%;">
+            🚀 Get Battle Pass
+          </button>
+        </div>
+        
+        <!-- Instant Autoclick -->
+        <div class="monet-card" id="instantAutoclickCard" style="width:100%; max-width:350px;">
+          <h3>⚡ Instant Autoclick</h3>
+          <p style="color:#ccc;">Buy <strong>1 hour</strong> of autoclicker for crystals</p>
+          <div class="price" style="color:#00ffa6;">50 💎</div>
+          <button class="click-button" id="instantAutoclickBtn" onclick="buyInstantAutoclick()">
+            ⚡ Activate (1 hour)
+          </button>
+        </div>
+      </div>
+      
       <div id="buttonGroup">
         <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
         <button class="click-button" id="achievementsBtn" onclick="togglePanel('achievements')">🏆 Achievements ▼</button>
@@ -242,6 +426,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -253,6 +438,69 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const auth = firebase.auth();
+    const functions = firebase.functions();
+
+    // ===== ЗАЩИТА ОТ XSS =====
+    function escapeHTML(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function sanitizeInput(input) {
+      if (typeof input !== 'string') return input;
+      return input.replace(/[<>"'&]/g, function(m) {
+        return {'<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','&':'&amp;'}[m];
+      });
+    }
+
+    // ===== RATE LIMITER =====
+    const rateLimiter = {
+      clicks: [],
+      maxClicksPerSecond: 20,
+      maxClicksPerMinute: 200,
+      
+      canClick() {
+        const now = Date.now();
+        this.clicks = this.clicks.filter(t => now - t < 60000);
+        
+        const lastSecond = this.clicks.filter(t => now - t < 1000).length;
+        const lastMinute = this.clicks.length;
+        
+        if (lastSecond >= this.maxClicksPerSecond || lastMinute >= this.maxClicksPerMinute) {
+          flagSuspiciousActivity('rateLimit', { lastSecond, lastMinute });
+          return false;
+        }
+        
+        this.clicks.push(now);
+        return true;
+      }
+    };
+
+    // ===== ПРОВЕРКА ЦЕЛОСТНОСТИ ДАННЫХ =====
+    function generateDataHash(data) {
+      const str = JSON.stringify(data);
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return Math.abs(hash).toString(36);
+    }
+
+    // ===== ПЕРЕМЕННЫЕ МОНЕТИЗАЦИИ =====
+    let adBoostActive = false;
+    let adBoostEndTime = 0;
+    let adBoostInterval = null;
+    let isPremium = false;
+    let hasBattlePass = false;
+
+    const AD_BOOST_DURATION = 30 * 60 * 1000; // 30 минут
+    const AD_BOOST_MULTIPLIER = 2;
+    const INSTANT_AUTOCLICK_COST = 50; // кристаллов
+    const INSTANT_AUTOCLICK_DURATION = 60 * 60 * 1000; // 1 час
 
     // ===== ГИБРИДНАЯ АВТОРИЗАЦИЯ =====
     
@@ -323,8 +571,8 @@
           uid = Object.keys(users)[0];
           
           await db.ref(`users/${uid}`).update({
-            display_name: tgUser.first_name || 'Player',
-            username: tgUser.username || '',
+            display_name: sanitizeInput(tgUser.first_name || 'Player'),
+            username: sanitizeInput(tgUser.username || ''),
             photo_url: tgUser.photo_url || '',
             last_login_at: firebase.database.ServerValue.TIMESTAMP,
             last_device: isMobileDevice ? 'mobile' : 'desktop',
@@ -340,8 +588,8 @@
               tg_user_id: tgUser.id,
               pc_google_id: null
             },
-            display_name: tgUser.first_name || 'Player',
-            username: tgUser.username || '',
+            display_name: sanitizeInput(tgUser.first_name || 'Player'),
+            username: sanitizeInput(tgUser.username || ''),
             photo_url: tgUser.photo_url || '',
             tokens: 0,
             crystals: 0,
@@ -354,7 +602,7 @@
           
           await db.ref(`leaderboard/${uid}`).set({
             id: uid,
-            name: tgUser.first_name || 'Player',
+            name: sanitizeInput(tgUser.first_name || 'Player'),
             score: 0,
             crystals: 0,
             clickPower: 1,
@@ -364,7 +612,7 @@
         
         user = { 
           uid, 
-          displayName: tgUser.first_name || 'Player',
+          displayName: sanitizeInput(tgUser.first_name || 'Player'),
           photoURL: tgUser.photo_url || ''
         };
         
@@ -416,7 +664,7 @@
               tg_user_id: null,
               pc_google_id: googleUser.uid
             },
-            display_name: googleUser.displayName || 'Player',
+            display_name: sanitizeInput(googleUser.displayName || 'Player'),
             email: googleUser.email || '',
             photo_url: googleUser.photoURL || '',
             tokens: 0,
@@ -428,7 +676,7 @@
           });
         } else {
           await userRef.update({
-            display_name: googleUser.displayName || 'Player',
+            display_name: sanitizeInput(googleUser.displayName || 'Player'),
             photo_url: googleUser.photoURL || '',
             last_login_at: firebase.database.ServerValue.TIMESTAMP,
             'auth_methods/pc_google_id': googleUser.uid
@@ -480,7 +728,7 @@
       const authButtons = document.getElementById('authButtons');
       authButtons.innerHTML = `
         <div class="auth-error">
-          ❌ ${message}
+          ❌ ${escapeHTML(message)}
         </div>
         <button class="click-button" onclick="location.reload()" style="margin-top: 10px;">
           🔄 Retry
@@ -502,9 +750,13 @@
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
     let scoreListener = null, dualClickActive = false, lastClickTime = 0;
+    let serverClickPower = 1;
 
     const MAX_CLICK_POWER = 100; let suspiciousFlags = 0; const MAX_SUSPICIOUS_FLAGS = 5;
     const maxAutoclickerDuration = 4 * 60 * 60 * 1000; const OFFLINE_LIMIT = 4 * 60 * 60 * 1000;
+    const MAX_MINI_GAMES_PER_DAY = 10;
+    const MINI_GAME_ENTRY_FEE = 100;
+    const MINI_GAME_REWARD = 500;
 
     const allAchievements = {
       superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
@@ -529,7 +781,229 @@
       "Skip signing in — miss the rewards!"
     ];
 
-    // Вспомогательная функция форматирования времени из секунд
+    // ===== ФУНКЦИИ МОНЕТИЗАЦИИ =====
+
+    /**
+     * Активирует Ad Boost: x2 Click Power на 30 минут
+     * Использует смарт-линк EffectiveCPM или открывает рекламу
+     */
+    function activateAdBoost() {
+      if (!user) {
+        showMessage('Sign in to use Ad Boost!');
+        return;
+      }
+      
+      if (adBoostActive) {
+        const remaining = Math.max(0, adBoostEndTime - Date.now());
+        const minutes = Math.floor(remaining / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        showMessage(`Ad Boost already active! ${minutes}:${String(seconds).padStart(2, '0')} remaining`);
+        return;
+      }
+      
+      // Открываем рекламу через смарт-линк EffectiveCPM
+      const adLink = 'https://www.effectivecpmnetwork.com/fi7bnefix?key=5a3d8d03414fa033d097fed7146d0903';
+      
+      // Показываем сообщение пользователю
+      showMessage('📺 Opening ad... Please watch to activate boost!');
+      
+      // Открываем рекламу в новом окне/вкладке
+      const adWindow = window.open(adLink, '_blank', 'width=800,height=600');
+      
+      // Если окно заблокировано, пробуем открыть в текущем окне (для Telegram Mini App)
+      if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
+        // В Telegram Mini App используем window.location или если есть Telegram WebApp - открываем ссылку
+        if (window.Telegram?.WebApp?.openLink) {
+          window.Telegram.WebApp.openLink(adLink);
+        } else if (window.Telegram?.WebApp?.openTelegramLink) {
+          // Альтернативный метод для Telegram
+          window.location.href = adLink;
+          // Возвращаемся обратно после небольшой задержки
+          setTimeout(() => {
+            window.history.back();
+          }, 500);
+        } else {
+          window.open(adLink, '_self');
+        }
+        
+        // Даем буст даже если окно не открылось (для удобства пользователей в Telegram)
+        setTimeout(() => {
+          applyAdBoost();
+        }, 3000);
+      } else {
+        // Для десктопа - даем буст сразу после открытия окна
+        setTimeout(() => {
+          applyAdBoost();
+        }, 2000);
+      }
+    }
+    
+    /**
+     * Применяет эффект Ad Boost
+     */
+    function applyAdBoost() {
+      if (!user) return;
+      
+      // Сохраняем оригинальный Click Power если еще не сохранен
+      if (!adBoostActive) {
+        originalClickPower = clickPower;
+      }
+      
+      adBoostActive = true;
+      adBoostEndTime = Date.now() + AD_BOOST_DURATION;
+      
+      // Применяем множитель
+      clickPower = Math.min(originalClickPower * AD_BOOST_MULTIPLIER, MAX_CLICK_POWER);
+      serverClickPower = clickPower;
+      
+      // Обновляем UI
+      const adBoostBtn = document.getElementById('adBoostBtn');
+      adBoostBtn.textContent = '🔥 x2 Active!';
+      adBoostBtn.classList.add('ad-boost-active');
+      adBoostBtn.classList.remove('ad-boost-btn');
+      
+      const adBoostTimer = document.getElementById('adBoostTimer');
+      adBoostTimer.style.display = 'block';
+      
+      // Запускаем таймер обратного отсчета
+      if (adBoostInterval) clearInterval(adBoostInterval);
+      adBoostInterval = setInterval(updateAdBoostTimer, 1000);
+      
+      showMessage('🔥 x2 Click Power activated for 30 minutes!');
+      updateClickPowerBar();
+      updateProfilePanel();
+      submitScore();
+      
+      // Сохраняем в Firebase
+      db.ref(`leaderboard/${user.uid}`).update({
+        adBoostActive: true,
+        adBoostEndTime: adBoostEndTime,
+        adBoostOriginalPower: originalClickPower,
+        lastUpdate: Date.now()
+      });
+    }
+    
+    /**
+     * Обновляет таймер Ad Boost
+     */
+    function updateAdBoostTimer() {
+      if (!adBoostActive) {
+        if (adBoostInterval) {
+          clearInterval(adBoostInterval);
+          adBoostInterval = null;
+        }
+        return;
+      }
+      
+      const now = Date.now();
+      const remaining = Math.max(0, adBoostEndTime - now);
+      
+      if (remaining <= 0) {
+        deactivateAdBoost();
+        return;
+      }
+      
+      const minutes = Math.floor(remaining / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+      document.getElementById('adBoostTimeLeft').textContent = 
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    
+    /**
+     * Деактивирует Ad Boost
+     */
+    function deactivateAdBoost() {
+      adBoostActive = false;
+      adBoostEndTime = 0;
+      
+      if (adBoostInterval) {
+        clearInterval(adBoostInterval);
+        adBoostInterval = null;
+      }
+      
+      // Возвращаем оригинальный Click Power
+      if (originalClickPower) {
+        clickPower = originalClickPower;
+        serverClickPower = originalClickPower;
+        originalClickPower = null;
+      }
+      
+      // Обновляем UI
+      const adBoostBtn = document.getElementById('adBoostBtn');
+      adBoostBtn.textContent = '▶ Watch Ad (Free)';
+      adBoostBtn.classList.add('ad-boost-btn');
+      adBoostBtn.classList.remove('ad-boost-active');
+      
+      document.getElementById('adBoostTimer').style.display = 'none';
+      
+      showMessage('Ad Boost expired! Watch another ad to reactivate.');
+      updateClickPowerBar();
+      updateProfilePanel();
+      submitScore();
+      
+      // Обновляем Firebase
+      if (user) {
+        db.ref(`leaderboard/${user.uid}`).update({
+          adBoostActive: false,
+          adBoostEndTime: 0,
+          lastUpdate: Date.now()
+        });
+      }
+    }
+    
+    /**
+     * Покупка Instant Autoclicker за кристаллы
+     */
+    function buyInstantAutoclick() {
+      if (!user) {
+        showMessage('Sign in to buy Instant Autoclick!');
+        return;
+      }
+      
+      if (crystals < INSTANT_AUTOCLICK_COST) {
+        showMessage(`Not enough crystals! Need ${INSTANT_AUTOCLICK_COST} 💎, you have ${crystals} 💎`);
+        return;
+      }
+      
+      // Списываем кристаллы
+      db.ref(`leaderboard/${user.uid}`).transaction(data => {
+        if ((data.crystals || 0) >= INSTANT_AUTOCLICK_COST) {
+          return { ...data, crystals: data.crystals - INSTANT_AUTOCLICK_COST };
+        }
+        return undefined;
+      }).then(result => {
+        if (result.committed) {
+          crystals = result.snapshot.val().crystals || 0;
+          
+          // Активируем автокликер на 1 час
+          startAutoclicker(INSTANT_AUTOCLICK_DURATION, true);
+          
+          showMessage(`⚡ Instant Autoclick activated for 1 hour! -${INSTANT_AUTOCLICK_COST} 💎`);
+          updateProfilePanel();
+          updateAutoclickerShop();
+          submitScore();
+        } else {
+          showMessage('Failed to purchase. Try again.');
+        }
+      });
+    }
+    
+    /**
+     * Заглушка для Premium и Battle Pass
+     */
+    function showComingSoon(feature) {
+      showMessage(`🚧 ${feature} is coming soon! Payment system is being integrated.`);
+      
+      // Можно добавить аналитику здесь
+      if (user) {
+        db.ref(`analytics/coming_soon_clicks`).push({
+          uid: user.uid,
+          feature: feature,
+          timestamp: Date.now()
+        });
+      }
+    }
+
     function formatTimeFromSeconds(totalSeconds) {
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -542,7 +1016,6 @@
       }
     }
 
-    // Обновление только отображения времени онлайн (без перерисовки всей панели)
     function updateOnlineTimeDisplay(progress) {
       const tasksList = document.getElementById("tasksList");
       if (!tasksList || !tasksList.children.length) return;
@@ -572,6 +1045,7 @@
       if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
       if (tempBoostTimeout) { clearTimeout(tempBoostTimeout); tempBoostTimeout = null; }
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
+      if (adBoostInterval) { clearInterval(adBoostInterval); adBoostInterval = null; }
       if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; }
       if (user) { db.ref(`hourlyBonus/${user.uid}`).off('value'); }
     }
@@ -597,11 +1071,360 @@
       else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); }
     }
 
-    function getMaxReasonableClickPower() { let mp = clickPower; if (dualClickActive) mp *= 2; if (superAutoclicker.active) mp *= superAutoclicker.multiplier; return Math.min(mp * 1.5, MAX_CLICK_POWER); }
-    function flagSuspiciousActivity(type, details) { suspiciousFlags++; const w = document.getElementById('antiCheatWarning'); w.style.display = 'block'; setTimeout(() => w.style.display = 'none', 3000); if (user) db.ref(`suspiciousActivity/${user.uid}`).push({ type, details, flags: suspiciousFlags, timestamp: Date.now() }); if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { if (user) db.ref(`banned/${user.uid}`).set({ reason: 'Suspicious', flags: suspiciousFlags, bannedAt: Date.now() }); showMessage('🚫 Suspended'); signOut(); } }
+    function getMaxReasonableClickPower() { let mp = clickPower; if (dualClickActive) mp *= 2; if (superAutoclicker.active) mp *= superAutoclicker.multiplier; if (adBoostActive) mp *= AD_BOOST_MULTIPLIER; return Math.min(mp * 1.5, MAX_CLICK_POWER); }
+    function flagSuspiciousActivity(type, details) { 
+      suspiciousFlags++; 
+      const w = document.getElementById('antiCheatWarning'); 
+      w.style.display = 'block'; 
+      setTimeout(() => w.style.display = 'none', 3000); 
+      if (user) {
+        const hash = generateDataHash({ type, details, timestamp: Date.now() });
+        db.ref(`suspiciousActivity/${user.uid}`).push({ 
+          type, 
+          details, 
+          flags: suspiciousFlags, 
+          timestamp: Date.now(),
+          hash 
+        }); 
+      }
+      if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { 
+        if (user) db.ref(`banned/${user.uid}`).set({ 
+          reason: 'Suspicious', 
+          flags: suspiciousFlags, 
+          bannedAt: Date.now() 
+        }); 
+        showMessage('🚫 Suspended'); 
+        signOut(); 
+      } 
+    }
 
-    function startScoreListener() { if (!user) return; if (scoreListener) db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); let ls = score; scoreListener = db.ref(`leaderboard/${user.uid}/score`).on("value", s => { const ns = s.val() || 0; if (ns - ls > 100000 && ls > 0) flagSuspiciousActivity('scoreJump', { from: ls, to: ns }); ls = ns; if (ns !== score) { score = ns; updateCounterDisplay(); updateProfilePanel(); } }); }
-    function stopScoreListener() { if (scoreListener && user) { db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); scoreListener = null; } }
+    async function safeAddScore(amount) {
+      if (!user) throw new Error('Not authenticated');
+      
+      try {
+        const addScore = functions.httpsCallable('addScore');
+        const result = await addScore({ 
+          amount: amount,
+          clickPower: serverClickPower,
+          timestamp: Date.now(),
+          hash: generateDataHash({ amount, uid: user.uid, timestamp: Date.now() })
+        });
+        
+        return result.data;
+      } catch (error) {
+        console.error('Safe score add error:', error);
+        return await fallbackScoreAdd(amount);
+      }
+    }
+    
+    async function fallbackScoreAdd(amount) {
+      if (amount > MAX_CLICK_POWER * 2) {
+        flagSuspiciousActivity('largeScoreAdd', { amount });
+        return false;
+      }
+      
+      const snapshot = await db.ref(`leaderboard/${user.uid}/score`).once('value');
+      const currentScore = snapshot.val() || 0;
+      
+      if (amount > 1000 && suspiciousFlags < 2) {
+        const recentSnapshot = await db.ref(`clicks/${user.uid}`)
+          .orderByChild('timestamp')
+          .limitToLast(10)
+          .once('value');
+        
+        const recentClicks = [];
+        recentSnapshot.forEach(child => recentClicks.push(child.val()));
+        
+        if (recentClicks.length >= 10) {
+          const timeSpan = Date.now() - recentClicks[0].timestamp;
+          if (timeSpan < 1000) {
+            flagSuspiciousActivity('rapidClicks', { count: recentClicks.length, timeSpan });
+            return false;
+          }
+        }
+      }
+      
+      const result = await db.ref(`leaderboard/${user.uid}/score`)
+        .transaction(cs => (cs || 0) + amount);
+      
+      await db.ref(`clicks/${user.uid}`).push({
+        amount,
+        timestamp: Date.now(),
+        clickPower: serverClickPower
+      });
+      
+      return result.committed;
+    }
+
+    function startScoreListener() { 
+      if (!user) return; 
+      if (scoreListener) db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); 
+      let ls = score; 
+      scoreListener = db.ref(`leaderboard/${user.uid}/score`).on("value", s => { 
+        const ns = s.val() || 0; 
+        if (ns - ls > 100000 && ls > 0) {
+          flagSuspiciousActivity('scoreJump', { from: ls, to: ns }); 
+        }
+        ls = ns; 
+        if (ns !== score) { 
+          score = ns; 
+          updateCounterDisplay(); 
+          updateProfilePanel(); 
+        } 
+      }); 
+    }
+    
+    function stopScoreListener() { 
+      if (scoreListener && user) { 
+        db.ref(`leaderboard/${user.uid}/score`).off("value", scoreListener); 
+        scoreListener = null; 
+      } 
+    }
+
+    async function clickToken(event) {
+      if (!user || isAnimating) return;
+      
+      if (!rateLimiter.canClick()) {
+        showMessage('Slow down!');
+        return;
+      }
+      
+      const now = Date.now();
+      if (now - lastClickTime < 50) return;
+      lastClickTime = now;
+      
+      isAnimating = true;
+      
+      if (clickPower > serverClickPower * 2) {
+        flagSuspiciousActivity('clickPowerMismatch', { 
+          client: clickPower, 
+          server: serverClickPower 
+        });
+        clickPower = serverClickPower;
+        isAnimating = false;
+        return;
+      }
+      
+      const mr = getMaxReasonableClickPower();
+      if (clickPower > mr) { 
+        flagSuspiciousActivity('highClickPower', { clickPower, mr }); 
+        isAnimating = false; 
+        return; 
+      }
+      
+      if (event) { 
+        const rect = event.target.getBoundingClientRect(); 
+        spawnScorePopup(rect.left + rect.width/2 - 20, rect.top, clickPower); 
+      }
+      
+      const success = await safeAddScore(clickPower);
+      
+      if (success) { 
+        totalClicks++; 
+        updateTaskProgress("clickMarathon",1); 
+        updateTaskProgress("collectTokens",clickPower); 
+        updateTaskProgress("collectBigTokens",clickPower); 
+        updateTaskProgress("clickMasterWeekly",1); 
+        checkAchievements(); 
+        animateCounter(); 
+      }
+      
+      const btn = document.getElementById("mainClickButton"); 
+      btn.classList.add("pulse"); 
+      setTimeout(() => { 
+        btn.classList.remove("pulse"); 
+        isAnimating = false; 
+      }, 200);
+    }
+
+    function boostClickPowerTemporarily(amount, duration) { 
+      if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) { 
+        showMessage("Boost active!"); 
+        return; 
+      } 
+      originalClickPower = clickPower; 
+      clickPower = Math.min(clickPower + amount, MAX_CLICK_POWER); 
+      serverClickPower = clickPower;
+      tempBoostEndTime = Date.now() + duration; 
+      showMessage(`Boost: +${amount} power`); 
+      if (user) db.ref("leaderboard/" + user.uid).update({ 
+        tempBoostActive: true, 
+        tempBoostEndTime, 
+        tempBoostOriginalClickPower: originalClickPower, 
+        tempBoostAmount: amount, 
+        lastUpdate: Date.now() 
+      }); 
+      if (tempBoostTimeout) clearTimeout(tempBoostTimeout); 
+      tempBoostTimeout = setTimeout(() => { 
+        clickPower = originalClickPower; 
+        serverClickPower = originalClickPower;
+        showMessage("Boost ended"); 
+        updateClickPowerBar(); 
+        updateProfilePanel(); 
+        submitScore(); 
+        tempBoostTimeout = null; 
+        tempBoostEndTime = 0; 
+      }, duration); 
+    }
+    
+    function autoclickTick() { 
+      if (!user) { stopAutoclicker(); return; } 
+      clickToken(); 
+    }
+    
+    function startAutoclicker(duration, extendTime = false) { 
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } 
+      if (autoclickActive) { 
+        const rem = Math.max(0, autoclickEndTime - Date.now()); 
+        if (rem <= 0) stopAutoclicker(); 
+        autoclickEndTime = extendTime ? Date.now() + rem + duration : Date.now() + duration; 
+      } else { 
+        autoclickActive = true; 
+        autoclickEndTime = Date.now() + duration; 
+      }
+      
+      if (autoclickEndTime - Date.now() > maxAutoclickerDuration + 60000) {
+        flagSuspiciousActivity('longAutoclicker', { duration: autoclickEndTime - Date.now() });
+        autoclickEndTime = Date.now() + maxAutoclickerDuration;
+      }
+      
+      autoclickInterval = setInterval(autoclickTick, 1000); 
+      setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now()); 
+      autoclickerUses++; 
+      updateTaskProgress("autoclickerMaster", 1); 
+      updateProfilePanel(); 
+      submitScore(); 
+      if (user) db.ref("leaderboard/" + user.uid).update({ 
+        autoclickActive: true, 
+        autoclickEndTime, 
+        lastUpdate: Date.now() 
+      }).catch(() => {}); 
+    }
+    
+    function stopAutoclicker() { 
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } 
+      autoclickActive = false; 
+      autoclickEndTime = 0; 
+      updateProfilePanel(); 
+      submitScore(); 
+      if (user) db.ref("leaderboard/" + user.uid).update({ 
+        autoclickActive: false, 
+        autoclickEndTime: 0, 
+        lastUpdate: Date.now() 
+      }).catch(() => {}); 
+    }
+    
+    function activateFreeAutoclicker() { 
+      if (autoclickActive) showMessage("Already active!"); 
+      else { startAutoclicker(getAutoclickerDuration()); updateAutoclickerShop(); } 
+    }
+
+    function buyUpgrade(type) { 
+      if (type === "clickPower") { 
+        if (clickPower >= 8) { showMessage("Max level!"); return; } 
+        const cost = getClickPowerUpgradeCost(); 
+        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => { 
+          const ns = (cs || 0) - cost; 
+          return ns < 0 ? undefined : ns; 
+        }).then(tr => { 
+          if (tr.committed) { 
+            clickPower++; 
+            serverClickPower = clickPower;
+            updateClickPowerBar(); 
+            updateProfilePanel(); 
+            updateClickPowerCostText(); 
+            submitScore(); 
+            showMessage("Click Power upgraded!"); 
+          } else showMessage("Not enough tokens."); 
+        }); 
+      } 
+    }
+    
+    function upgradeAutoclicker() { 
+      if (autoclickerLevel >= 20) { showMessage("Max level!"); return; } 
+      const cost = getAutoclickerUpgradeCost(); 
+      if (score < cost.tokens || crystals < cost.crystals) { 
+        showMessage("Not enough resources!"); 
+        return; 
+      } 
+      db.ref(`leaderboard/${user.uid}`).transaction(d => 
+        ((d.score||0)>=cost.tokens && (d.crystals||0)>=cost.crystals) ? 
+        {...d, score: d.score - cost.tokens, crystals: d.crystals - cost.crystals, autoclickerLevel: (d.autoclickerLevel||1)+1} : 
+        undefined
+      ).then(tr => { 
+        if (tr.committed) { 
+          crystals = tr.snapshot.val().crystals; 
+          autoclickerLevel = tr.snapshot.val().autoclickerLevel || autoclickerLevel + 1; 
+          showMessage(`Autoclicker Lv${autoclickerLevel}!`); 
+          updateProfilePanel(); 
+          updateAutoclickerShop(); 
+          submitScore(); 
+        } else showMessage("Not enough resources."); 
+      }); 
+    }
+    
+    function buyLuckySpin(tc = 300, cc = 10) { 
+      if (!user) return showMessage("Sign in."); 
+      db.ref(`luckySpin/${user.uid}`).once("value").then(s => { 
+        const sd = s.val() || { spinsToday: 0, lastSpinDate: "" }, 
+              today = new Date().toDateString(); 
+        let st = sd.lastSpinDate === today ? sd.spinsToday : 0; 
+        if (st >= 3) return showMessage("Daily limit!"); 
+        if (score < tc || crystals < cc) return showMessage("Not enough!"); 
+        db.ref(`leaderboard/${user.uid}`).transaction(d => 
+          ((d.score||0)>=tc && (d.crystals||0)>=cc) ? 
+          {...d, score: d.score - tc, crystals: d.crystals - cc} : 
+          undefined
+        ).then(r => { 
+          if (r.committed) { 
+            crystals = r.snapshot.val().crystals; 
+            db.ref(`luckySpin/${user.uid}`).update({ spinsToday: st+1, lastSpinDate: today }); 
+            const rand = Math.random(); 
+            if (rand < 0.4) { 
+              db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+Math.floor(500+Math.random()*1500)); 
+              showMessage('+tokens!'); 
+            } else if (rand < 0.7) { 
+              crystals += Math.floor(10+Math.random()*20); 
+              showMessage('+💎!'); 
+              updateProfilePanel(); 
+            } else if (rand < 0.85) boostClickPowerTemporarily(clickPower, 300000); 
+            else startAutoclicker(600000, true); 
+            submitScore(); 
+          } 
+        }); 
+      }); 
+    }
+    
+    function buySuperAutoclicker(mult, dur, tc, cc) { 
+      if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) 
+        return showMessage("Already active!"); 
+      if (!user) return showMessage("Sign in."); 
+      if (score < tc || crystals < cc) return showMessage("Not enough!"); 
+      db.ref(`leaderboard/${user.uid}`).transaction(d => 
+        ((d.score||0)>=tc && (d.crystals||0)>=cc) ? 
+        {...d, score: d.score - tc, crystals: d.crystals - cc, superAutoclicker:{active:true, multiplier:mult, endTime:Date.now()+dur}} : 
+        undefined
+      ).then(r => { 
+        if (r.committed) { 
+          crystals = r.snapshot.val().crystals; 
+          superAutoclicker = { active: true, multiplier: mult, endTime: Date.now() + dur }; 
+          if (superAutoclickInterval) clearInterval(superAutoclickInterval); 
+          superAutoclickInterval = setInterval(() => { 
+            if (!user) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; return; } 
+            db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0) + clickPower * mult); 
+            submitScore(); 
+          }, 1000); 
+          setTimeout(() => { 
+            if (superAutoclickInterval) clearInterval(superAutoclickInterval); 
+            superAutoclicker = { active: false, multiplier: 1, endTime: 0 }; 
+            showMessage("Super ended!"); 
+          }, dur); 
+          showMessage(`Super x${mult} activated!`); 
+          updateProfilePanel(); 
+          submitScore(); 
+        } 
+      }); 
+    }
 
     function updateProfilePanel() {
       document.getElementById('profileClickPower').innerText = Math.min(clickPower, 8);
@@ -618,15 +1441,20 @@
       }
       
       let lv = 1; for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) lv = i + 2; else break; }
-      document.getElementById('playerLevel').innerText = lv; document.getElementById('profileTokens').innerText = score;
+      document.getElementById('playerLevel').innerText = lv; 
+      document.getElementById('profileTokens').innerText = score;
       
       const platform = isTelegramMiniApp ? '📱 Telegram' : (isMobileDevice ? '📱 Google' : '💻 Google');
-      document.getElementById('profileName').innerHTML = `${user?.displayName || 'Anonymous'} <small style="color:#888;font-size:10px;">${platform}</small>`;
+      document.getElementById('profileName').textContent = user?.displayName || 'Anonymous';
+      const platformSpan = document.createElement('small');
+      platformSpan.style.cssText = 'color:#888;font-size:10px;';
+      platformSpan.textContent = ` ${platform}`;
+      document.getElementById('profileName').appendChild(platformSpan);
       
       document.getElementById('referralLink').value = generateReferralLink();
-      document.getElementById('profileCrystals').innerHTML = `${crystals || 0} 💎`;
+      document.getElementById('profileCrystals').textContent = `${crystals || 0} 💎`;
       if (user) db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; });
-      const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.innerText = 'Max level!'; lm.classList.add('show'); } else lm.classList.remove('show');
+      const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.textContent = 'Max level!'; lm.classList.add('show'); } else lm.classList.remove('show');
     }
     
     function updateClickPowerBar() { document.getElementById("clickPowerDisplay").innerText = clickPower; document.getElementById("clickPowerBar").style.width = Math.min((clickPower / 8) * 100, 100) + "%"; updateClickPowerCostText(); }
@@ -660,7 +1488,12 @@
     function togglePanel(pn) {
       const panel = document.getElementById(pn); if (!panel) return;
       const io = panel.classList.contains('open');
-      if (miniGameActive) endMiniGame(false);
+      
+      // Останавливаем мини-игру, если она активна
+      if (miniGameActive) {
+        endMiniGame(false, true);
+      }
+      
       document.getElementById("miniGamePanel").style.display = "none";
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
       document.getElementById('shopBtn').innerHTML = 'Shop ▼'; 
@@ -678,69 +1511,21 @@
     function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
 
     function spawnScorePopup(x, y, amount) {
-      const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = `+${amount}`;
-      popup.style.left = `${x}px`; popup.style.top = `${y}px`;
-      popup.style.setProperty('--dx20', `${(Math.random()-0.5)*30}px`); popup.style.setProperty('--dx50', `${(Math.random()-0.5)*60}px`);
-      popup.style.setProperty('--dx100', `${(Math.random()-0.5)*100}px`); popup.style.setProperty('--rot20', `${(Math.random()-0.5)*30}deg`);
-      popup.style.setProperty('--rot50', `${(Math.random()-0.5)*60}deg`); popup.style.setProperty('--rot100', `${(Math.random()-0.5)*120}deg`);
+      const popup = document.createElement('div'); 
+      popup.className = 'score-popup'; 
+      popup.textContent = `+${amount}`;
+      popup.style.left = `${x}px`; 
+      popup.style.top = `${y}px`;
+      popup.style.setProperty('--dx20', `${(Math.random()-0.5)*30}px`); 
+      popup.style.setProperty('--dx50', `${(Math.random()-0.5)*60}px`);
+      popup.style.setProperty('--dx100', `${(Math.random()-0.5)*100}px`); 
+      popup.style.setProperty('--rot20', `${(Math.random()-0.5)*30}deg`);
+      popup.style.setProperty('--rot50', `${(Math.random()-0.5)*60}deg`); 
+      popup.style.setProperty('--rot100', `${(Math.random()-0.5)*120}deg`);
       popup.style.color = ['#ffd700','#ffcc00','#ffe44d','#ffaa00','#ffc107','#ffeb3b'][Math.floor(Math.random()*6)];
-      document.body.appendChild(popup); setTimeout(() => popup.remove(), 1000);
+      document.body.appendChild(popup); 
+      setTimeout(() => popup.remove(), 1000);
     }
-
-    function clickToken(event) {
-      if (!user || isAnimating) return;
-      
-      const now = Date.now();
-      if (now - lastClickTime < 50) return;
-      lastClickTime = now;
-      
-      isAnimating = true;
-      const mr = getMaxReasonableClickPower();
-      if (clickPower > mr) { flagSuspiciousActivity('highClickPower', { clickPower, mr }); isAnimating = false; return; }
-      if (event) { const rect = event.target.getBoundingClientRect(); spawnScorePopup(rect.left + rect.width/2 - 20, rect.top, clickPower); }
-      db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+clickPower).then(tr => {
-        if (tr.committed) { totalClicks++; updateTaskProgress("clickMarathon",1); updateTaskProgress("collectTokens",clickPower); updateTaskProgress("collectBigTokens",clickPower); updateTaskProgress("clickMasterWeekly",1); checkAchievements(); animateCounter(); }
-        const btn = document.getElementById("mainClickButton"); btn.classList.add("pulse"); setTimeout(() => { btn.classList.remove("pulse"); isAnimating = false; }, 200);
-      }).catch(() => { isAnimating = false; });
-    }
-
-    function boostClickPowerTemporarily(amount, duration) { if (tempBoostTimeout && Date.now() < (tempBoostEndTime || 0)) { showMessage("Boost active!"); return; } originalClickPower = clickPower; clickPower = Math.min(clickPower + amount, MAX_CLICK_POWER); tempBoostEndTime = Date.now() + duration; showMessage(`Boost: +${amount} power`); if (user) db.ref("leaderboard/" + user.uid).update({ tempBoostActive: true, tempBoostEndTime, tempBoostOriginalClickPower: originalClickPower, tempBoostAmount: amount, lastUpdate: Date.now() }); if (tempBoostTimeout) clearTimeout(tempBoostTimeout); tempBoostTimeout = setTimeout(() => { clickPower = originalClickPower; showMessage("Boost ended"); updateClickPowerBar(); updateProfilePanel(); submitScore(); tempBoostTimeout = null; tempBoostEndTime = 0; }, duration); }
-    function autoclickTick() { if (!user) { stopAutoclicker(); return; } clickToken(); }
-    
-    function startAutoclicker(duration, extendTime = false) { 
-      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } 
-      if (autoclickActive) { 
-        const rem = Math.max(0, autoclickEndTime - Date.now()); 
-        if (rem <= 0) stopAutoclicker(); 
-        autoclickEndTime = extendTime ? Date.now() + rem + duration : Date.now() + duration; 
-      } else { 
-        autoclickActive = true; 
-        autoclickEndTime = Date.now() + duration; 
-      } 
-      autoclickInterval = setInterval(autoclickTick, 1000); 
-      setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now()); 
-      autoclickerUses++; 
-      updateTaskProgress("autoclickerMaster", 1); 
-      updateProfilePanel(); 
-      submitScore(); 
-      if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: true, autoclickEndTime, lastUpdate: Date.now() }).catch(() => {}); 
-    }
-    
-    function stopAutoclicker() { 
-      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } 
-      autoclickActive = false; 
-      autoclickEndTime = 0; 
-      updateProfilePanel(); 
-      submitScore(); 
-      if (user) db.ref("leaderboard/" + user.uid).update({ autoclickActive: false, autoclickEndTime: 0, lastUpdate: Date.now() }).catch(() => {}); 
-    }
-    
-    function activateFreeAutoclicker() { if (autoclickActive) showMessage("Already active!"); else { startAutoclicker(getAutoclickerDuration()); updateAutoclickerShop(); } }
-
-    function buyUpgrade(type) { if (type === "clickPower") { if (clickPower >= 8) { showMessage("Max level!"); return; } const cost = getClickPowerUpgradeCost(); db.ref(`leaderboard/${user.uid}/score`).transaction(cs => { const ns = (cs || 0) - cost; return ns < 0 ? undefined : ns; }).then(tr => { if (tr.committed) { clickPower++; updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); submitScore(); showMessage("Click Power upgraded!"); } else showMessage("Not enough tokens."); }); } }
-    function upgradeAutoclicker() { if (autoclickerLevel >= 20) { showMessage("Max level!"); return; } const cost = getAutoclickerUpgradeCost(); if (score < cost.tokens || crystals < cost.crystals) { showMessage("Not enough resources!"); return; } db.ref(`leaderboard/${user.uid}`).transaction(d => ((d.score||0)>=cost.tokens && (d.crystals||0)>=cost.crystals) ? {...d, score: d.score - cost.tokens, crystals: d.crystals - cost.crystals, autoclickerLevel: (d.autoclickerLevel||1)+1} : undefined).then(tr => { if (tr.committed) { crystals = tr.snapshot.val().crystals; autoclickerLevel = tr.snapshot.val().autoclickerLevel || autoclickerLevel + 1; showMessage(`Autoclicker Lv${autoclickerLevel}!`); updateProfilePanel(); updateAutoclickerShop(); submitScore(); } else showMessage("Not enough resources."); }); }
-    function buyLuckySpin(tc = 300, cc = 10) { if (!user) return showMessage("Sign in."); db.ref(`luckySpin/${user.uid}`).once("value").then(s => { const sd = s.val() || { spinsToday: 0, lastSpinDate: "" }, today = new Date().toDateString(); let st = sd.lastSpinDate === today ? sd.spinsToday : 0; if (st >= 3) return showMessage("Daily limit!"); if (score < tc || crystals < cc) return showMessage("Not enough!"); db.ref(`leaderboard/${user.uid}`).transaction(d => ((d.score||0)>=tc && (d.crystals||0)>=cc) ? {...d, score: d.score - tc, crystals: d.crystals - cc} : undefined).then(r => { if (r.committed) { crystals = r.snapshot.val().crystals; db.ref(`luckySpin/${user.uid}`).update({ spinsToday: st+1, lastSpinDate: today }); const rand = Math.random(); if (rand < 0.4) { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+Math.floor(500+Math.random()*1500)); showMessage('+tokens!'); } else if (rand < 0.7) { crystals += Math.floor(10+Math.random()*20); showMessage('+💎!'); updateProfilePanel(); } else if (rand < 0.85) boostClickPowerTemporarily(clickPower, 300000); else startAutoclicker(600000, true); submitScore(); } }); }); }
-    function buySuperAutoclicker(mult, dur, tc, cc) { if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) return showMessage("Already active!"); if (!user) return showMessage("Sign in."); if (score < tc || crystals < cc) return showMessage("Not enough!"); db.ref(`leaderboard/${user.uid}`).transaction(d => ((d.score||0)>=tc && (d.crystals||0)>=cc) ? {...d, score: d.score - tc, crystals: d.crystals - cc, superAutoclicker:{active:true, multiplier:mult, endTime:Date.now()+dur}} : undefined).then(r => { if (r.committed) { crystals = r.snapshot.val().crystals; superAutoclicker = { active: true, multiplier: mult, endTime: Date.now() + dur }; if (superAutoclickInterval) clearInterval(superAutoclickInterval); superAutoclickInterval = setInterval(() => { if (!user) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; return; } db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0) + clickPower * mult); submitScore(); }, 1000); setTimeout(() => { if (superAutoclickInterval) clearInterval(superAutoclickInterval); superAutoclicker = { active: false, multiplier: 1, endTime: 0 }; showMessage("Super ended!"); }, dur); showMessage(`Super x${mult} activated!`); updateProfilePanel(); submitScore(); } }); }
 
     function renderTasks() { 
       if (isRenderingTasks) return; 
@@ -787,7 +1572,7 @@
           const div = document.createElement("div"); 
           
           if (tdd.completed || tdd.completions >= 1) {
-            div.innerHTML = `<span style="color:#00ffa6;">✅ ${task.description} - Done!</span>`; 
+            div.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(task.description)} - Done!</span>`; 
           } else { 
             const g = tdd.goal || task.goal, 
                   p = tdd.progress || 0, 
@@ -796,16 +1581,16 @@
                   cc = p >= g; 
             
             if (task.id === "subscribeTwitter") {
-              div.innerHTML = `${task.description}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; 
+              div.innerHTML = `${escapeHTML(task.description)}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; 
             } else if (task.id === "onlineTime") {
               const progressTime = formatTimeFromSeconds(p);
               const goalTime = formatTimeFromSeconds(g);
-              div.innerHTML = `${task.description}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`;
+              div.innerHTML = `${escapeHTML(task.description)}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`;
               div.setAttribute('data-task-id', 'onlineTime');
             } else if (task.id === "miniGameChallenge") {
-              div.innerHTML = `${task.description}: ${p}/${g}<br><small>Reward: ${rt}</small>`; 
+              div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g}<br><small>Reward: ${rt}</small>`; 
             } else {
-              div.innerHTML = `${task.description}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; 
+              div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; 
             }
           } 
           list.appendChild(div); 
@@ -855,7 +1640,6 @@
           td.progress = np; 
           db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{});
           
-          // Обновляем только текст времени онлайн без перерисовки всей панели
           if (taskId === "onlineTime") {
             updateOnlineTimeDisplay(np);
           }
@@ -863,39 +1647,231 @@
       }).catch(()=>{}); 
     }
     
-    function claimTask(taskId) { if (!user) return showMessage("Sign in."); db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); const g = td.goal || task.goal; if ((td.progress||0) >= g) { const rw = td.reward || task.reward; if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); } else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); } else { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw); showMessage(`✅ +${rw} tokens!`); } db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); submitScore(); renderTasks(); }); } else showMessage(`${td.progress}/${g}`); }); }
-    function completeTwitterTask(taskId) { if (!user) return showMessage("Sign in."); db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return; if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+task.reward); showMessage(`✅ +${task.reward} tokens!`); submitScore(); renderTasks(); }); }); }
+    function claimTask(taskId) { 
+      if (!user) return showMessage("Sign in."); 
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { 
+        const td = s.val(), task = dailyTasks.find(t => t.id === taskId); 
+        if (!task || !td) return; 
+        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); 
+        const g = td.goal || task.goal; 
+        if ((td.progress||0) >= g) { 
+          const rw = td.reward || task.reward; 
+          if (task.rewardType === "crystals") { 
+            crystals += rw; 
+            showMessage(`✅ +${rw} 💎`); 
+          } else if (task.id === "autoclickerMaster") { 
+            startAutoclicker(300000, true); 
+            showMessage("✅ Free 5-min!"); 
+          } else { 
+            db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw); 
+            showMessage(`✅ +${rw} tokens!`); 
+          } 
+          db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { 
+            updateProfilePanel(); 
+            submitScore(); 
+            renderTasks(); 
+          }); 
+        } else showMessage(`${td.progress}/${g}`); 
+      }); 
+    }
+    
+    function completeTwitterTask(taskId) { 
+      if (!user) return showMessage("Sign in."); 
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => { 
+        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); 
+        if (!task) return; 
+        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!"); 
+        db.ref(`tasks/${user.uid}/${taskId}`).set({ 
+          progress: task.goal, 
+          lastReset: td.lastReset||new Date().toDateString(), 
+          completions: (td.completions||0)+1, 
+          completed: true 
+        }).then(() => { 
+          db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+task.reward); 
+          showMessage(`✅ +${task.reward} tokens!`); 
+          submitScore(); 
+          renderTasks(); 
+        }); 
+      }); 
+    }
 
     function startMiniGame() { 
-      if (score < 1000) return showMessage("Need 1000!");
-      if (miniGameActive) endMiniGame(false);
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
-      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
-      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-      miniGameActive = true; miniGameClicks = 0; 
-      document.getElementById("miniGamePanel").style.display = "block"; 
-      document.getElementById("miniGameClicks").innerText = 0; 
-      let tl = 10; document.getElementById("miniGameTimer").innerText = tl; 
-      if (miniGameTimer) clearInterval(miniGameTimer);
-      miniGameTimer = setInterval(() => { tl--; document.getElementById("miniGameTimer").innerText = tl; if (tl <= 0) endMiniGame(true); }, 1000); 
+      if (!user) return showMessage("Sign in to play!");
+      if (score < MINI_GAME_ENTRY_FEE) return showMessage(`Need ${MINI_GAME_ENTRY_FEE} tokens to play!`);
+      if (miniGameActive) return showMessage("Mini-game already active!");
+      
+      // Проверяем лимит игр на сегодня
+      const today = new Date().toDateString();
+      db.ref(`miniGameLimit/${user.uid}`).once('value').then(s => {
+        const data = s.val() || { gamesPlayed: 0, lastReset: today };
+        
+        // Сбрасываем счётчик если новый день
+        if (data.lastReset !== today) {
+          data.gamesPlayed = 0;
+          data.lastReset = today;
+        }
+        
+        // Проверяем лимит
+        if (data.gamesPlayed >= MAX_MINI_GAMES_PER_DAY) {
+          showMessage(`Daily limit reached! (${MAX_MINI_GAMES_PER_DAY} games)`);
+          return;
+        }
+        
+        // Закрываем все панели
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+        document.getElementById('shopBtn').innerHTML = 'Shop ▼';
+        document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
+        document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+        
+        // Списываем плату за вход
+        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
+          const currentScore = cs || 0;
+          if (currentScore < MINI_GAME_ENTRY_FEE) return undefined;
+          return currentScore - MINI_GAME_ENTRY_FEE;
+        }).then(result => {
+          if (!result.committed) {
+            showMessage("Failed to start mini-game!");
+            return;
+          }
+          
+          // Увеличиваем счётчик игр
+          data.gamesPlayed++;
+          db.ref(`miniGameLimit/${user.uid}`).set(data);
+          
+          // Запускаем мини-игру
+          miniGameActive = true; 
+          miniGameClicks = 0; 
+          document.getElementById("miniGamePanel").style.display = "block"; 
+          document.getElementById("miniGameClicks").innerText = "0"; 
+          
+          let timeLeft = 10; 
+          document.getElementById("miniGameTimer").innerText = timeLeft; 
+          
+          if (miniGameTimer) clearInterval(miniGameTimer);
+          
+          miniGameTimer = setInterval(() => { 
+            timeLeft--; 
+            document.getElementById("miniGameTimer").innerText = timeLeft; 
+            if (timeLeft <= 0) {
+              endMiniGame(false, false);
+            }
+          }, 1000);
+          
+          const gamesLeft = MAX_MINI_GAMES_PER_DAY - data.gamesPlayed;
+          showMessage(`Mini-game started! -${MINI_GAME_ENTRY_FEE} tokens (${gamesLeft} games left today)`);
+          updateProfilePanel();
+          submitScore();
+        }).catch(error => {
+          console.error("Mini-game start error:", error);
+          showMessage("Error starting mini-game!");
+        });
+      });
     }
-    function miniGameClick() { if (miniGameActive) { miniGameClicks++; document.getElementById("miniGameClicks").innerText = miniGameClicks; if (miniGameClicks >= 50) endMiniGame(true); } }
-    function endMiniGame(success = false) { 
-      if (!miniGameActive) return;
-      clearInterval(miniGameTimer); miniGameActive = false; miniGameTimer = null;
-      document.getElementById("miniGamePanel").style.display = "none"; 
-      if (success) { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+500); showMessage("+500 tokens!"); updateTaskProgress("miniGameChallenge", 1); submitScore(); } 
-      else showMessage("Mini-game closed!"); 
-      updateProfilePanel(); 
-    }
-
-    function checkAchievements() { if (!achievements.superClicker && totalClicks >= 10000) { achievements.superClicker = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Super Clicker!"); saveAchievements(); } if (!achievements.tokenHoarder && score >= 1000000) { achievements.tokenHoarder = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Token Hoarder!"); saveAchievements(); } if (!achievements.level5 && parseInt(document.getElementById("playerLevel").innerText) >= 5) { achievements.level5 = true; boostClickPowerTemporarily(2, 120000); showMessage("Achievement: Level 5!"); saveAchievements(); } }
-    function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
-    function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); } }
-
-    // ===== СИСТЕМА ОНЛАЙН-ТАЙМЕРА =====
     
+    function miniGameClick() { 
+      if (!miniGameActive) return; 
+      if (!user) {
+        endMiniGame(false, true);
+        return;
+      }
+      
+      miniGameClicks++; 
+      document.getElementById("miniGameClicks").innerText = miniGameClicks; 
+      
+      if (miniGameClicks >= 50) {
+        endMiniGame(true, false);
+      } 
+    }
+    
+    function endMiniGame(won = false, leftManually = false) { 
+      if (!miniGameActive) return;
+      
+      clearInterval(miniGameTimer); 
+      miniGameActive = false; 
+      miniGameTimer = null;
+      
+      document.getElementById("miniGamePanel").style.display = "none"; 
+      
+      if (!user) {
+        showMessage("Mini-game ended!");
+        return;
+      }
+      
+      if (won) { 
+        // Игрок победил - начисляем 500 токенов (чистая прибыль 400)
+        db.ref(`leaderboard/${user.uid}/score`).transaction(cs => {
+          return (cs || 0) + MINI_GAME_REWARD;
+        }).then(() => {
+          showMessage(`🎉 Victory! +${MINI_GAME_REWARD} tokens! (Profit: +${MINI_GAME_REWARD - MINI_GAME_ENTRY_FEE})`);
+          updateTaskProgress("miniGameChallenge", 1); 
+          submitScore(); 
+          updateProfilePanel(); 
+        }).catch(error => {
+          console.error("Mini-game reward error:", error);
+          showMessage("Error giving reward!");
+        });
+        
+      } else if (leftManually) { 
+        // Игрок сам вышел из игры
+        showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
+        updateProfilePanel();
+        
+      } else { 
+        // Время вышло - игрок проиграл
+        showMessage(`⏰ Time's up! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
+        updateProfilePanel();
+      }
+    }
+
+    function checkAchievements() { 
+      if (!achievements.superClicker && totalClicks >= 10000) { 
+        achievements.superClicker = true; 
+        boostClickPowerTemporarily(2, 120000); 
+        showMessage("Achievement: Super Clicker!"); 
+        saveAchievements(); 
+      } 
+      if (!achievements.tokenHoarder && score >= 1000000) { 
+        achievements.tokenHoarder = true; 
+        boostClickPowerTemporarily(2, 120000); 
+        showMessage("Achievement: Token Hoarder!"); 
+        saveAchievements(); 
+      } 
+      if (!achievements.level5 && parseInt(document.getElementById("playerLevel").innerText) >= 5) { 
+        achievements.level5 = true; 
+        boostClickPowerTemporarily(2, 120000); 
+        showMessage("Achievement: Level 5!"); 
+        saveAchievements(); 
+      } 
+    }
+    
+    function saveAchievements() { 
+      if (user) db.ref("achievements/" + user.uid).set(achievements); 
+    }
+    
+    function renderAchievements() { 
+      const list = document.getElementById('achievementsList'); 
+      list.innerHTML = ''; 
+      for (const k in allAchievements) { 
+        const a = achievements[k], ac = allAchievements[k]; 
+        const d = document.createElement('div'); 
+        d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; 
+        d.style.backgroundColor = a ? '#00ffa6' : '#222'; 
+        d.style.color = a ? '#000' : '#fff'; 
+        d.textContent = '';
+        const nameEl = document.createElement('strong');
+        nameEl.textContent = ac.name;
+        const descEl = document.createElement('br');
+        const rewardEl = document.createElement('em');
+        rewardEl.textContent = ac.reward;
+        d.appendChild(nameEl);
+        d.appendChild(document.createElement('br'));
+        d.appendChild(document.createTextNode(ac.description));
+        d.appendChild(document.createElement('br'));
+        d.appendChild(rewardEl);
+        list.appendChild(d); 
+      } 
+    }
+
     function startOnlineTimer() {
       if (onlineTimer) return;
       if (!isPageActive) return;
@@ -1072,14 +2048,86 @@
     function showTab(tab) { currentTab = tab; if (tab === "overall") { document.getElementById("overallTabBtn").classList.add("active"); document.getElementById("weeklyTabBtn").classList.remove("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; } else { document.getElementById("overallTabBtn").classList.remove("active"); document.getElementById("weeklyTabBtn").classList.add("active"); document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; } }
     function updateWeeklyScore() { if (user) db.ref(`weeklyLeaderboard/${getWeekKey()}/${user.uid}`).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, lastUpdate: Date.now() }); }
     function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
-    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
+    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, crystals, clickPower, autoclickActive, autoclickEndTime, tempBoostActive: !!tempBoostTimeout, tempBoostEndTime: tempBoostTimeout ? tempBoostEndTime : 0, adBoostActive, adBoostEndTime, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
 
-    function loadPlayerData(uid) { db.ref("leaderboard/" + uid).once("value").then(snapshot => { const data = snapshot.val(); if (!data) return; score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; autoclickActive = data.autoclickActive || false; autoclickEndTime = data.autoclickEndTime || 0; autoclickerLevel = data.autoclickerLevel || 1; suspiciousFlags = data.suspiciousFlags || 0; if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { showMessage('🚫 Suspended'); signOut(); return; } if (autoclickActive && autoclickEndTime > Date.now()) { const rem = autoclickEndTime - Date.now(); const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); if (offlineSec > 0) { const offlineTok = Math.floor(offlineSec * clickPower * 0.5); if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline`)); startAutoclicker(rem, false); } } else if (autoclickActive) stopAutoclicker(); updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); renderAchievements(); updateClickPowerCostText(); updateAutoclickerShop(); startScoreListener(); startBonusTimer(); startBonusListener(); startOnlineTimer(); checkWeeklyReset(); }); db.ref("achievements/" + uid).once("value").then(s => { if (s.val()) { achievements = s.val(); renderAchievements(); } }); }
+    function loadPlayerData(uid) { 
+      db.ref("leaderboard/" + uid).once("value").then(snapshot => { 
+        const data = snapshot.val(); 
+        if (!data) return; 
+        score = data.score || 0; 
+        crystals = data.crystals || 0; 
+        clickPower = data.clickPower || 1; 
+        serverClickPower = data.clickPower || 1;
+        autoclickActive = data.autoclickActive || false; 
+        autoclickEndTime = data.autoclickEndTime || 0; 
+        autoclickerLevel = data.autoclickerLevel || 1; 
+        suspiciousFlags = data.suspiciousFlags || 0;
+        
+        // Загружаем состояние Ad Boost
+        if (data.adBoostActive && data.adBoostEndTime > Date.now()) {
+          adBoostActive = true;
+          adBoostEndTime = data.adBoostEndTime;
+          originalClickPower = data.adBoostOriginalPower || clickPower;
+          clickPower = Math.min(originalClickPower * AD_BOOST_MULTIPLIER, MAX_CLICK_POWER);
+          serverClickPower = clickPower;
+          
+          // Обновляем UI
+          const adBoostBtn = document.getElementById('adBoostBtn');
+          adBoostBtn.textContent = '🔥 x2 Active!';
+          adBoostBtn.classList.add('ad-boost-active');
+          adBoostBtn.classList.remove('ad-boost-btn');
+          document.getElementById('adBoostTimer').style.display = 'block';
+          
+          if (adBoostInterval) clearInterval(adBoostInterval);
+          adBoostInterval = setInterval(updateAdBoostTimer, 1000);
+        } else if (data.adBoostActive) {
+          // Буст истек
+          deactivateAdBoost();
+        }
+        
+        if (suspiciousFlags >= MAX_SUSPICIOUS_FLAGS) { 
+          showMessage('🚫 Suspended'); 
+          signOut(); 
+          return; 
+        } 
+        if (autoclickActive && autoclickEndTime > Date.now()) { 
+          const rem = autoclickEndTime - Date.now(); 
+          const offlineSec = Math.floor(Math.min(rem, OFFLINE_LIMIT) / 1000); 
+          if (offlineSec > 0) { 
+            const offlineTok = Math.floor(offlineSec * clickPower * 0.5); 
+            if (offlineTok > 0) db.ref(`leaderboard/${uid}/score`).transaction(cs => (cs||0)+offlineTok).then(() => showMessage(`⏰ +${offlineTok} offline`)); 
+            startAutoclicker(rem, false); 
+          } 
+        } else if (autoclickActive) stopAutoclicker(); 
+        updateCounterDisplay(); 
+        updateClickPowerBar(); 
+        updateProfilePanel(); 
+        renderAchievements(); 
+        updateClickPowerCostText(); 
+        updateAutoclickerShop(); 
+        startScoreListener(); 
+        startBonusTimer(); 
+        startBonusListener(); 
+        startOnlineTimer(); 
+        checkWeeklyReset(); 
+      }); 
+      db.ref("achievements/" + uid).once("value").then(s => { 
+        if (s.val()) { 
+          achievements = s.val(); 
+          renderAchievements(); 
+        } 
+      }); 
+    }
 
     async function signOut() {
       stopOnlineTimer();
       stopScoreListener();
       cleanupAllTimers();
+      
+      // Деактивируем Ad Boost при выходе
+      if (adBoostActive) {
+        deactivateAdBoost();
+      }
       
       if (user) {
         if (suspiciousFlags > 0) {
@@ -1111,8 +2159,11 @@
       user = null;
       score = 0;
       clickPower = 1;
+      serverClickPower = 1;
       autoclickEndTime = 0;
       onlineTime = 0;
+      adBoostActive = false;
+      adBoostEndTime = 0;
       
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
@@ -1125,7 +2176,36 @@
       setupAuthUI();
     }
 
-    function saveReferrer(ruid) { if (!user || !ruid || isProcessingReferrer) return; isProcessingReferrer = true; db.ref(`leaderboard/${user.uid}`).once('value').then(s => { if (s.val()?.referral_bonus_claimed) { isProcessingReferrer = false; return; } db.ref(`leaderboard/${ruid}`).once('value').then(rs => { if (!rs.exists()) { isProcessingReferrer = false; return; } db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+50); showMessage('+50 referral!'); db.ref(`leaderboard/${user.uid}`).update({ referrer_uid: ruid, referral_bonus_claimed: true, lastUpdate: Date.now() }); db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now(), tokens_earned: 0, reward_claimed: false }); submitScore(); isProcessingReferrer = false; }); }); }
+    function saveReferrer(ruid) { 
+      if (!user || !ruid || isProcessingReferrer) return; 
+      isProcessingReferrer = true; 
+      db.ref(`leaderboard/${user.uid}`).once('value').then(s => { 
+        if (s.val()?.referral_bonus_claimed) { 
+          isProcessingReferrer = false; 
+          return; 
+        } 
+        db.ref(`leaderboard/${ruid}`).once('value').then(rs => { 
+          if (!rs.exists()) { 
+            isProcessingReferrer = false; 
+            return; 
+          } 
+          db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+50); 
+          showMessage('+50 referral!'); 
+          db.ref(`leaderboard/${user.uid}`).update({ 
+            referrer_uid: ruid, 
+            referral_bonus_claimed: true, 
+            lastUpdate: Date.now() 
+          }); 
+          db.ref(`referrals/${ruid}/${user.uid}`).set({ 
+            invited_at: Date.now(), 
+            tokens_earned: 0, 
+            reward_claimed: false 
+          }); 
+          submitScore(); 
+          isProcessingReferrer = false; 
+        }); 
+      }); 
+    }
 
     const profilePanel = document.getElementById('profilePanel');
     function isMobileOrTablet() { return window.innerWidth <= 1023; }
@@ -1145,12 +2225,12 @@
       }
     });
 
-    db.ref("leaderboard").on("value", s => { if (currentTab !== "overall") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td></tr>`).join(''); });
-    db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.rewardClaimed ? getRewardForRank(i+1)+' (Claimed)' : getRewardForRank(i+1)}</td></tr>`).join(''); });
+    db.ref("leaderboard").on("value", s => { if (currentTab !== "overall") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td></tr>`).join(''); });
+    db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${e.rewardClaimed ? getRewardForRank(i+1)+' (Claimed)' : getRewardForRank(i+1)}</td></tr>`).join(''); });
     showTab("overall"); setInterval(checkWeeklyReset, 600000);
     setInterval(() => { if (user) { updateProfilePanel(); if (score > 0) submitScore(); } }, 1000);
 
-    let mi = 0; const me = document.getElementById("motiveText"); setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1) % motivationalPhrases.length; me.innerText = motivationalPhrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
+    let mi = 0; const me = document.getElementById("motiveText"); setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1) % motivationalPhrases.length; me.textContent = motivationalPhrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
     window.gameAPI = { activateDualClick, deactivateDualClick };
   </script>
 </body>
