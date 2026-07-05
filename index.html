@@ -429,11 +429,13 @@
     let hasResonance = false, cloneEndTime = 0, cloneRemainingMs = 0;
     let suspiciousFlags = 0;
     let instantAutoclickTimerInterval = null;
+    let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
     
     const MAX_CLICK_POWER = 100; const MAX_SUSPICIOUS_FLAGS = 5;
     const INSTANT_AUTOCLICK_COST = 50; const INSTANT_AUTOCLICK_DURATION = 60 * 60 * 1000;
     const RESONANCE_COST = 750; const RESONANCE_CLICK_REQUIREMENT = 10000;
     const CLONE_COST = 300; const CLONE_DURATION = 100 * 60 * 1000;
+    const maxAutoclickerDuration = 4 * 60 * 60 * 1000;
 
     const levelUpRequirements = [50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000];
     const isTelegramMiniApp = !!(window.Telegram?.WebApp?.initData);
@@ -516,7 +518,21 @@
     function animateCounter() { const c = document.getElementById('counter'); c.classList.add('bounce'); setTimeout(() => c.classList.remove('bounce'), 200); }
     function showMessage(msg, isBonus) { if (isBonus) { const bm = document.getElementById("bonusMessage"); bm.innerText = msg; bm.style.opacity = 1; setTimeout(() => { bm.style.opacity = 0; }, 3000); } else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); } }
     function getClickPowerUpgradeCost() { return Math.floor(500 * Math.pow(6, clickPower - 1)); }
-    function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel-1)*(4*60*60*1000-60000)/19); }
+    function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel-1)*(maxAutoclickerDuration-60000)/19); }
+    function getAutoclickerUpgradeCost() { if (autoclickerLevel >= 10) return { tokens: 1500000, crystals: 1000 }; if (autoclickerLevel >= 6) return { tokens: 1000000+125000*(autoclickerLevel-6), crystals: 500+125*(autoclickerLevel-6) }; return { tokens: Math.round(1000*Math.pow(Math.pow(1000,1/5),autoclickerLevel-1)), crystals: 10+98*(autoclickerLevel-1) }; }
+
+    function cleanupAllTimers() {
+      if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
+      if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; }
+      if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; }
+      if (superAutoclickInterval) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; }
+      if (cloneTimeout) { clearTimeout(cloneTimeout); cloneTimeout = null; }
+      if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
+      if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
+      if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
+    }
+    window.addEventListener('beforeunload', cleanupAllTimers);
 
     function spawnScorePopup(x, y, amount) {
       const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = `+${amount}`;
@@ -548,7 +564,7 @@
     function autoclickTick() { if (!user) { stopAutoclicker(); return; } clickToken(); }
 
     // ==========================================
-    // АВТОКЛИКЕРЫ
+    // ОБЫЧНЫЙ АВТОКЛИКЕР
     // ==========================================
     function startAutoclicker(duration, extendTime = false) {
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
@@ -567,6 +583,8 @@
       db.ref(`leaderboard/${user.uid}`).update({ autoclickActive: false, autoclickEndTime: 0 }).catch(() => {});
     }
 
+    function activateFreeAutoclicker() { if (autoclickActive) showMessage("Already active!"); else { startAutoclicker(getAutoclickerDuration()); } }
+
     // ==========================================
     // INSTANT AUTOCLICK (1 час, работает оффлайн)
     // ==========================================
@@ -578,10 +596,8 @@
       instantAutoclickInterval = setInterval(autoclickTick, 1000);
       instantAutoclickTimerInterval = setInterval(updateInstantAutoclickTimer, 1000);
       updateInstantAutoclickTimer();
+      updateCloneButtonState();
       db.ref(`leaderboard/${user.uid}`).update({ instantAutoclickActive: true, instantAutoclickEndTime }).catch(() => {});
-      // Отключаем кнопку покупки
-      document.getElementById('buyInstantAutoclickBtn').disabled = true;
-      document.getElementById('buyInstantAutoclickBtn').textContent = '⚡ Active';
     }
 
     function stopInstantAutoclick() {
@@ -589,8 +605,7 @@
       if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; }
       instantAutoclickActive = false; instantAutoclickEndTime = 0;
       updateInstantAutoclickTimer();
-      document.getElementById('buyInstantAutoclickBtn').disabled = false;
-      document.getElementById('buyInstantAutoclickBtn').textContent = '⚡ Activate (1 hour)';
+      updateCloneButtonState();
       db.ref(`leaderboard/${user.uid}`).update({ instantAutoclickActive: false, instantAutoclickEndTime: 0 }).catch(() => {});
     }
 
@@ -601,18 +616,26 @@
         const rem = Math.max(0, instantAutoclickEndTime - Date.now());
         if (rem <= 0) { stopInstantAutoclick(); return; }
         display.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(rem/1000))}`;
-        btn.disabled = true;
-        btn.textContent = '⚡ Active';
+        btn.disabled = true; btn.textContent = '⚡ Active'; btn.style.background = '#555';
       } else {
         display.textContent = '';
-        btn.disabled = false;
-        btn.textContent = '⚡ Activate (1 hour)';
+        if (!dualClickActive && cloneRemainingMs <= 0) { btn.disabled = false; btn.textContent = '⚡ Activate (1 hour)'; btn.style.background = ''; }
+      }
+    }
+
+    function updateInstantAutoclickButtonState() {
+      const btn = document.getElementById('buyInstantAutoclickBtn');
+      if (dualClickActive || cloneRemainingMs > 0) {
+        btn.disabled = true; btn.textContent = '🔒 Blocked'; btn.style.background = '#555'; btn.title = 'Deactivate Clone first';
+      } else if (!instantAutoclickActive) {
+        btn.disabled = false; btn.textContent = '⚡ Activate (1 hour)'; btn.style.background = ''; btn.title = '';
       }
     }
 
     function buyInstantAutoclick() {
       if (!user) { showMessage('Sign in!'); return; }
       if (instantAutoclickActive) { showMessage('Already active!'); return; }
+      if (dualClickActive || cloneRemainingMs > 0) { showMessage('Clone is active! Deactivate it first.'); return; }
       if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; }
       crystals -= INSTANT_AUTOCLICK_COST;
       db.ref(`leaderboard/${user.uid}/crystals`).set(crystals);
@@ -630,11 +653,10 @@
       activateDualClick();
       cloneEndTime = Date.now() + duration;
       cloneRemainingMs = duration;
-      cloneTimeout = setTimeout(() => { deactivateDualClick(); cloneEndTime = 0; cloneRemainingMs = 0; updateCloneTimer(); }, duration);
+      cloneTimeout = setTimeout(() => { stopClone(); }, duration);
       cloneTimerInterval = setInterval(updateCloneTimer, 1000);
       updateCloneTimer();
-      document.getElementById('buyCloneBtn').disabled = true;
-      document.getElementById('buyCloneBtn').textContent = '👥 Active';
+      updateInstantAutoclickButtonState();
       db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, cloneRemainingMs }).catch(() => {});
     }
 
@@ -644,8 +666,7 @@
       deactivateDualClick();
       cloneEndTime = 0; cloneRemainingMs = 0;
       updateCloneTimer();
-      document.getElementById('buyCloneBtn').disabled = false;
-      document.getElementById('buyCloneBtn').textContent = '👥 Activate Clone';
+      updateInstantAutoclickButtonState();
       db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime: 0, cloneRemainingMs: 0 }).catch(() => {});
     }
 
@@ -653,14 +674,20 @@
       if (!cloneTimeout || cloneRemainingMs <= 0) return;
       clearTimeout(cloneTimeout); cloneTimeout = null;
       cloneRemainingMs = Math.max(0, cloneEndTime - Date.now());
+      deactivateDualClick();
+      updateCloneTimer();
+      updateInstantAutoclickButtonState();
       db.ref(`leaderboard/${user.uid}`).update({ cloneRemainingMs }).catch(() => {});
     }
 
     function resumeClone() {
       if (cloneRemainingMs <= 0 || dualClickActive) return;
+      if (instantAutoclickActive) { showMessage('Cannot resume Clone — Instant Autoclick is active!'); return; }
       activateDualClick();
       cloneEndTime = Date.now() + cloneRemainingMs;
-      cloneTimeout = setTimeout(() => { deactivateDualClick(); cloneEndTime = 0; cloneRemainingMs = 0; updateCloneTimer(); }, cloneRemainingMs);
+      cloneTimeout = setTimeout(() => { stopClone(); }, cloneRemainingMs);
+      updateCloneTimer();
+      updateInstantAutoclickButtonState();
       db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, cloneRemainingMs }).catch(() => {});
     }
 
@@ -668,30 +695,32 @@
       const display = document.getElementById('cloneTimerDisplay');
       const btn = document.getElementById('buyCloneBtn');
       if (dualClickActive && cloneRemainingMs > 0) {
-        const rem = Math.max(0, cloneRemainingMs - (cloneTimeout ? 0 : 1000));
-        if (rem <= 0) { stopClone(); return; }
-        if (cloneTimeout) {
-          const actualRem = Math.max(0, cloneEndTime - Date.now());
-          display.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(actualRem/1000))}`;
-        } else {
-          display.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(rem/1000))}`;
-        }
-        btn.disabled = true;
-        btn.textContent = '👥 Active';
+        const actualRem = Math.max(0, cloneEndTime - Date.now());
+        if (actualRem <= 0) { stopClone(); return; }
+        display.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(actualRem/1000))}`;
+        btn.disabled = true; btn.textContent = '👥 Active'; btn.style.background = '#555';
       } else if (!dualClickActive && cloneRemainingMs <= 0) {
         display.textContent = '';
-        btn.disabled = false;
-        btn.textContent = '👥 Activate Clone';
+        if (!instantAutoclickActive) { btn.disabled = false; btn.textContent = '👥 Activate Clone'; btn.style.background = ''; }
       } else {
         display.textContent = '⏸️ Paused';
-        btn.disabled = true;
-        btn.textContent = '👥 Active (Paused)';
+        btn.disabled = true; btn.textContent = '👥 Active (Paused)'; btn.style.background = '#555';
+      }
+    }
+
+    function updateCloneButtonState() {
+      const btn = document.getElementById('buyCloneBtn');
+      if (instantAutoclickActive) {
+        btn.disabled = true; btn.textContent = '🔒 Blocked'; btn.style.background = '#555'; btn.title = 'Deactivate Instant Autoclick first';
+      } else if (!dualClickActive && cloneRemainingMs <= 0) {
+        btn.disabled = false; btn.textContent = '👥 Activate Clone'; btn.style.background = ''; btn.title = '';
       }
     }
 
     function buyClone() {
       if (!user) { showMessage('Sign in!'); return; }
       if (dualClickActive || cloneRemainingMs > 0) { showMessage('Clone already active or paused!'); return; }
+      if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; }
       if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; }
       crystals -= CLONE_COST;
       db.ref(`leaderboard/${user.uid}/crystals`).set(crystals);
@@ -700,9 +729,6 @@
       updateProfilePanel();
     }
 
-    // ==========================================
-    // АКТИВАЦИЯ/ДЕАКТИВАЦИЯ ВТОРОЙ КНОПКИ
-    // ==========================================
     function activateDualClick() { dualClickActive = true; document.getElementById('secondClickButton').classList.add('visible'); }
     function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
 
@@ -724,7 +750,7 @@
 
     function upgradeAutoclicker() {
       if (autoclickerLevel >= 20) { showMessage("Max level!"); return; }
-      const cost = { tokens: autoclickerLevel >= 10 ? 1500000 : Math.round(1000*Math.pow(Math.pow(1000,1/5),autoclickerLevel-1)), crystals: autoclickerLevel >= 10 ? 1000 : 10+98*(autoclickerLevel-1) };
+      const cost = getAutoclickerUpgradeCost();
       if (score < cost.tokens || crystals < cost.crystals) { showMessage("Not enough resources!"); return; }
       score -= cost.tokens; crystals -= cost.crystals; autoclickerLevel++;
       db.ref(`leaderboard/${user.uid}/score`).set(score);
@@ -745,6 +771,21 @@
       showMessage('🔮 Resonance activated!');
     }
 
+    function buyLuckySpin() { showMessage('🎰 Lucky Spin coming soon!'); }
+    function buySuperAutoclicker(mult, dur, tc, cc) {
+      if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) { showMessage('Already active!'); return; }
+      if (!user) { showMessage('Sign in!'); return; }
+      if (score < tc || crystals < cc) { showMessage('Not enough resources!'); return; }
+      score -= tc; crystals -= cc;
+      db.ref(`leaderboard/${user.uid}/score`).set(score);
+      db.ref(`leaderboard/${user.uid}/crystals`).set(crystals);
+      superAutoclicker = { active: true, multiplier: mult, endTime: Date.now() + dur };
+      if (superAutoclickInterval) clearInterval(superAutoclickInterval);
+      superAutoclickInterval = setInterval(() => { if (!user) { clearInterval(superAutoclickInterval); return; } db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0) + clickPower * mult); }, 1000);
+      setTimeout(() => { if (superAutoclickInterval) clearInterval(superAutoclickInterval); superAutoclicker = { active: false, multiplier: 1, endTime: 0 }; }, dur);
+      showMessage(`🚀 Super x${mult} activated!`); updateProfilePanel(); updateCounterDisplay();
+    }
+
     // ==========================================
     // UI ОБНОВЛЕНИЯ
     // ==========================================
@@ -758,13 +799,9 @@
 
     function updateProfilePanel() {
       document.getElementById('profileClickPower').innerText = Math.min(clickPower, 8);
-      if (instantAutoclickActive) {
-        document.getElementById('profileAutoclick').innerText = 'Active (Instant)';
-      } else if (autoclickActive) {
-        document.getElementById('profileAutoclick').innerText = `Active: ${formatTimeFromSeconds(Math.floor(Math.max(0,autoclickEndTime-Date.now())/1000))}`;
-      } else {
-        document.getElementById('profileAutoclick').innerText = 'Inactive';
-      }
+      if (instantAutoclickActive) { document.getElementById('profileAutoclick').innerText = 'Active (Instant)'; }
+      else if (autoclickActive) { document.getElementById('profileAutoclick').innerText = `Active: ${formatTimeFromSeconds(Math.floor(Math.max(0,autoclickEndTime-Date.now())/1000))}`; }
+      else { document.getElementById('profileAutoclick').innerText = 'Inactive'; }
       let lv = 1; for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) lv = i + 2; else break; }
       document.getElementById('playerLevel').innerText = lv;
       document.getElementById('profileTokens').innerText = score;
@@ -779,7 +816,7 @@
       document.getElementById("autoclickerDurationValue").innerHTML = `Duration: <span id="timeLeft">${formatTimeFromSeconds(Math.floor(getAutoclickerDuration()/1000))}</span>`;
       const ub = document.getElementById("upgradeAutoclickerBtn");
       if (autoclickerLevel >= 20) { document.getElementById("autoclickerUpgradeCost").innerText = "MAX LEVEL"; ub.disabled = true; }
-      else { const c = { tokens: autoclickerLevel >= 10 ? 1500000 : Math.round(1000*Math.pow(Math.pow(1000,1/5),autoclickerLevel-1)), crystals: autoclickerLevel >= 10 ? 1000 : 10+98*(autoclickerLevel-1) }; document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade Cost: ${c.tokens} Tokens + ${c.crystals} 💎`; ub.disabled = false; }
+      else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade Cost: ${c.tokens} Tokens + ${c.crystals} 💎`; ub.disabled = false; }
     }
 
     function togglePanel(pn) {
@@ -805,7 +842,7 @@
     function endMiniGame(won) { if (!miniGameActive) return; clearInterval(miniGameTimer); miniGameActive = false; document.getElementById("miniGamePanel").style.display = "none"; if (won) { score += 500; db.ref(`leaderboard/${user.uid}/score`).set(score); showMessage('🎉 Victory! +500 tokens!'); updateProfilePanel(); updateCounterDisplay(); } }
 
     function checkAchievements() { if (!achievements.superClicker && totalClicks >= 10000) { achievements.superClicker = true; clickPower = Math.min(clickPower+2, MAX_CLICK_POWER); db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower); db.ref("achievements/" + user.uid).set(achievements); showMessage("Achievement: Super Clicker!"); } }
-    function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in { superClicker: { name: "Super Clicker", description: "10,000 clicks", reward: "+2 Power" } }) { const a = achievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${k}</strong><br>10,000 clicks<br><em>+2 Power</em>`; list.appendChild(d); } }
+    function renderAchievements() { const list = document.getElementById('achievementsList'); list.innerHTML = ''; for (const k in { superClicker: { name: "Super Clicker", description: "10,000 clicks", reward: "+2 Power" } }) { const a = achievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>Super Clicker</strong><br>10,000 clicks<br><em>+2 Power</em>`; list.appendChild(d); } }
 
     function startBonusTimer() { if (bonusTimerInterval) clearInterval(bonusTimerInterval); bonusTimerInterval = setInterval(async () => { if (!user) return; try { const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); document.getElementById("claimBonusBtn").disabled = rem > 0; document.getElementById("bonusTimer").innerText = rem <= 0 ? "Claim now!" : `Next: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; } catch (e) {} }, 1000); }
     async function claimHourlyBonus() { if (!user) return; const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { const rw = Math.floor(Math.random()*191)+10; score += rw; db.ref(`leaderboard/${user.uid}/score`).set(score); await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now() }); showMessage(`✅ +${rw} tokens!`, true); updateCounterDisplay(); updateProfilePanel(); } }
@@ -823,21 +860,10 @@
           else {
             score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; totalClicks = data.totalClicks || 0;
             hasResonance = data.hasResonance || false; autoclickerLevel = data.autoclickerLevel || 1;
-            
-            // Instant Autoclick (оффлайн-токены)
-            if (data.instantAutoclickActive && data.instantAutoclickEndTime > Date.now()) {
-              const offlineSec = Math.floor((data.instantAutoclickEndTime - Date.now()) / 1000);
-              const offlineTokens = Math.floor(offlineSec * clickPower * 0.5);
-              if (offlineTokens > 0) { score += offlineTokens; db.ref(`leaderboard/${uid}/score`).set(score); showMessage(`⏰ +${offlineTokens} offline tokens from Instant Autoclick!`); }
-              startInstantAutoclick(data.instantAutoclickEndTime - Date.now());
-            }
-            
-            // Обычный автокликер
+            if (data.instantAutoclickActive && data.instantAutoclickEndTime > Date.now()) { const offlineSec = Math.floor((data.instantAutoclickEndTime - Date.now()) / 1000); const offlineTokens = Math.floor(offlineSec * clickPower * 0.5); if (offlineTokens > 0) { score += offlineTokens; db.ref(`leaderboard/${uid}/score`).set(score); showMessage(`⏰ +${offlineTokens} offline tokens!`); } startInstantAutoclick(data.instantAutoclickEndTime - Date.now()); }
             if (data.autoclickActive && data.autoclickEndTime > Date.now()) { startAutoclicker(data.autoclickEndTime - Date.now(), false); }
-            
-            // Clone (время НЕ возобновляется)
             cloneRemainingMs = data.cloneRemainingMs || 0;
-            if (cloneRemainingMs > 0) { updateCloneTimer(); document.getElementById('buyCloneBtn').disabled = true; document.getElementById('buyCloneBtn').textContent = '👥 Active (Paused)'; }
+            if (cloneRemainingMs > 0) { updateCloneTimer(); }
           }
           updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); updateResonanceUI(); updateAutoclickerShopUI();
           updateInstantAutoclickTimer(); updateCloneTimer();
@@ -846,15 +872,18 @@
       });
     }
 
+    // ==========================================
+    // ПАУЗА/ВОЗОБНОВЛЕНИЕ КЛОНА ПРИ УХОДЕ С ВКЛАДКИ
+    // ==========================================
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { if (dualClickActive && cloneRemainingMs > 0) pauseClone(); }
+      else { if (!dualClickActive && cloneRemainingMs > 0 && !instantAutoclickActive) resumeClone(); }
+    });
+    window.addEventListener('beforeunload', () => { if (dualClickActive && cloneRemainingMs > 0) { pauseClone(); if (user) db.ref(`leaderboard/${user.uid}`).update({ cloneRemainingMs, cloneEndTime: 0, lastUpdate: Date.now() }).catch(() => {}); } });
+
     async function signOut() {
-      // Паузим клон при выходе
       if (dualClickActive && cloneRemainingMs > 0) pauseClone();
-      if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-      if (autoclickInterval) clearInterval(autoclickInterval);
-      if (instantAutoclickInterval) clearInterval(instantAutoclickInterval);
-      if (instantAutoclickTimerInterval) clearInterval(instantAutoclickTimerInterval);
-      if (cloneTimerInterval) clearInterval(cloneTimerInterval);
-      if (cloneTimeout) clearTimeout(cloneTimeout);
+      cleanupAllTimers();
       if (user) await db.ref("leaderboard/" + user.uid).update({ lastUpdate: Date.now(), cloneRemainingMs }).catch(() => {});
       if (isTelegramMiniApp) { try { window.Telegram.WebApp.close(); } catch (e) {} return; }
       await auth.signOut(); user = null; score = 0; clickPower = 1; crystals = 0;
@@ -862,13 +891,6 @@
       document.getElementById('adminPanel').classList.remove('open'); document.getElementById('adminToggle').classList.remove('visible'); document.getElementById('adminBadge').style.display = 'none';
       setupAuthUI();
     }
-
-    // Пауза/возобновление клона при уходе/возврате на вкладку
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { if (dualClickActive && cloneRemainingMs > 0) pauseClone(); }
-      else { if (!dualClickActive && cloneRemainingMs > 0) resumeClone(); }
-    });
-    window.addEventListener('beforeunload', () => { if (dualClickActive && cloneRemainingMs > 0) pauseClone(); });
 
     const profilePanel = document.getElementById('profilePanel');
     if (window.innerWidth <= 1023) profilePanel.classList.remove('expanded');
@@ -884,15 +906,11 @@
 
     showTab("overall");
 
-    // Обновление таймеров
-    setInterval(() => {
-      updateProfilePanel();
-      updateInstantAutoclickTimer();
-      if (!document.hidden && dualClickActive) updateCloneTimer();
-    }, 1000);
+    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); if (!document.hidden && dualClickActive) updateCloneTimer(); }, 1000);
 
     let mi = 0; const me = document.getElementById("motiveText");
-    setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1)%["Click — earn tokens.","Sign in — save your progress.","Your crypto journey starts here.","No account — no profit!","Top farmers are waiting for you!"].length; me.textContent = ["Click — earn tokens.","Sign in — save your progress.","Your crypto journey starts here.","No account — no profit!","Top farmers are waiting for you!"][mi]; me.style.opacity = 1; }, 500); }, 3000);
+    const phrases = ["Click — earn tokens.","Sign in — save your progress.","Your crypto journey starts here.","No account — no profit!","Top farmers are waiting for you!"];
+    setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1)%phrases.length; me.textContent = phrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
   </script>
 </body>
 </html>
