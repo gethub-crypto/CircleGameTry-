@@ -61,6 +61,9 @@
     #leaderboardBody td { padding: 10px; color: #fff; border-bottom: 1px solid #333; }
     #battlePassPanel { display: none; margin-top: 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 25px; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); border: 2px solid #a855f7; max-width: 800px; margin-left: auto; margin-right: auto; }
     #battlePassPanel.open { display: block; }
+    /* Убеждаемся, что панель BP не перехватывает клики */
+    #battlePassPanel * { pointer-events: auto; }
+    #battlePassPanel .bp-actions button { pointer-events: auto; }
     .bp-header { text-align: center; margin-bottom: 20px; }
     .bp-header h2 { font-size: 32px; background: linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
     .bp-season-info { font-size: 14px; color: #888; }
@@ -76,9 +79,10 @@
     .bp-tier.premium { border-color: #a855f7; background: linear-gradient(135deg, #111 0%, #1a1025 100%); }
     .bp-tier h4 { text-align: center; margin-bottom: 15px; font-size: 18px; }
     .bp-tier.free h4 { color: #aaa; } .bp-tier.premium h4 { color: #a855f7; }
-    .bp-reward-item { display: flex; align-items: center; gap: 10px; padding: 8px; margin: 5px 0; border-radius: 8px; font-size: 14px; }
+    .bp-reward-item { display: flex; align-items: center; gap: 10px; padding: 8px; margin: 5px 0; border-radius: 8px; font-size: 14px; cursor: default; }
     .bp-reward-item.claimed { background: rgba(0, 255, 166, 0.1); color: #00ffa6; }
     .bp-reward-item.available { background: rgba(168, 85, 247, 0.2); color: #a855f7; cursor: pointer; }
+    .bp-reward-item.available:hover { background: rgba(168, 85, 247, 0.4); }
     .bp-reward-item.locked { color: #555; }
     .bp-reward-icon { font-size: 24px; width: 30px; text-align: center; }
     .bp-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
@@ -169,7 +173,11 @@
     <h1>Crypto Clicker 💰</h1>
     <div id="authSection"><div id="authButtons"></div><div id="motiveText">Click — earn tokens.</div></div>
     <div id="gameSection" style="display:none;">
-      <div id="mainButtonContainer"><button id="mainClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button><button id="secondClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button></div>
+      <!-- mainButtonContainer должен быть поверх всех панелей -->
+      <div id="mainButtonContainer" style="position:relative;z-index:5;">
+        <button id="mainClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button>
+        <button id="secondClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button>
+      </div>
       <div id="counter">Tokens: 0</div><div id="message"></div>
       <div id="buttonGroup">
         <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
@@ -279,7 +287,27 @@
     function addBPXP(a) { if (!user) return; const t = new Date().toDateString(); if (bpData.lastXPDay !== t) { bpData.dailyXP = 0; bpData.lastXPDay = t; } if (bpData.dailyXP >= 5000) return; const add = Math.min(a, 5000 - bpData.dailyXP); bpData.dailyXP += add; bpData.xp += add; while (bpData.level < 100) { const n = getXPForLevel(bpData.level); if (bpData.xp >= n) { bpData.xp -= n; bpData.level++; } else break; } db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); updateBattlePassUI(); }
     function claimBPReward(lv) { if (!user || bpData.claimedFree.includes(lv) || bpData.level < lv) return; const r = BP_FREE_REWARDS[lv]; if (!r) return; r.claim(); bpData.claimedFree.push(lv); db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); updateBattlePassUI(); updateCounterDisplay(); }
     function claimAllBPRewards() { if (!user) return; for (const l in BP_FREE_REWARDS) { const lv = parseInt(l); if (bpData.level >= lv && !bpData.claimedFree.includes(lv)) { BP_FREE_REWARDS[lv].claim(); bpData.claimedFree.push(lv); } } db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); updateBattlePassUI(); updateCounterDisplay(); }
-    function updateBattlePassUI() { const p = document.getElementById('battlePassPanel'); if (!p || !p.classList.contains('open')) return; const xp = bpData.xp, n = getXPForLevel(bpData.level); document.getElementById('bpLevelBadge').textContent = bpData.level; document.getElementById('bpCurrentXP').textContent = xp; document.getElementById('bpXPRequired').textContent = n; document.getElementById('bpProgressFill').style.width = Math.min(100,(xp/n)*100)+'%'; document.getElementById('bpDaysLeft').textContent = Math.max(0,Math.ceil((new Date(new Date().getFullYear(),new Date().getMonth()+1,1).getTime()-Date.now())/86400000)); const fc = document.getElementById('bpFreeRewards'); fc.innerHTML = ''; for (const l in BP_FREE_REWARDS) { const lv = parseInt(l), r = BP_FREE_REWARDS[lv], cl = bpData.claimedFree.includes(lv), av = bpData.level >= lv && !cl; const d = document.createElement('div'); d.className = 'bp-reward-item '+(cl?'claimed':av?'available':'locked'); d.innerHTML = `<span class="bp-reward-icon">${r.icon}</span><span>Lv.${lv}: ${r.name}</span>${cl?' ✅':''}`; if (av) d.onclick = () => claimBPReward(lv); fc.appendChild(d); } document.getElementById('bpClaimAllBtn').disabled = !Object.keys(BP_FREE_REWARDS).some(l => bpData.level >= parseInt(l) && !bpData.claimedFree.includes(parseInt(l))); }
+    function updateBattlePassUI() { 
+      const p = document.getElementById('battlePassPanel'); 
+      if (!p || !p.classList.contains('open')) return; 
+      const xp = bpData.xp, n = getXPForLevel(bpData.level); 
+      document.getElementById('bpLevelBadge').textContent = bpData.level; 
+      document.getElementById('bpCurrentXP').textContent = xp; 
+      document.getElementById('bpXPRequired').textContent = n; 
+      document.getElementById('bpProgressFill').style.width = Math.min(100,(xp/n)*100)+'%'; 
+      document.getElementById('bpDaysLeft').textContent = Math.max(0,Math.ceil((new Date(new Date().getFullYear(),new Date().getMonth()+1,1).getTime()-Date.now())/86400000)); 
+      const fc = document.getElementById('bpFreeRewards'); 
+      fc.innerHTML = ''; 
+      for (const l in BP_FREE_REWARDS) { 
+        const lv = parseInt(l), r = BP_FREE_REWARDS[lv], cl = bpData.claimedFree.includes(lv), av = bpData.level >= lv && !cl; 
+        const d = document.createElement('div'); 
+        d.className = 'bp-reward-item '+(cl?'claimed':av?'available':'locked'); 
+        d.innerHTML = `<span class="bp-reward-icon">${r.icon}</span><span>Lv.${lv}: ${r.name}</span>${cl?' ✅':''}`; 
+        if (av) { d.onclick = (e) => { e.stopPropagation(); claimBPReward(lv); }; } 
+        fc.appendChild(d); 
+      } 
+      document.getElementById('bpClaimAllBtn').disabled = !Object.keys(BP_FREE_REWARDS).some(l => bpData.level >= parseInt(l) && !bpData.claimedFree.includes(parseInt(l))); 
+    }
     function loadBattlePassData() { if (!user) return; db.ref(`battlePass/${user.uid}`).once('value').then(s => { if (s.val()) bpData = s.val(); else { bpData = { xp: 0, level: 1, isPremium: false, claimedFree: [], claimedPremium: [], seasonNumber: 1, dailyXP: 0, lastXPDay: new Date().toDateString() }; db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); } updateBattlePassUI(); }); }
 
     function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
@@ -319,22 +347,74 @@
       popup.style.fontSize = `${16+Math.random()*12}px`; document.body.appendChild(popup); setTimeout(() => popup.remove(), 800);
     }
 
+    // Функция клика с защитой от перехвата событий
     function clickToken(event) {
+      // Останавливаем всплытие, чтобы панели не перехватывали клик
+      if (event) { event.stopPropagation(); }
+      
       if (!user || isAnimating) return;
       if (!rateLimiter.canClick()) { showMessage('Slow down!'); return; }
       if (Date.now() - lastClickTime < 50) return;
       lastClickTime = Date.now(); isAnimating = true;
-      if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
-      score += clickPower; totalClicks++;
+      
+      // Получаем координаты для попапа
+      let rect = null;
+      if (event && event.currentTarget) {
+        rect = event.currentTarget.getBoundingClientRect();
+      }
+      
+      // Начисляем очки
+      const power = clickPower;
+      score += power; 
+      totalClicks++;
+      
+      // Сохраняем в БД
       db.ref(`leaderboard/${user.uid}/score`).set(score).catch(() => {});
       db.ref(`leaderboard/${user.uid}/totalClicks`).set(totalClicks).catch(() => {});
-      checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel(); addBPXP(1);
-      if (hasResonance && totalClicks % 100 === 0) { crystals++; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); showMessage(`🔮 Resonance! +1 💎`); updateProfilePanel(); }
+      
+      // Обновляем UI
+      checkAchievements(); 
+      animateCounter(); 
+      updateCounterDisplay(); 
+      updateProfilePanel(); 
+      addBPXP(1);
+      
+      // Resonance
+      if (hasResonance && totalClicks % 100 === 0) { 
+        crystals++; 
+        db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); 
+        showMessage(`🔮 Resonance! +1 💎`); 
+        updateProfilePanel(); 
+      }
       updateResonanceUI();
-      const btn = document.getElementById("mainClickButton"); if (btn) { btn.classList.add("pulse"); setTimeout(() => { if (btn) btn.classList.remove("pulse"); isAnimating = false; }, 200); } else isAnimating = false;
+      
+      // Анимация попапа
+      if (rect) {
+        spawnScorePopup(rect.left + rect.width/2 - 20, rect.top, power);
+      }
+      
+      // Анимация кнопки
+      const btn = event ? event.currentTarget : document.getElementById("mainClickButton");
+      if (btn) { 
+        btn.classList.add("pulse"); 
+        setTimeout(() => { 
+          if (btn) btn.classList.remove("pulse"); 
+          isAnimating = false; 
+        }, 200); 
+      } else { 
+        isAnimating = false; 
+      }
     }
 
-    function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } clickToken(); }
+    function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } 
+      // Создаем искусственное событие для clickToken
+      const fakeEvent = { 
+        stopPropagation: () => {}, 
+        currentTarget: document.getElementById("mainClickButton"),
+        preventDefault: () => {}
+      };
+      clickToken(fakeEvent); 
+    }
 
     function startAutoclicker(duration, extendTime = false) {
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
@@ -350,7 +430,6 @@
     function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); } }
     function activateFreeAutoclicker() { if (autoclickActive) showMessage("Already active!"); else startAutoclicker(getAutoclickerDuration()); }
 
-    // INSTANT AUTOCLICK
     function startInstantAutoclick(duration) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = true; instantAutoclickEndTime = Date.now() + duration; instantAutoclickInterval = setInterval(autoclickTick, 1000); instantAutoclickTimerInterval = setInterval(updateInstantAutoclickTimer, 1000); updateInstantAutoclickTimer(); updateCloneButtonState(); db.ref(`leaderboard/${user.uid}`).update({ instantAutoclickActive: true, instantAutoclickEndTime }).catch(() => {}); }
     function stopInstantAutoclick() { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); db.ref(`leaderboard/${user.uid}`).update({ instantAutoclickActive: false, instantAutoclickEndTime: 0 }).catch(() => {}); }
 
@@ -365,7 +444,6 @@
 
     function buyInstantAutoclick() { if (!user) { showMessage('Sign in!'); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneRemainingMs > 0) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
 
-    // CLONE
     function startClone(duration) { if (instantAutoclickActive) { showMessage('Cannot start Clone — Instant Autoclick is active!'); return; } if (cloneTimeout) { clearTimeout(cloneTimeout); cloneTimeout = null; } if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; } activateDualClick(); cloneEndTime = Date.now() + duration; cloneRemainingMs = duration; cloneStartedAt = Date.now(); cloneTimeout = setTimeout(() => stopClone(), duration); cloneTimerInterval = setInterval(updateCloneTimer, 1000); updateCloneTimer(); updateInstantAutoclickButtonState(); db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, cloneRemainingMs, cloneStartedAt }).catch(() => {}); }
     function stopClone() { if (cloneTimeout) { clearTimeout(cloneTimeout); cloneTimeout = null; } if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; } deactivateDualClick(); cloneEndTime = 0; cloneRemainingMs = 0; cloneStartedAt = 0; updateCloneTimer(); updateInstantAutoclickButtonState(); db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime: 0, cloneRemainingMs: 0, cloneStartedAt: 0 }).catch(() => {}); }
     function pauseClone() { if (!cloneTimeout || cloneRemainingMs <= 0) return; clearTimeout(cloneTimeout); cloneTimeout = null; cloneRemainingMs = Math.max(0, cloneEndTime - Date.now()); deactivateDualClick(); updateCloneTimer(); updateInstantAutoclickButtonState(); db.ref(`leaderboard/${user.uid}`).update({ cloneRemainingMs, cloneEndTime: 0 }).catch(() => {}); }
@@ -401,19 +479,37 @@
     function togglePanel(pn) {
       if (miniGameActive) endMiniGame(false);
       document.getElementById("miniGamePanel").style.display = "none";
-      const targetId = pn === 'battlePass' ? 'battlePassPanel' : pn;
-      const panel = document.getElementById(targetId);
-      if (!panel) return;
-      const isOpen = panel.classList.contains('open');
+      
+      // Закрываем все панели
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
       document.getElementById('battlePassPanel').classList.remove('open');
       document.getElementById('shopBtn').innerHTML = 'Shop ▼';
       document.getElementById('battlePassBtn').innerHTML = '🎫 Battle Pass ▼';
       document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
       document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-      if (!isOpen) {
-        if (pn === 'battlePass') { document.getElementById('battlePassPanel').classList.add('open'); document.getElementById('battlePassBtn').innerHTML = '🎫 Battle Pass ▲'; updateBattlePassUI(); }
-        else { panel.classList.add('open'); if (pn === 'shop') { document.getElementById('shopBtn').innerHTML = 'Shop ▲'; updateResonanceUI(); updateInstantAutoclickTimer(); updateCloneTimer(); } else if (pn === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); } else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); } }
+      
+      // Открываем нужную
+      if (pn === 'battlePass') { 
+        document.getElementById('battlePassPanel').classList.add('open'); 
+        document.getElementById('battlePassBtn').innerHTML = '🎫 Battle Pass ▲'; 
+        updateBattlePassUI(); 
+      } else { 
+        const panel = document.getElementById(pn); 
+        if (panel) { 
+          panel.classList.add('open'); 
+          if (pn === 'shop') { 
+            document.getElementById('shopBtn').innerHTML = 'Shop ▲'; 
+            updateResonanceUI(); 
+            updateInstantAutoclickTimer(); 
+            updateCloneTimer(); 
+          } else if (pn === 'achievements') { 
+            document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; 
+            renderAchievements(); 
+          } else if (pn === 'tasks') { 
+            document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; 
+            renderTasks(); 
+          } 
+        } 
       }
     }
 
@@ -470,7 +566,6 @@
     const phrases = ["Click — earn tokens.","Sign in — save your progress.","Your crypto journey starts here.","No account — no profit!","Top farmers are waiting for you!"];
     setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1)%phrases.length; me.textContent = phrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
 
-    // Начальная установка обработчиков кнопок
     document.getElementById('buyCloneBtn').onclick = buyClone;
     document.getElementById('buyInstantAutoclickBtn').onclick = buyInstantAutoclick;
   </script>
