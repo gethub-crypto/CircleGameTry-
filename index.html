@@ -266,7 +266,7 @@
     let miniGameActive = false, miniGameClicks = 0, miniGameTimer = null;
     let dualClickActive = false, lastClickTime = 0;
     let cloneTimeout = null, cloneTimerInterval = null;
-    let hasResonance = false, cloneEndTime = 0, cloneRemainingMs = 0, cloneStartedAt = 0;
+    let hasResonance = false, cloneEndTime = 0;
     let suspiciousFlags = 0;
     let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
@@ -417,10 +417,9 @@
 
     function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } clickToken(); }
 
-    // ==================== АВТОКЛИКЕР (ОБЫЧНЫЙ) ====================
+    // ==================== АВТОКЛИКЕР (ОБЫЧНЫЙ) — БЛОКИРУЕТСЯ ПРИ CLONE ====================
     function startAutoclicker(duration, extendTime = false) {
-      // БЛОКИРУЕМ, ЕСЛИ CLONE АКТИВЕН
-      if (dualClickActive || cloneRemainingMs > 0) {
+      if (dualClickActive || cloneEndTime > Date.now()) {
         showMessage('👥 Clone is active — manual clicking only! Deactivate Clone first.');
         return;
       }
@@ -434,9 +433,9 @@
     }
 
     function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); db.ref(`leaderboard/${user.uid}`).update({ autoclickActive: false, autoclickEndTime: 0 }).catch(() => {}); }
-    function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); } }
+    function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); } }
     function activateFreeAutoclicker() {
-      if (dualClickActive || cloneRemainingMs > 0) {
+      if (dualClickActive || cloneEndTime > Date.now()) {
         showMessage('👥 Clone is active — manual clicking only!');
         return;
       }
@@ -446,7 +445,7 @@
 
     // ==================== INSTANT AUTOCLICK ====================
     function startInstantAutoclick(duration) {
-      if (dualClickActive || cloneRemainingMs > 0) {
+      if (dualClickActive || cloneEndTime > Date.now()) {
         showMessage('👥 Clone is active — cannot start Instant Autoclick!');
         return;
       }
@@ -464,14 +463,14 @@
       const d = document.getElementById('instantAutoclickTimerDisplay'), b = document.getElementById('buyInstantAutoclickBtn');
       if (!b) return; b.onclick = null;
       if (instantAutoclickActive) { const r = Math.max(0, instantAutoclickEndTime - Date.now()); if (r <= 0) { stopInstantAutoclick(); return; } if (d) d.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(r/1000))}`; b.disabled = true; b.textContent = '⚡ Active'; b.style.background = '#555'; }
-      else { if (d) d.textContent = ''; if (!dualClickActive && cloneRemainingMs <= 0) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } else { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } }
+      else { if (d) d.textContent = ''; if (!dualClickActive && cloneEndTime <= Date.now()) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } else { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } }
     }
 
-    function updateInstantAutoclickButtonState() { const b = document.getElementById('buyInstantAutoclickBtn'); if (!b) return; b.onclick = null; if (dualClickActive || cloneRemainingMs > 0) { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } else if (!instantAutoclickActive) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } }
+    function updateInstantAutoclickButtonState() { const b = document.getElementById('buyInstantAutoclickBtn'); if (!b) return; b.onclick = null; if (dualClickActive || cloneEndTime > Date.now()) { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } else if (!instantAutoclickActive) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } }
 
-    function buyInstantAutoclick() { if (!user) { showMessage('Sign in!'); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneRemainingMs > 0) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
+    function buyInstantAutoclick() { if (!user) { showMessage('Sign in!'); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
 
-    // ==================== CLONE (БЕЗ ПАУЗЫ, ВРЕМЯ ИДЕТ ВСЕГДА) ====================
+    // ==================== CLONE (ВРЕМЯ ВСЕГДА ИДЁТ, ПРИ ВОЗВРАТЕ ВОЗОБНОВЛЯЕТСЯ) ====================
     function startClone(duration) {
       if (instantAutoclickActive) { showMessage('Cannot start Clone — Instant Autoclick is active!'); return; }
       if (autoclickActive) { stopAutoclicker(); showMessage('Autoclicker deactivated — Clone is active!'); }
@@ -479,14 +478,12 @@
       if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
       activateDualClick();
       cloneEndTime = Date.now() + duration;
-      cloneRemainingMs = duration;
-      cloneStartedAt = Date.now();
       cloneTimerInterval = setInterval(updateCloneTimer, 1000);
       cloneTimeout = setTimeout(() => stopClone(), duration);
       updateCloneTimer();
       updateInstantAutoclickButtonState();
       updateAutoclickerShopUI();
-      db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, cloneRemainingMs, cloneStartedAt }).catch(() => {});
+      db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime }).catch(() => {});
     }
 
     function stopClone() {
@@ -494,12 +491,31 @@
       if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
       deactivateDualClick();
       cloneEndTime = 0;
-      cloneRemainingMs = 0;
-      cloneStartedAt = 0;
       updateCloneTimer();
       updateInstantAutoclickButtonState();
       updateAutoclickerShopUI();
-      db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime: 0, cloneRemainingMs: 0, cloneStartedAt: 0 }).catch(() => {});
+      db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime: 0 }).catch(() => {});
+    }
+
+    function resumeCloneIfActive() {
+      if (!user || dualClickActive) return;
+      if (!cloneEndTime || cloneEndTime <= Date.now()) {
+        cloneEndTime = 0;
+        deactivateDualClick();
+        updateCloneTimer();
+        updateInstantAutoclickButtonState();
+        updateAutoclickerShopUI();
+        return;
+      }
+      const remaining = cloneEndTime - Date.now();
+      activateDualClick();
+      if (cloneTimeout) clearTimeout(cloneTimeout);
+      if (cloneTimerInterval) clearInterval(cloneTimerInterval);
+      cloneTimerInterval = setInterval(updateCloneTimer, 1000);
+      cloneTimeout = setTimeout(() => stopClone(), remaining);
+      updateCloneTimer();
+      updateInstantAutoclickButtonState();
+      updateAutoclickerShopUI();
     }
 
     function updateCloneTimer() {
@@ -507,7 +523,7 @@
       if (!b) return;
       b.onclick = null;
       
-      if (cloneRemainingMs > 0) {
+      if (cloneEndTime > 0) {
         const remaining = Math.max(0, cloneEndTime - Date.now());
         if (remaining <= 0) {
           stopClone();
@@ -530,7 +546,7 @@
       const b = document.getElementById('buyCloneBtn');
       if (!b) return;
       b.onclick = null;
-      if (cloneRemainingMs > 0) {
+      if (cloneEndTime > 0) {
         b.disabled = true;
         b.textContent = '👥 Active';
         b.style.background = '#555';
@@ -548,7 +564,7 @@
 
     function buyClone() {
       if (!user) { showMessage('Sign in!'); return; }
-      if (cloneRemainingMs > 0) { showMessage('Clone already active!'); return; }
+      if (cloneEndTime > 0) { showMessage('Clone already active!'); return; }
       if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; }
       if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; }
       crystals -= CLONE_COST;
@@ -592,10 +608,9 @@
       const ub = document.getElementById("upgradeAutoclickerBtn");
       if (autoclickerLevel >= 20) { document.getElementById("autoclickerUpgradeCost").innerText = "MAX LEVEL"; ub.disabled = true; }
       else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade: ${c.tokens} 🪙 + ${c.crystals} 💎`; ub.disabled = false; }
-      // Блокируем кнопку активации обычного автокликера при активном Clone
       const afab = document.getElementById('activateFreeAutoclickerBtn');
       if (afab) {
-        if (dualClickActive || cloneRemainingMs > 0) {
+        if (dualClickActive || cloneEndTime > Date.now()) {
           afab.disabled = true;
           afab.textContent = '🔒 Blocked by Clone';
           afab.style.background = '#555';
@@ -949,7 +964,7 @@
     }
 
     document.addEventListener('visibilitychange', updatePageActivity);
-    window.addEventListener('focus', () => { lastOnlinePing = Date.now(); updatePageActivity(); });
+    window.addEventListener('focus', () => { lastOnlinePing = Date.now(); updatePageActivity(); if (user && cloneEndTime > 0 && !dualClickActive) resumeCloneIfActive(); });
     window.addEventListener('blur', () => { stopOnlineTimer(); isPageActive = false; lastOnlinePing = Date.now(); });
     setInterval(() => { if (user && isPageActive && !onlineTimer) updatePageActivity(); }, 5000);
 
@@ -992,35 +1007,21 @@
       return new Promise((resolve) => {
         db.ref("leaderboard/" + uid).once("value").then(snapshot => {
           const data = snapshot.val();
-          if (!data) { db.ref("leaderboard/" + uid).set({ id: uid, score: 0, crystals: 0, clickPower: 1, totalClicks: 0, hasResonance: false, cloneEndTime: 0, cloneRemainingMs: 0, cloneStartedAt: 0, instantAutoclickActive: false, instantAutoclickEndTime: 0, autoclickActive: false, autoclickEndTime: 0, lastUpdate: Date.now() }); score = 0; crystals = 0; clickPower = 1; }
+          if (!data) { db.ref("leaderboard/" + uid).set({ id: uid, score: 0, crystals: 0, clickPower: 1, totalClicks: 0, hasResonance: false, cloneEndTime: 0, instantAutoclickActive: false, instantAutoclickEndTime: 0, autoclickActive: false, autoclickEndTime: 0, lastUpdate: Date.now() }); score = 0; crystals = 0; clickPower = 1; }
           else {
             score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; totalClicks = data.totalClicks || 0;
             hasResonance = data.hasResonance || false; autoclickerLevel = data.autoclickerLevel || 1;
             if (data.instantAutoclickActive && data.instantAutoclickEndTime > Date.now()) { const offSec = Math.floor((data.instantAutoclickEndTime - Date.now()) / 1000); const offTok = Math.floor(offSec * clickPower * 0.5); if (offTok > 0) { score += offTok; db.ref(`leaderboard/${uid}/score`).set(score); showMessage(`⏰ +${offTok} offline tokens!`); } startInstantAutoclick(data.instantAutoclickEndTime - Date.now()); }
-            if (data.autoclickActive && data.autoclickEndTime > Date.now()) {
-              // При активном Clone не запускаем обычный автокликер
-              if (!data.cloneEndTime || data.cloneEndTime <= Date.now()) {
-                startAutoclicker(data.autoclickEndTime - Date.now(), false);
-              }
+            // Обычный автокликер запускаем только если Clone НЕ активен
+            if (data.autoclickActive && data.autoclickEndTime > Date.now() && (!data.cloneEndTime || data.cloneEndTime <= Date.now())) {
+              startAutoclicker(data.autoclickEndTime - Date.now(), false);
             }
             
-            // Clone всегда проверяется по времени окончания
-            if (data.cloneEndTime && data.cloneEndTime > Date.now()) {
-              const remaining = data.cloneEndTime - Date.now();
-              cloneRemainingMs = remaining;
-              cloneEndTime = data.cloneEndTime;
-              cloneStartedAt = data.cloneStartedAt || (Date.now() - (CLONE_DURATION - remaining));
-              activateDualClick();
-              cloneTimerInterval = setInterval(updateCloneTimer, 1000);
-              cloneTimeout = setTimeout(() => stopClone(), remaining);
-              updateCloneTimer();
-              updateAutoclickerShopUI();
-            } else if (data.cloneEndTime && data.cloneEndTime <= Date.now()) {
-              cloneRemainingMs = 0;
+            cloneEndTime = data.cloneEndTime || 0;
+            if (cloneEndTime > Date.now()) {
+              resumeCloneIfActive();
+            } else {
               cloneEndTime = 0;
-              cloneStartedAt = 0;
-              deactivateDualClick();
-              db.ref(`leaderboard/${uid}`).update({ cloneEndTime: 0, cloneRemainingMs: 0, cloneStartedAt: 0 }).catch(() => {});
             }
           }
           updateCounterDisplay(); updateClickPowerBar(); updateProfilePanel(); updateResonanceUI(); updateAutoclickerShopUI();
@@ -1048,18 +1049,18 @@
       });
     }
 
-    function resetAllBoosters() { stopAllAutoclickers(); stopClone(); cloneRemainingMs = 0; cloneEndTime = 0; cloneStartedAt = 0; instantAutoclickActive = false; instantAutoclickEndTime = 0; dualClickActive = false; deactivateDualClick(); updateCloneTimer(); updateCloneButtonState(); updateInstantAutoclickTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); if (user) db.ref(`leaderboard/${user.uid}`).update({ cloneRemainingMs: 0, cloneEndTime: 0, cloneStartedAt: 0, instantAutoclickActive: false, instantAutoclickEndTime: 0 }).catch(() => {}); showMessage('🔄 Boosters reset!'); }
+    function resetAllBoosters() { stopAllAutoclickers(); stopClone(); cloneEndTime = 0; instantAutoclickActive = false; instantAutoclickEndTime = 0; dualClickActive = false; deactivateDualClick(); updateCloneTimer(); updateCloneButtonState(); updateInstantAutoclickTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); if (user) db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime: 0, instantAutoclickActive: false, instantAutoclickEndTime: 0 }).catch(() => {}); showMessage('🔄 Boosters reset!'); }
     window.resetAllBoosters = resetAllBoosters;
 
     window.addEventListener('beforeunload', () => {
       if (user && cloneEndTime > 0) {
-        db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, cloneRemainingMs: Math.max(0, cloneEndTime - Date.now()), cloneStartedAt, lastUpdate: Date.now() }).catch(() => {});
+        db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, lastUpdate: Date.now() }).catch(() => {});
       }
     });
 
     async function signOut() {
       if (user && cloneEndTime > 0) {
-        await db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, cloneRemainingMs: Math.max(0, cloneEndTime - Date.now()), cloneStartedAt, lastUpdate: Date.now() }).catch(() => {});
+        await db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime, lastUpdate: Date.now() }).catch(() => {});
       }
       cleanupAllTimers();
       if (user) await db.ref("leaderboard/" + user.uid).update({ lastUpdate: Date.now() }).catch(() => {});
