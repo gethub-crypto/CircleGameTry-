@@ -223,9 +223,6 @@
           <div class="booster-card" id="resonanceBooster"><h3>🔮 Resonance</h3><p style="color:#ccc;">Every 100th click gives +1 💎</p><div class="price" style="color:#b388ff;">750 💎</div><p class="requirement-text" id="resonanceRequirement">Requires: 10,000 clicks (You have: <span id="resonanceClickCount">0</span>)</p><button class="click-button" id="buyResonanceBtn" onclick="buyResonance()" disabled>🔮 Buy Resonance</button></div>
           <div class="booster-card" id="cloneBooster"><h3>👥 Clone</h3><p style="color:#ccc;">Second button (100 min)</p><div class="price" style="color:#00bcd4;">300 💎</div><button class="click-button" id="buyCloneBtn">👥 Activate Clone</button><div class="booster-timer" id="cloneTimerDisplay"></div></div>
           <div class="booster-card" id="instantAutoclickBooster"><h3>⚡ Instant Autoclick</h3><p style="color:#ccc;">1 hour autoclicker</p><div class="price" style="color:#00ffa6;">50 💎</div><button class="click-button" id="buyInstantAutoclickBtn">⚡ Activate (1 hour)</button><div class="booster-timer" id="instantAutoclickTimerDisplay"></div></div>
-          <div class="booster-card"><h3>🎰 Lucky Spin</h3><p>Random reward (300 🪙 + 10 💎)</p><button class="click-button" onclick="buyLuckySpin()">Spin!</button></div>
-          <div class="booster-card"><h3>🚀 Super x5</h3><p>x5 Power (500 🪙 + 15 💎)</p><button class="click-button" onclick="buySuperAutoclicker(5,120000,500,15)">Buy x5</button></div>
-          <div class="booster-card"><h3>🚀 Super x10</h3><p>x10 Power (1000 🪙 + 35 💎)</p><button class="click-button" onclick="buySuperAutoclicker(10,120000,1000,35)">Buy x10</button></div>
         </div>
       </div>
       <div id="achievements" class="panel"><h2>🏆 Achievements</h2><div id="achievementsList"></div></div>
@@ -268,7 +265,6 @@
     let cloneTimeout = null, cloneTimerInterval = null;
     let hasResonance = false, cloneEndTime = 0;
     let suspiciousFlags = 0;
-    let superAutoclicker = { active: false, multiplier: 1, endTime: 0 }, superAutoclickInterval = null;
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let isRenderingTasks = false, isProcessingReferrer = false;
     
@@ -376,7 +372,6 @@
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
       if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; }
       if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; }
-      if (superAutoclickInterval) { clearInterval(superAutoclickInterval); superAutoclickInterval = null; }
       if (cloneTimeout) { clearTimeout(cloneTimeout); cloneTimeout = null; }
       if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
@@ -581,8 +576,6 @@
     function buyUpgrade(type) { if (type === "clickPower" && clickPower < 8) { const c = getClickPowerUpgradeCost(); if (score < c) { showMessage("Not enough tokens."); return; } score -= c; clickPower++; db.ref(`leaderboard/${user.uid}/score`).set(score); db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower); updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); updateCounterDisplay(); } else if (clickPower >= 8) showMessage("Max level!"); }
     function upgradeAutoclicker() { if (autoclickerLevel >= 20) { showMessage("Max level!"); return; } const c = getAutoclickerUpgradeCost(); if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } score -= c.tokens; crystals -= c.crystals; autoclickerLevel++; db.ref(`leaderboard/${user.uid}/score`).set(score); db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); updateProfilePanel(); updateAutoclickerShopUI(); updateCounterDisplay(); }
     function buyResonance() { if (!user) return; if (hasResonance) { showMessage('Already have Resonance!'); return; } if (totalClicks < RESONANCE_CLICK_REQUIREMENT) { showMessage(`Need ${RESONANCE_CLICK_REQUIREMENT} clicks!`); return; } if (crystals < RESONANCE_COST) { showMessage(`Need ${RESONANCE_COST} 💎!`); return; } crystals -= RESONANCE_COST; hasResonance = true; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); db.ref(`leaderboard/${user.uid}/hasResonance`).set(true); updateProfilePanel(); updateResonanceUI(); }
-    function buyLuckySpin() { showMessage('🎰 Coming soon!'); }
-    function buySuperAutoclicker(mult, dur, tc, cc) { if (superAutoclicker.active && Date.now() < superAutoclicker.endTime) { showMessage('Already active!'); return; } if (!user || score < tc || crystals < cc) { showMessage('Not enough!'); return; } score -= tc; crystals -= cc; db.ref(`leaderboard/${user.uid}/score`).set(score); db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); superAutoclicker = { active: true, multiplier: mult, endTime: Date.now() + dur }; if (superAutoclickInterval) clearInterval(superAutoclickInterval); superAutoclickInterval = setInterval(() => { if (!user) { clearInterval(superAutoclickInterval); return; } db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0) + clickPower * mult); }, 1000); setTimeout(() => { if (superAutoclickInterval) clearInterval(superAutoclickInterval); superAutoclicker = { active: false, multiplier: 1, endTime: 0 }; }, dur); showMessage(`🚀 Super x${mult}!`); updateCounterDisplay(); }
 
     function updateResonanceUI() { const b = document.getElementById('buyResonanceBtn'), r = document.getElementById('resonanceClickCount'); if (r) r.textContent = totalClicks; if (hasResonance) { if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } } else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } } else { if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } } }
     
@@ -1012,7 +1005,6 @@
             score = data.score || 0; crystals = data.crystals || 0; clickPower = data.clickPower || 1; totalClicks = data.totalClicks || 0;
             hasResonance = data.hasResonance || false; autoclickerLevel = data.autoclickerLevel || 1;
             if (data.instantAutoclickActive && data.instantAutoclickEndTime > Date.now()) { const offSec = Math.floor((data.instantAutoclickEndTime - Date.now()) / 1000); const offTok = Math.floor(offSec * clickPower * 0.5); if (offTok > 0) { score += offTok; db.ref(`leaderboard/${uid}/score`).set(score); showMessage(`⏰ +${offTok} offline tokens!`); } startInstantAutoclick(data.instantAutoclickEndTime - Date.now()); }
-            // Обычный автокликер запускаем только если Clone НЕ активен
             if (data.autoclickActive && data.autoclickEndTime > Date.now() && (!data.cloneEndTime || data.cloneEndTime <= Date.now())) {
               startAutoclicker(data.autoclickEndTime - Date.now(), false);
             }
