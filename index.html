@@ -6,17 +6,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <meta name="590b08291eaf7810856a6e6c3e9506ae51ac29da" content="590b08291eaf7810856a6e6c3e9506ae51ac29da" />
   <title>Crypto Clicker</title>
-  
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  
-  <script>
-    window.onTelegramAuth = function(user) {
-      if (window.handleTelegramWidgetAuth) {
-        window.handleTelegramWidgetAuth(user);
-      }
-    };
-  </script>
-  
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; min-height: 100vh; overflow-x: hidden; overscroll-behavior: none; }
@@ -122,10 +112,12 @@
     .auth-error { color: #ff5555; padding: 15px; }
     .score-popup { position: fixed; font-weight: bold; pointer-events: none; z-index: 9999; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4); animation: floatUpChaotic 0.8s ease-out forwards; user-select: none; }
     @keyframes floatUpChaotic { 0% { opacity: 0; transform: translate(0, 0) scale(0.2) rotate(0deg); } 15% { opacity: 1; transform: translate(var(--dx20, 0px), -10px) scale(0.8) rotate(var(--rot20, 0deg)); } 40% { opacity: 1; transform: translate(var(--dx50, 0px), -35px) scale(1.3) rotate(var(--rot50, 0deg)); } 70% { opacity: 0.7; transform: translate(var(--dx100, 0px), -65px) scale(1.1) rotate(var(--rot100, 0deg)); } 100% { opacity: 0; transform: translate(calc(var(--dx100, 0px) * 1.5), -100px) scale(0.6) rotate(calc(var(--rot100, 0deg) * 1.5)); } }
-    
-    #telegramLoginWidget { display: flex; justify-content: center; margin: 20px 0; min-height: 50px; }
+
     .signout-button { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; transition: all 0.3s; font-size: 14px; }
     .signout-button:hover { background: #cc0000; transform: translateY(-2px); }
+    .language-switch { position: fixed; top: 10px; right: 10px; z-index: 10000; display: flex; gap: 5px; }
+    .lang-btn { background: #2a2a2a; color: #fff; border: 1px solid #00c3ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+    .lang-btn.active { background: linear-gradient(135deg, #00c3ff, #00ffa6); color: #000; font-weight: bold; }
 
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
@@ -157,6 +149,10 @@
   </style>
 </head>
 <body>
+  <div class="language-switch">
+    <button class="lang-btn active" onclick="switchLanguage('ru')">RU</button>
+    <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
+  </div>
   <div id="antiCheatWarning">⚠️ Suspicious activity detected!</div>
   <button id="adminToggle" onclick="toggleAdminPanel()">🛡️</button>
   <div id="adminPanel">
@@ -249,6 +245,108 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <script>
+    // ==================== МУЛЬТИЯЗЫЧНОСТЬ ====================
+    let currentLanguage = localStorage.getItem('cryptoClickerLang') || 'ru';
+    
+    const translations = {
+      ru: {
+        authTitle: 'Войдите через Telegram',
+        authSubtitle: 'Используйте тот же аккаунт, что и на телефоне',
+        authLoading: 'Авторизация через Telegram...',
+        authError: 'Ошибка авторизации. Попробуйте позже.',
+        welcome: '🎉 Добро пожаловать',
+        welcomeBack: '👋 С возвращением',
+        signOut: '🚪 Выйти',
+        copyLink: 'Копировать ссылку',
+        claimBonus: 'Забрать бонус',
+        nextIn: 'Следующий через',
+        claimNow: 'Забрать сейчас!',
+        shop: 'Магазин',
+        battlePass: '🎫 Battle Pass',
+        achievements: '🏆 Достижения',
+        tasks: '📋 Задания',
+        miniGame: 'Мини-игра',
+        player: 'Игрок',
+        level: 'Уровень',
+        clickPower: 'Сила клика',
+        autoclicker: 'Автокликер',
+        tokens: 'Токены',
+        crystals: 'Кристаллы',
+        referralLink: 'Реферальная ссылка',
+        invited: 'Приглашено',
+        inactive: 'Неактивен',
+        active: 'Активен',
+        maxLevel: 'Макс. уровень!',
+        notEnoughTokens: 'Недостаточно токенов!',
+        notEnoughCrystals: 'Недостаточно кристаллов!',
+        signIn: 'Войдите в аккаунт!',
+        slowDown: 'Не так быстро!',
+        victory: '🎉 Победа!',
+        timeUp: '⏰ Время вышло!',
+        error: 'Ошибка. Попробуйте позже.',
+        platform: 'Платформа',
+        mobile: '📱 Телефон',
+        pc: '💻 ПК',
+        syncMessage: '🔄 Данные синхронизированы'
+      },
+      en: {
+        authTitle: 'Sign in with Telegram',
+        authSubtitle: 'Use the same account as on your phone',
+        authLoading: 'Authenticating via Telegram...',
+        authError: 'Authentication error. Please try again.',
+        welcome: '🎉 Welcome',
+        welcomeBack: '👋 Welcome back',
+        signOut: '🚪 Sign Out',
+        copyLink: 'Copy Link',
+        claimBonus: 'Claim Bonus',
+        nextIn: 'Next in',
+        claimNow: 'Claim now!',
+        shop: 'Shop',
+        battlePass: '🎫 Battle Pass',
+        achievements: '🏆 Achievements',
+        tasks: '📋 Tasks',
+        miniGame: 'Mini-Game',
+        player: 'Player',
+        level: 'Level',
+        clickPower: 'Click Power',
+        autoclicker: 'Autoclicker',
+        tokens: 'Tokens',
+        crystals: 'Crystals',
+        referralLink: 'Referral Link',
+        invited: 'Invited',
+        inactive: 'Inactive',
+        active: 'Active',
+        maxLevel: 'Max level!',
+        notEnoughTokens: 'Not enough tokens!',
+        notEnoughCrystals: 'Not enough crystals!',
+        signIn: 'Sign in!',
+        slowDown: 'Slow down!',
+        victory: '🎉 Victory!',
+        timeUp: '⏰ Time\'s up!',
+        error: 'Error. Please try again.',
+        platform: 'Platform',
+        mobile: '📱 Mobile',
+        pc: '💻 PC',
+        syncMessage: '🔄 Data synced'
+      }
+    };
+    
+    function t(key) {
+      return translations[currentLanguage]?.[key] || translations.en[key] || key;
+    }
+    
+    function switchLanguage(lang) {
+      currentLanguage = lang;
+      localStorage.setItem('cryptoClickerLang', lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
+      });
+      setupAuthUI();
+      updateProfilePanel();
+    }
+    
+    window.switchLanguage = switchLanguage;
+
     // ==================== КОНФИГУРАЦИЯ И БАЗОВЫЕ НАСТРОЙКИ ====================
     const WHITELISTED_UIDS = ['tg_464829483','464829483'];
     try { const s = localStorage.getItem('whitelisted_uids'); if (s) JSON.parse(s).forEach(u => { if (!WHITELISTED_UIDS.includes(u)) WHITELISTED_UIDS.push(u); }); } catch (e) {}
@@ -347,43 +445,52 @@
       const ab = document.getElementById('authButtons');
       
       if (isTelegramMiniApp) { 
-        ab.innerHTML = '<div class="auth-loading">Авторизация через Telegram...</div>'; 
+        ab.innerHTML = `<div class="auth-loading">${t('authLoading')}</div>`; 
         setTimeout(() => signInWithTelegramMiniApp(), 500); 
         try { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } catch (e) {} 
       } else { 
         ab.innerHTML = `
           <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-            <h3 style="color: #00c3ff; margin-bottom: 10px;">Войдите через Telegram</h3>
-            <p style="color: #aaa; font-size: 14px;">Используйте тот же аккаунт, что и на телефоне</p>
-            <div id="telegramLoginWidget"></div>
+            <h3 style="color: #00c3ff; margin-bottom: 10px;">${t('authTitle')}</h3>
+            <p style="color: #aaa; font-size: 14px;">${t('authSubtitle')}</p>
+            <div id="telegramWidgetContainer"></div>
           </div>
         `;
-        loadTelegramLoginWidget();
+        loadTelegramWidget();
       }
     }
 
-    function loadTelegramLoginWidget() {
-      const widgetContainer = document.getElementById('telegramLoginWidget');
-      if (!widgetContainer) return;
+    function loadTelegramWidget() {
+      const container = document.getElementById('telegramWidgetContainer');
+      if (!container) return;
       
+      // Очищаем контейнер
+      container.innerHTML = '';
+      
+      // Создаем скрипт виджета
       const script = document.createElement('script');
+      script.async = true;
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
       script.setAttribute('data-telegram-login', 'circlegametry_bot');
       script.setAttribute('data-size', 'large');
-      script.setAttribute('data-onauth', 'window.handleTelegramWidgetAuth(user)');
+      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
       script.setAttribute('data-request-access', 'write');
-      script.async = true;
       
-      widgetContainer.appendChild(script);
+      container.appendChild(script);
     }
 
-    window.handleTelegramWidgetAuth = async function(telegramUser) {
-      console.log('Telegram widget auth:', telegramUser);
-      if (!telegramUser || !telegramUser.id) {
-        document.getElementById('authButtons').innerHTML = '<div class="auth-error">Ошибка авторизации Telegram. Попробуйте снова.</div>';
-        return;
+    // Глобальная функция для виджета Telegram
+    window.onTelegramAuth = async function(telegramUser) {
+      console.log('Telegram auth:', telegramUser);
+      if (telegramUser && telegramUser.id) {
+        await handleTelegramUser(telegramUser);
+      } else {
+        document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`;
+        // Повторная попытка через 3 секунды
+        setTimeout(() => {
+          if (!user) setupAuthUI();
+        }, 3000);
       }
-      await handleTelegramUser(telegramUser);
     };
 
     async function signInWithTelegramMiniApp() {
@@ -391,13 +498,13 @@
         const tg = window.Telegram.WebApp;
         const u = tg.initDataUnsafe?.user;
         if (!u?.id) { 
-          document.getElementById('authButtons').innerHTML = '<div class="auth-error">Не удалось получить данные Telegram. Попробуйте перезапустить приложение.</div>'; 
+          document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
           return; 
         }
         await handleTelegramUser(u);
       } catch (e) { 
         console.error('Telegram auth error:', e);
-        document.getElementById('authButtons').innerHTML = '<div class="auth-error">Ошибка авторизации. Попробуйте позже.</div>'; 
+        document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
       }
     }
 
@@ -405,7 +512,7 @@
       try {
         const tgId = telegramUser.id;
         const tgUid = 'tg_' + tgId;
-        const displayName = sanitizeInput(telegramUser.first_name || telegramUser.username || 'Игрок');
+        const displayName = sanitizeInput(telegramUser.first_name || telegramUser.username || t('player'));
         
         let uid = await unifiedAuth.findUserByIdentifier('tg_user_id', tgId);
         
@@ -437,7 +544,7 @@
           
           await db.ref(`auth_lookup/tg_user_id_${tgId}`).set(uid);
           
-          showMessage(`🎉 Добро пожаловать, ${displayName}!`);
+          showMessage(`${t('welcome')}, ${displayName}!`);
         } else {
           await db.ref(`users/${uid}`).update({ 
             display_name: displayName,
@@ -458,7 +565,7 @@
             });
           }
           
-          showMessage(`👋 С возвращением, ${displayName}!`);
+          showMessage(`${t('welcomeBack')}, ${displayName}!`);
         }
         
         user = { 
@@ -474,7 +581,7 @@
         
       } catch (error) {
         console.error('Error handling Telegram user:', error);
-        showMessage('Произошла ошибка при входе. Попробуйте позже.');
+        showMessage(t('error'));
       }
     }
 
@@ -492,7 +599,7 @@
         const userData = userSnap.val();
         user = {
           uid: session.uid, tgUid: 'tg_' + session.tgId, tgId: session.tgId,
-          displayName: userData.display_name || 'Игрок',
+          displayName: userData.display_name || t('player'),
           username: userData.username || '',
           photoUrl: userData.photo_url || ''
         };
@@ -530,7 +637,7 @@
           updateCounterDisplay();
           updateProfilePanel();
           if (diff > 0 && diff < 1000000) {
-            showMessage(`🔄 +${diff} токенов с другого устройства`);
+            showMessage(`🔄 +${diff} tokens from another device`);
           }
         }
       });
@@ -684,7 +791,7 @@
     // ==================== ОСНОВНОЙ КЛИК ====================
     function clickToken(event) {
       if (!user || isAnimating) return;
-      if (!rateLimiter.canClick()) { showMessage('Slow down!'); return; }
+      if (!rateLimiter.canClick()) { showMessage(t('slowDown')); return; }
       if (Date.now() - lastClickTime < 50) return;
       lastClickTime = Date.now(); isAnimating = true;
       if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
@@ -741,7 +848,7 @@
 
     function updateInstantAutoclickButtonState() { const b = document.getElementById('buyInstantAutoclickBtn'); if (!b) return; b.onclick = null; if (dualClickActive || cloneEndTime > Date.now()) { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } else if (!instantAutoclickActive) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } }
 
-    function buyInstantAutoclick() { if (!user) { showMessage('Sign in!'); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; savePlayerCrystals(); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
+    function buyInstantAutoclick() { if (!user) { showMessage(t('signIn')); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; savePlayerCrystals(); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
 
     // ==================== CLONE ====================
     function startClone(duration) {
@@ -792,13 +899,13 @@
       else { b.disabled = false; b.textContent = '👥 Activate Clone'; b.style.background = ''; b.onclick = buyClone; }
     }
 
-    function buyClone() { if (!user) { showMessage('Sign in!'); return; } if (cloneEndTime > 0) { showMessage('Clone already active!'); return; } if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; } if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; } crystals -= CLONE_COST; savePlayerCrystals(); startClone(CLONE_DURATION); showMessage(`👥 Clone activated for 100 minutes! Autoclicker disabled.`); updateProfilePanel(); }
+    function buyClone() { if (!user) { showMessage(t('signIn')); return; } if (cloneEndTime > 0) { showMessage('Clone already active!'); return; } if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; } if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; } crystals -= CLONE_COST; savePlayerCrystals(); startClone(CLONE_DURATION); showMessage(`👥 Clone activated for 100 minutes! Autoclicker disabled.`); updateProfilePanel(); }
     function activateDualClick() { dualClickActive = true; document.getElementById('secondClickButton').classList.add('visible'); }
     function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
 
     // ==================== ПОКУПКИ ====================
-    function buyUpgrade(type) { if (type === "clickPower" && clickPower < 8) { const c = getClickPowerUpgradeCost(); if (score < c) { showMessage("Not enough tokens."); return; } score -= c; clickPower++; savePlayerScore(); db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower); updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); updateCounterDisplay(); } else if (clickPower >= 8) showMessage("Max level!"); }
-    function upgradeAutoclicker() { if (autoclickerLevel >= 20) { showMessage("Max level!"); return; } const c = getAutoclickerUpgradeCost(); if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } score -= c.tokens; crystals -= c.crystals; autoclickerLevel++; savePlayerScore(); savePlayerCrystals(); db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); updateProfilePanel(); updateAutoclickerShopUI(); updateCounterDisplay(); }
+    function buyUpgrade(type) { if (type === "clickPower" && clickPower < 8) { const c = getClickPowerUpgradeCost(); if (score < c) { showMessage(t('notEnoughTokens')); return; } score -= c; clickPower++; savePlayerScore(); db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower); updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); updateCounterDisplay(); } else if (clickPower >= 8) showMessage(t('maxLevel')); }
+    function upgradeAutoclicker() { if (autoclickerLevel >= 20) { showMessage(t('maxLevel')); return; } const c = getAutoclickerUpgradeCost(); if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } score -= c.tokens; crystals -= c.crystals; autoclickerLevel++; savePlayerScore(); savePlayerCrystals(); db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); updateProfilePanel(); updateAutoclickerShopUI(); updateCounterDisplay(); }
     function buyResonance() { if (!user) return; if (hasResonance) { showMessage('Already have Resonance!'); return; } if (totalClicks < RESONANCE_CLICK_REQUIREMENT) { showMessage(`Need ${RESONANCE_CLICK_REQUIREMENT} clicks!`); return; } if (crystals < RESONANCE_COST) { showMessage(`Need ${RESONANCE_COST} 💎!`); return; } crystals -= RESONANCE_COST; hasResonance = true; savePlayerCrystals(); db.ref(`leaderboard/${user.uid}/hasResonance`).set(true); updateProfilePanel(); updateResonanceUI(); }
 
     function updateResonanceUI() { const b = document.getElementById('buyResonanceBtn'), r = document.getElementById('resonanceClickCount'); if (r) r.textContent = totalClicks; if (hasResonance) { if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } } else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } } else { if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } } }
@@ -807,7 +914,7 @@
       document.getElementById('profileClickPower').innerText = Math.min(clickPower,8);
       if (instantAutoclickActive) document.getElementById('profileAutoclick').innerText = 'Active (Instant)';
       else if (autoclickActive) document.getElementById('profileAutoclick').innerText = `Active: ${formatTimeFromSeconds(Math.floor(Math.max(0,autoclickEndTime-Date.now())/1000))}`;
-      else document.getElementById('profileAutoclick').innerText = 'Inactive';
+      else document.getElementById('profileAutoclick').innerText = t('inactive');
       let lv = 1; for (let i=0;i<levelUpRequirements.length;i++){if(score>=levelUpRequirements[i])lv=i+2;else break;}
       document.getElementById('playerLevel').innerText = lv;
       document.getElementById('profileTokens').innerText = score;
@@ -817,7 +924,7 @@
         document.getElementById('referralLink').value = generateReferralLink();
         db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; });
       }
-      const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.textContent = 'Max level!'; lm.classList.add('show'); } else lm.classList.remove('show');
+      const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.textContent = t('maxLevel'); lm.classList.add('show'); } else lm.classList.remove('show');
     }
     
     function updateClickPowerBar() { document.getElementById("clickPowerDisplay").innerText = clickPower; document.getElementById("clickPowerBar").style.width = Math.min((clickPower/8)*100,100)+"%"; updateClickPowerCostText(); }
@@ -854,7 +961,7 @@
 
     // ==================== МИНИ-ИГРА ====================
     function startMiniGame() {
-      if (!user) return showMessage("Sign in to play!");
+      if (!user) return showMessage(t('signIn'));
       if (score < MINI_GAME_ENTRY_FEE) return showMessage(`Need ${MINI_GAME_ENTRY_FEE} tokens to play!`);
       if (miniGameActive) return showMessage("Mini-game already active!");
       const today = new Date().toDateString();
@@ -887,9 +994,9 @@
       clearInterval(miniGameTimer); miniGameActive = false; miniGameTimer = null;
       document.getElementById("miniGamePanel").style.display = "none";
       if (!user) return;
-      if (won) { score += MINI_GAME_REWARD; savePlayerScore(); showMessage(`🎉 Victory! +${MINI_GAME_REWARD} tokens!`); updateTaskProgress("miniGameChallenge", 1); updateProfilePanel(); updateCounterDisplay(); }
+      if (won) { score += MINI_GAME_REWARD; savePlayerScore(); showMessage(`${t('victory')} +${MINI_GAME_REWARD} tokens!`); updateTaskProgress("miniGameChallenge", 1); updateProfilePanel(); updateCounterDisplay(); }
       else if (leftManually) { showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
-      else { showMessage(`⏰ Time's up! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
+      else { showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
     }
 
     // ==================== ЗАДАНИЯ (TASKS) ====================
@@ -933,7 +1040,7 @@
     }
     
     function claimTask(taskId) {
-      if (!user) return showMessage("Sign in.");
+      if (!user) return showMessage(t('signIn'));
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
         const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
@@ -948,7 +1055,7 @@
     }
     
     function completeTwitterTask(taskId) {
-      if (!user) return showMessage("Sign in.");
+      if (!user) return showMessage(t('signIn'));
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
         const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
@@ -991,7 +1098,7 @@
     // ==================== БОНУСЫ ====================
     function startBonusTimer() {
       if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-      bonusTimerInterval = setInterval(async () => { if (!user) return; try { const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); document.getElementById("claimBonusBtn").disabled = rem > 0; document.getElementById("bonusTimer").innerText = rem <= 0 ? "Claim now!" : `Next: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; } catch (e) {} }, 1000);
+      bonusTimerInterval = setInterval(async () => { if (!user) return; try { const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); document.getElementById("claimBonusBtn").disabled = rem > 0; document.getElementById("bonusTimer").innerText = rem <= 0 ? t('claimNow') : `${t('nextIn')}: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; } catch (e) {} }, 1000);
     }
     
     async function claimHourlyBonus() {
@@ -1058,6 +1165,10 @@
 
     // Инициализация
     (async function init() {
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === currentLanguage);
+      });
+      
       const loggedIn = await autoLogin();
       if (loggedIn) {
         document.getElementById('authSection').style.display = 'none';
