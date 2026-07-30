@@ -113,11 +113,15 @@
     .score-popup { position: fixed; font-weight: bold; pointer-events: none; z-index: 9999; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4); animation: floatUpChaotic 0.8s ease-out forwards; user-select: none; }
     @keyframes floatUpChaotic { 0% { opacity: 0; transform: translate(0, 0) scale(0.2) rotate(0deg); } 15% { opacity: 1; transform: translate(var(--dx20, 0px), -10px) scale(0.8) rotate(var(--rot20, 0deg)); } 40% { opacity: 1; transform: translate(var(--dx50, 0px), -35px) scale(1.3) rotate(var(--rot50, 0deg)); } 70% { opacity: 0.7; transform: translate(var(--dx100, 0px), -65px) scale(1.1) rotate(var(--rot100, 0deg)); } 100% { opacity: 0; transform: translate(calc(var(--dx100, 0px) * 1.5), -100px) scale(0.6) rotate(calc(var(--rot100, 0deg) * 1.5)); } }
 
-    .signout-button { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; transition: all 0.3s; font-size: 14px; }
+    .signout-button { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; transition: all 0.3s; font-size: 14px; display: none; }
+    .signout-button.visible { display: block; }
     .signout-button:hover { background: #cc0000; transform: translateY(-2px); }
     .language-switch { position: fixed; top: 10px; right: 10px; z-index: 10000; display: flex; gap: 5px; }
     .lang-btn { background: #2a2a2a; color: #fff; border: 1px solid #00c3ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
     .lang-btn.active { background: linear-gradient(135deg, #00c3ff, #00ffa6); color: #000; font-weight: bold; }
+    
+    #telegramWidgetContainer { display: flex; justify-content: center; min-height: 50px; margin: 10px 0; }
+    #telegramWidgetContainer iframe { max-width: 100%; }
 
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
@@ -177,7 +181,7 @@
       <div><strong>Referral Link:</strong> <input id="referralLink" readonly></div>
       <div><strong>Invited:</strong> <span id="invitedCount">0</span></div>
       <div style="text-align:center;"><button class="click-button" onclick="copyReferralLink()">Copy Link</button></div>
-      <div style="text-align:center;margin-top:10px;"><button class="signout-button" onclick="signOut()">🚪 Sign Out</button></div>
+      <div style="text-align:center;margin-top:10px;"><button id="signOutBtn" class="signout-button" onclick="signOut()">🚪 Sign Out</button></div>
     </div>
     <div id="hourlyBonus">
       <div class="bonus-card"><h3>Hourly Bonus</h3><p id="bonusTimer">Next in: 01:00:00</p><button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button><div class="bonus-message" id="bonusMessage"></div></div>
@@ -283,11 +287,7 @@
         slowDown: 'Не так быстро!',
         victory: '🎉 Победа!',
         timeUp: '⏰ Время вышло!',
-        error: 'Ошибка. Попробуйте позже.',
-        platform: 'Платформа',
-        mobile: '📱 Телефон',
-        pc: '💻 ПК',
-        syncMessage: '🔄 Данные синхронизированы'
+        error: 'Ошибка. Попробуйте позже.'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -323,17 +323,11 @@
         slowDown: 'Slow down!',
         victory: '🎉 Victory!',
         timeUp: '⏰ Time\'s up!',
-        error: 'Error. Please try again.',
-        platform: 'Platform',
-        mobile: '📱 Mobile',
-        pc: '💻 PC',
-        syncMessage: '🔄 Data synced'
+        error: 'Error. Please try again.'
       }
     };
     
-    function t(key) {
-      return translations[currentLanguage]?.[key] || translations.en[key] || key;
-    }
+    function t(key) { return translations[currentLanguage]?.[key] || translations.en[key] || key; }
     
     function switchLanguage(lang) {
       currentLanguage = lang;
@@ -341,13 +335,12 @@
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
       });
-      setupAuthUI();
+      if (!user) setupAuthUI();
       updateProfilePanel();
     }
-    
     window.switchLanguage = switchLanguage;
 
-    // ==================== КОНФИГУРАЦИЯ И БАЗОВЫЕ НАСТРОЙКИ ====================
+    // ==================== КОНФИГУРАЦИЯ ====================
     const WHITELISTED_UIDS = ['tg_464829483','464829483'];
     try { const s = localStorage.getItem('whitelisted_uids'); if (s) JSON.parse(s).forEach(u => { if (!WHITELISTED_UIDS.includes(u)) WHITELISTED_UIDS.push(u); }); } catch (e) {}
     function isWhitelisted(uid) { return uid && (WHITELISTED_UIDS.includes(uid) || WHITELISTED_UIDS.includes('tg_' + uid) || (uid.startsWith('tg_') && WHITELISTED_UIDS.includes(uid.replace('tg_', '')))); }
@@ -363,7 +356,7 @@
     function sanitizeInput(s) { return typeof s === 'string' ? s.replace(/[<>"'&]/g, m => ({'<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','&':'&amp;'})[m]) : s; }
     const rateLimiter = { clicks: [], maxClicksPerSecond: 20, maxClicksPerMinute: 200, canClick() { const n = Date.now(); this.clicks = this.clicks.filter(t => n - t < 60000); if (this.clicks.filter(t => n - t < 1000).length >= this.maxClicksPerSecond || this.clicks.length >= this.maxClicksPerMinute) return false; this.clicks.push(n); return true; } };
 
-    // ==================== СИСТЕМА ЕДИНОЙ TELEGRAM АВТОРИЗАЦИИ ====================
+    // ==================== АВТОРИЗАЦИЯ ====================
     const unifiedAuth = {
       async findUserByIdentifier(type, id) {
         let snap = await db.ref(`auth_lookup/${type}_${id}`).once('value');
@@ -371,28 +364,19 @@
         snap = await db.ref('users').orderByChild(`auth_methods/${type}`).equalTo(id).once('value');
         if (snap.exists()) return Object.keys(snap.val())[0];
         return null;
-      },
-      async getLinkedAccounts(uid) {
-        const snap = await db.ref(`users/${uid}/auth_methods`).once('value');
-        return snap.val() || {};
       }
     };
 
-    // ==================== СОХРАНЕНИЕ И ВОССТАНОВЛЕНИЕ СЕССИИ ====================
     function saveSession(uid, tgId) {
-      const sessionData = { uid: uid, tgId: tgId, timestamp: Date.now() };
-      localStorage.setItem('cryptoClickerSession', JSON.stringify(sessionData));
+      localStorage.setItem('cryptoClickerSession', JSON.stringify({ uid, tgId, timestamp: Date.now() }));
     }
 
     function restoreSession() {
       try {
-        const sessionStr = localStorage.getItem('cryptoClickerSession');
-        if (!sessionStr) return null;
-        const session = JSON.parse(sessionStr);
-        if (Date.now() - session.timestamp > 86400000) {
-          localStorage.removeItem('cryptoClickerSession');
-          return null;
-        }
+        const s = localStorage.getItem('cryptoClickerSession');
+        if (!s) return null;
+        const session = JSON.parse(s);
+        if (Date.now() - session.timestamp > 86400000) { localStorage.removeItem('cryptoClickerSession'); return null; }
         return session;
       } catch (e) { return null; }
     }
@@ -440,9 +424,13 @@
       { id: "onlineTime", description: "Stay online for 30 minutes", goal: 1800, reward: 2, rewardType: "crystals", period: "daily" }
     ];
 
-    // ==================== АВТОРИЗАЦИЯ ====================
+    // ==================== НАСТРОЙКА АВТОРИЗАЦИИ ====================
     function setupAuthUI() {
       const ab = document.getElementById('authButtons');
+      const signOutBtn = document.getElementById('signOutBtn');
+      
+      // Скрываем кнопку выхода до авторизации
+      if (signOutBtn) signOutBtn.classList.remove('visible');
       
       if (isTelegramMiniApp) { 
         ab.innerHTML = `<div class="auth-loading">${t('authLoading')}</div>`; 
@@ -456,40 +444,31 @@
             <div id="telegramWidgetContainer"></div>
           </div>
         `;
-        loadTelegramWidget();
+        
+        // Загружаем виджет Telegram
+        setTimeout(() => {
+          const container = document.getElementById('telegramWidgetContainer');
+          if (container) {
+            container.innerHTML = '';
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://telegram.org/js/telegram-widget.js?22';
+            script.setAttribute('data-telegram-login', 'circlegametry_bot');
+            script.setAttribute('data-size', 'large');
+            script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+            script.setAttribute('data-request-access', 'write');
+            container.appendChild(script);
+          }
+        }, 100);
       }
     }
 
-    function loadTelegramWidget() {
-      const container = document.getElementById('telegramWidgetContainer');
-      if (!container) return;
-      
-      // Очищаем контейнер
-      container.innerHTML = '';
-      
-      // Создаем скрипт виджета
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://telegram.org/js/telegram-widget.js?22';
-      script.setAttribute('data-telegram-login', 'circlegametry_bot');
-      script.setAttribute('data-size', 'large');
-      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-      script.setAttribute('data-request-access', 'write');
-      
-      container.appendChild(script);
-    }
-
-    // Глобальная функция для виджета Telegram
     window.onTelegramAuth = async function(telegramUser) {
-      console.log('Telegram auth:', telegramUser);
       if (telegramUser && telegramUser.id) {
         await handleTelegramUser(telegramUser);
       } else {
         document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`;
-        // Повторная попытка через 3 секунды
-        setTimeout(() => {
-          if (!user) setupAuthUI();
-        }, 3000);
+        setTimeout(() => { if (!user) setupAuthUI(); }, 3000);
       }
     };
 
@@ -503,7 +482,6 @@
         }
         await handleTelegramUser(u);
       } catch (e) { 
-        console.error('Telegram auth error:', e);
         document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
       }
     }
@@ -511,76 +489,47 @@
     async function handleTelegramUser(telegramUser) {
       try {
         const tgId = telegramUser.id;
-        const tgUid = 'tg_' + tgId;
         const displayName = sanitizeInput(telegramUser.first_name || telegramUser.username || t('player'));
-        
         let uid = await unifiedAuth.findUserByIdentifier('tg_user_id', tgId);
         
         if (!uid) {
           const userRef = db.ref('users').push();
           uid = userRef.key;
-          
           await userRef.set({ 
             auth_methods: { tg_user_id: tgId }, 
             display_name: displayName,
-            username: telegramUser.username || '',
-            photo_url: telegramUser.photo_url || '',
-            created_at: firebase.database.ServerValue.TIMESTAMP,
-            last_platform: isTelegramMiniApp ? 'mobile' : 'pc'
+            created_at: firebase.database.ServerValue.TIMESTAMP
           });
-          
           await db.ref(`player_data/${uid}`).set({
             score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
-            autoclickerLevel: 1, hasResonance: false, inventory: {},
-            achievements: {},
-            lastActive: firebase.database.ServerValue.TIMESTAMP,
-            lastPlatform: isTelegramMiniApp ? 'mobile' : 'pc'
+            autoclickerLevel: 1, hasResonance: false,
+            autoclickActive: false, autoclickEndTime: 0,
+            lastActive: firebase.database.ServerValue.TIMESTAMP
           });
-          
           await db.ref(`leaderboard/${uid}`).set({ 
             id: uid, name: displayName, score: 0, crystals: 0, 
             clickPower: 1, totalClicks: 0, lastUpdate: Date.now() 
           });
-          
           await db.ref(`auth_lookup/tg_user_id_${tgId}`).set(uid);
-          
           showMessage(`${t('welcome')}, ${displayName}!`);
         } else {
           await db.ref(`users/${uid}`).update({ 
             display_name: displayName,
-            username: telegramUser.username || '',
-            photo_url: telegramUser.photo_url || '',
-            last_login_at: firebase.database.ServerValue.TIMESTAMP,
-            last_platform: isTelegramMiniApp ? 'mobile' : 'pc'
+            last_login_at: firebase.database.ServerValue.TIMESTAMP
           });
-          
-          const existingData = (await db.ref(`player_data/${uid}`).once('value')).val();
-          if (!existingData) {
-            await db.ref(`player_data/${uid}`).set({
-              score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
-              autoclickerLevel: 1, hasResonance: false, inventory: {},
-              achievements: {},
-              lastActive: firebase.database.ServerValue.TIMESTAMP,
-              lastPlatform: isTelegramMiniApp ? 'mobile' : 'pc'
-            });
-          }
-          
           showMessage(`${t('welcomeBack')}, ${displayName}!`);
         }
         
-        user = { 
-          uid: uid, tgUid: tgUid, tgId: tgId,
-          displayName: displayName,
-          username: telegramUser.username || '',
-          photoUrl: telegramUser.photo_url || ''
-        };
-        
-        if (isWhitelisted(tgUid) || isWhitelisted(uid)) showAdminPanel();
+        user = { uid, tgUid: 'tg_' + tgId, displayName };
+        if (isWhitelisted(user.tgUid) || isWhitelisted(uid)) showAdminPanel();
         saveSession(uid, tgId);
-        startGameAfterAuth();
         
+        // Показываем кнопку выхода
+        const signOutBtn = document.getElementById('signOutBtn');
+        if (signOutBtn) signOutBtn.classList.add('visible');
+        
+        startGameAfterAuth();
       } catch (error) {
-        console.error('Error handling Telegram user:', error);
         showMessage(t('error'));
       }
     }
@@ -588,28 +537,18 @@
     async function autoLogin() {
       const session = restoreSession();
       if (!session) return false;
-      
       try {
         const userSnap = await db.ref(`users/${session.uid}`).once('value');
-        if (!userSnap.exists()) {
-          localStorage.removeItem('cryptoClickerSession');
-          return false;
-        }
-        
-        const userData = userSnap.val();
-        user = {
-          uid: session.uid, tgUid: 'tg_' + session.tgId, tgId: session.tgId,
-          displayName: userData.display_name || t('player'),
-          username: userData.username || '',
-          photoUrl: userData.photo_url || ''
-        };
-        
+        if (!userSnap.exists()) { localStorage.removeItem('cryptoClickerSession'); return false; }
+        user = { uid: session.uid, tgUid: 'tg_' + session.tgId, displayName: userSnap.val().display_name || t('player') };
         if (isWhitelisted(user.tgUid) || isWhitelisted(user.uid)) showAdminPanel();
+        
+        // Показываем кнопку выхода
+        const signOutBtn = document.getElementById('signOutBtn');
+        if (signOutBtn) signOutBtn.classList.add('visible');
+        
         return true;
-      } catch (error) {
-        console.error('Auto login error:', error);
-        return false;
-      }
+      } catch (e) { return false; }
     }
 
     async function startGameAfterAuth() {
@@ -625,48 +564,20 @@
       if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
     }
 
-    // ==================== СИНХРОНИЗАЦИЯ ДАННЫХ ====================
+    // ==================== СИНХРОНИЗАЦИЯ ====================
     function setupCrossPlatformSync() {
       if (!user) return;
-      
       db.ref(`player_data/${user.uid}/score`).on('value', (snapshot) => {
         const newScore = snapshot.val();
-        if (newScore !== null && newScore !== score) {
-          const diff = newScore - score;
-          score = newScore;
-          updateCounterDisplay();
-          updateProfilePanel();
-          if (diff > 0 && diff < 1000000) {
-            showMessage(`🔄 +${diff} tokens from another device`);
-          }
-        }
+        if (newScore !== null && newScore !== score) { score = newScore; updateCounterDisplay(); updateProfilePanel(); }
       });
-      
       db.ref(`player_data/${user.uid}/crystals`).on('value', (snapshot) => {
         const newCrystals = snapshot.val();
-        if (newCrystals !== null && newCrystals !== crystals) {
-          crystals = newCrystals;
-          updateProfilePanel();
-        }
-      });
-      
-      db.ref(`player_data/${user.uid}/inventory`).on('value', (snapshot) => {
-        const inventory = snapshot.val() || {};
-        updateInventoryDisplay(inventory);
-      });
-      
-      db.ref(`player_data/${user.uid}`).update({
-        lastActive: firebase.database.ServerValue.TIMESTAMP,
-        lastPlatform: isTelegramMiniApp ? 'mobile' : 'pc'
+        if (newCrystals !== null && newCrystals !== crystals) { crystals = newCrystals; updateProfilePanel(); }
       });
     }
 
-    function updateInventoryDisplay(inventory) {
-      if (inventory.resonance && !hasResonance) { hasResonance = true; updateResonanceUI(); }
-      if (inventory.battlePass) { bpData.isPremium = true; updateBattlePassUI(); }
-    }
-
-    // ==================== ЗАГРУЗКА ДАННЫХ ИГРОКА ====================
+    // ==================== ЗАГРУЗКА ДАННЫХ (С ВОССТАНОВЛЕНИЕМ АВТОКЛИКЕРА) ====================
     async function loadPlayerData(uid) {
       return new Promise((resolve) => {
         db.ref(`player_data/${uid}`).once('value').then(snapshot => {
@@ -674,9 +585,9 @@
           if (!data) {
             db.ref(`player_data/${uid}`).set({
               score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
-              autoclickerLevel: 1, hasResonance: false, inventory: {},
-              lastActive: firebase.database.ServerValue.TIMESTAMP,
-              lastPlatform: isTelegramMiniApp ? 'mobile' : 'pc'
+              autoclickerLevel: 1, hasResonance: false,
+              autoclickActive: false, autoclickEndTime: 0,
+              lastActive: firebase.database.ServerValue.TIMESTAMP
             });
             score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
             autoclickerLevel = 1; hasResonance = false;
@@ -687,17 +598,24 @@
             totalClicks = data.totalClicks || 0;
             autoclickerLevel = data.autoclickerLevel || 1;
             hasResonance = data.hasResonance || false;
-            achievements = data.achievements || {};
             
+            // ВАЖНО: Восстанавливаем обычный автокликер
+            if (data.autoclickActive && data.autoclickEndTime && data.autoclickEndTime > Date.now()) {
+              const remaining = data.autoclickEndTime - Date.now();
+              console.log('Restoring autoclicker, remaining:', Math.floor(remaining/1000), 'seconds');
+              startAutoclicker(remaining, false);
+            }
+            
+            // Восстанавливаем instant автокликер
+            if (data.instantAutoclickActive && data.instantAutoclickEndTime && data.instantAutoclickEndTime > Date.now()) {
+              const remaining = data.instantAutoclickEndTime - Date.now();
+              startInstantAutoclick(remaining);
+            }
+            
+            // Восстанавливаем клон
             if (data.cloneEndTime && data.cloneEndTime > Date.now()) {
               cloneEndTime = data.cloneEndTime;
               resumeCloneIfActive();
-            }
-            if (data.instantAutoclickActive && data.instantAutoclickEndTime > Date.now()) {
-              startInstantAutoclick(data.instantAutoclickEndTime - Date.now());
-            }
-            if (data.autoclickActive && data.autoclickEndTime > Date.now()) {
-              startAutoclicker(data.autoclickEndTime - Date.now(), false);
             }
           }
           updateCounterDisplay();
@@ -708,32 +626,12 @@
           updateInstantAutoclickTimer();
           updateCloneTimer();
           resolve();
-        }).catch(() => {
-          score = 0; crystals = 0; clickPower = 1;
-          resolve();
-        });
+        }).catch(() => { score = 0; crystals = 0; clickPower = 1; resolve(); });
       });
     }
 
-    // ==================== СОХРАНЕНИЕ ДАННЫХ ====================
     function savePlayerScore() { if (user) { db.ref(`player_data/${user.uid}/score`).set(score); db.ref(`leaderboard/${user.uid}/score`).set(score); } }
     function savePlayerCrystals() { if (user) { db.ref(`player_data/${user.uid}/crystals`).set(crystals); db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); } }
-
-    async function savePlayerData() {
-      if (!user) return;
-      const playerData = {
-        score, crystals, clickPower, totalClicks,
-        autoclickerLevel, hasResonance, achievements,
-        cloneEndTime, instantAutoclickActive, instantAutoclickEndTime,
-        autoclickActive, autoclickEndTime,
-        lastActive: firebase.database.ServerValue.TIMESTAMP,
-        lastPlatform: isTelegramMiniApp ? 'mobile' : 'pc'
-      };
-      await db.ref(`player_data/${user.uid}`).update(playerData);
-      await db.ref(`leaderboard/${user.uid}`).update({
-        score, crystals, clickPower, totalClicks, lastUpdate: Date.now()
-      });
-    }
 
     // ==================== BATTLE PASS ====================
     let bpData = { xp: 0, level: 1, isPremium: false, claimedFree: [], claimedPremium: [], seasonNumber: 1, dailyXP: 0, lastXPDay: '' };
@@ -745,7 +643,7 @@
     function updateBattlePassUI() { const p = document.getElementById('battlePassPanel'); if (!p || !p.classList.contains('open')) return; const xp = bpData.xp, n = getXPForLevel(bpData.level); document.getElementById('bpLevelBadge').textContent = bpData.level; document.getElementById('bpCurrentXP').textContent = xp; document.getElementById('bpXPRequired').textContent = n; document.getElementById('bpProgressFill').style.width = Math.min(100,(xp/n)*100)+'%'; document.getElementById('bpDaysLeft').textContent = Math.max(0,Math.ceil((new Date(new Date().getFullYear(),new Date().getMonth()+1,1).getTime()-Date.now())/86400000)); const fc = document.getElementById('bpFreeRewards'); fc.innerHTML = ''; for (const l in BP_FREE_REWARDS) { const lv = parseInt(l), r = BP_FREE_REWARDS[lv], cl = bpData.claimedFree.includes(lv), av = bpData.level >= lv && !cl; const d = document.createElement('div'); d.className = 'bp-reward-item '+(cl?'claimed':av?'available':'locked'); d.innerHTML = `<span class="bp-reward-icon">${r.icon}</span><span>Lv.${lv}: ${r.name}</span>${cl?' ✅':''}`; if (av) d.onclick = () => claimBPReward(lv); fc.appendChild(d); } document.getElementById('bpClaimAllBtn').disabled = !Object.keys(BP_FREE_REWARDS).some(l => bpData.level >= parseInt(l) && !bpData.claimedFree.includes(parseInt(l))); }
     function loadBattlePassData() { if (!user) return; db.ref(`battlePass/${user.uid}`).once('value').then(s => { if (s.val()) bpData = s.val(); else { bpData = { xp: 0, level: 1, isPremium: false, claimedFree: [], claimedPremium: [], seasonNumber: 1, dailyXP: 0, lastXPDay: new Date().toDateString() }; db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); } updateBattlePassUI(); }); }
 
-    // ==================== АДМИН-ФУНКЦИИ ====================
+    // ==================== АДМИН ====================
     function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
     function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; db.ref(`leaderboard/${user.uid}/score`).set(score); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
     function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
@@ -777,7 +675,17 @@
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
       if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
     }
-    window.addEventListener('beforeunload', cleanupAllTimers);
+    window.addEventListener('beforeunload', () => {
+      // Сохраняем состояние автокликера перед закрытием
+      if (user && autoclickActive) {
+        db.ref(`player_data/${user.uid}`).update({
+          autoclickActive: true,
+          autoclickEndTime: autoclickEndTime,
+          lastActive: firebase.database.ServerValue.TIMESTAMP
+        }).catch(() => {});
+      }
+      cleanupAllTimers();
+    });
 
     function spawnScorePopup(x, y, amount) {
       const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = `+${amount}`;
@@ -810,21 +718,65 @@
 
     function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } clickToken(); }
 
-    // ==================== АВТОКЛИКЕР (ОБЫЧНЫЙ) ====================
+    // ==================== АВТОКЛИКЕР (С СОХРАНЕНИЕМ ВРЕМЕНИ) ====================
     function startAutoclicker(duration, extendTime = false) {
       if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only! Deactivate Clone first.'); return; }
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
-      if (autoclickActive && extendTime) { autoclickEndTime = Math.max(autoclickEndTime, Date.now()) + duration; }
-      else { autoclickActive = true; autoclickEndTime = Date.now() + duration; }
+      
+      if (autoclickActive && extendTime) {
+        autoclickEndTime = Math.max(autoclickEndTime, Date.now()) + duration;
+      } else {
+        autoclickActive = true;
+        autoclickEndTime = Date.now() + duration;
+      }
+      
       autoclickInterval = setInterval(autoclickTick, 1000);
-      setTimeout(() => stopAutoclicker(), autoclickEndTime - Date.now());
-      updateProfilePanel(); updateAutoclickerShopUI();
-      db.ref(`player_data/${user.uid}`).update({ autoclickActive: true, autoclickEndTime }).catch(() => {});
+      
+      // Сохраняем в Firebase
+      if (user) {
+        db.ref(`player_data/${user.uid}`).update({
+          autoclickActive: true,
+          autoclickEndTime: autoclickEndTime
+        }).catch(() => {});
+      }
+      
+      updateProfilePanel(); 
+      updateAutoclickerShopUI();
     }
 
-    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); db.ref(`player_data/${user.uid}`).update({ autoclickActive: false, autoclickEndTime: 0 }).catch(() => {}); }
-    function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); } }
-    function activateFreeAutoclicker() { if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only!'); return; } if (autoclickActive) showMessage("Already active!"); else startAutoclicker(getAutoclickerDuration()); }
+    function stopAutoclicker() { 
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } 
+      autoclickActive = false; 
+      autoclickEndTime = 0; 
+      updateProfilePanel(); 
+      updateAutoclickerShopUI(); 
+      if (user) {
+        db.ref(`player_data/${user.uid}`).update({ 
+          autoclickActive: false, 
+          autoclickEndTime: 0 
+        }).catch(() => {}); 
+      }
+    }
+    
+    function stopAllAutoclickers() { 
+      stopAutoclicker(); 
+      if (instantAutoclickActive) { 
+        if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } 
+        if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } 
+        instantAutoclickActive = false; 
+        instantAutoclickEndTime = 0; 
+        updateInstantAutoclickTimer(); 
+      } 
+    }
+    
+    function activateFreeAutoclicker() { 
+      if (dualClickActive || cloneEndTime > Date.now()) { 
+        showMessage('👥 Clone is active — manual clicking only!'); 
+        return; 
+      } 
+      if (autoclickActive) showMessage("Already active!"); 
+      else startAutoclicker(getAutoclickerDuration()); 
+    }
 
     // ==================== INSTANT AUTOCLICK ====================
     function startInstantAutoclick(duration) {
@@ -939,7 +891,7 @@
       if (afab) { if (dualClickActive || cloneEndTime > Date.now()) { afab.disabled = true; afab.textContent = '🔒 Blocked by Clone'; afab.style.background = '#555'; } else { afab.disabled = false; afab.textContent = 'Activate Free Autoclicker'; afab.style.background = ''; } }
     }
 
-    // ==================== ОТКРЫТИЕ/ЗАКРЫТИЕ МЕНЮ ====================
+    // ==================== МЕНЮ ====================
     function togglePanel(pn) {
       if (miniGameActive) endMiniGame(false, true);
       document.getElementById("miniGamePanel").style.display = "none";
@@ -999,7 +951,7 @@
       else { showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
     }
 
-    // ==================== ЗАДАНИЯ (TASKS) ====================
+    // ==================== ЗАДАНИЯ ====================
     function renderTasks() {
       if (isRenderingTasks) return; isRenderingTasks = true;
       const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; }
@@ -1129,18 +1081,31 @@
     function resetAllBoosters() { stopAllAutoclickers(); stopClone(); cloneEndTime = 0; instantAutoclickActive = false; instantAutoclickEndTime = 0; dualClickActive = false; deactivateDualClick(); updateCloneTimer(); updateCloneButtonState(); updateInstantAutoclickTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); if (user) db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime: 0, instantAutoclickActive: false, instantAutoclickEndTime: 0 }).catch(() => {}); showMessage('🔄 Boosters reset!'); }
     window.resetAllBoosters = resetAllBoosters;
 
-    window.addEventListener('beforeunload', () => { if (user) { savePlayerData(); } });
-
     async function signOut() {
-      await savePlayerData();
+      // Сохраняем состояние автокликера перед выходом
+      if (user && autoclickActive) {
+        await db.ref(`player_data/${user.uid}`).update({
+          autoclickActive: true,
+          autoclickEndTime: autoclickEndTime,
+          lastActive: firebase.database.ServerValue.TIMESTAMP
+        }).catch(() => {});
+      }
+      
       cleanupAllTimers();
       localStorage.removeItem('cryptoClickerSession');
       user = null; score = 0; clickPower = 1; crystals = 0;
+      autoclickActive = false; autoclickEndTime = 0;
+      
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
       document.getElementById('adminPanel').classList.remove('open');
       document.getElementById('adminToggle').classList.remove('visible');
       document.getElementById('adminBadge').style.display = 'none';
+      
+      // Скрываем кнопку выхода
+      const signOutBtn = document.getElementById('signOutBtn');
+      if (signOutBtn) signOutBtn.classList.remove('visible');
+      
       setupAuthUI();
     }
 
@@ -1163,7 +1128,7 @@
     document.getElementById('buyCloneBtn').onclick = buyClone;
     document.getElementById('buyInstantAutoclickBtn').onclick = buyInstantAutoclick;
 
-    // Инициализация
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
     (async function init() {
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === currentLanguage);
