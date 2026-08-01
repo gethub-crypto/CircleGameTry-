@@ -53,8 +53,6 @@
     .booster-card .feature-list { text-align: left; margin: 15px 0; font-size: 13px; color: #ccc; }
     .booster-card .feature-list div { margin: 5px 0; }
     .booster-card .feature-list i { color: #00ffa6; margin-right: 8px; }
-    .battle-pass-progress { background: #222; border-radius: 8px; height: 8px; margin: 10px 0; overflow: hidden; }
-    .battle-pass-progress-bar { height: 100%; background: linear-gradient(90deg, #a855f7, #6366f1); width: 0%; transition: width 0.3s ease; }
     .booster-card .rewards-preview { display: flex; justify-content: space-around; font-size: 24px; margin: 10px 0; }
     .requirement-text { font-size: 11px; color: #888; margin: 5px 0; }
     .booster-timer { font-size: 12px; color: #ffd700; margin-top: 8px; min-height: 20px; }
@@ -67,31 +65,6 @@
     #tableHeader { background: #00c3ff; }
     #tableHeader th { padding: 10px; color: #000; font-weight: bold; text-align: left; }
     #leaderboardBody td { padding: 10px; color: #fff; border-bottom: 1px solid #333; }
-    #battlePassPanel { display: none; margin-top: 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 25px; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); border: 2px solid #a855f7; max-width: 800px; margin-left: auto; margin-right: auto; }
-    #battlePassPanel.open { display: block; }
-    .bp-header { text-align: center; margin-bottom: 20px; }
-    .bp-header h2 { font-size: 32px; background: linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
-    .bp-season-info { font-size: 14px; color: #888; }
-    .bp-progress-section { background: #111; border-radius: 12px; padding: 20px; margin: 15px 0; }
-    .bp-level-display { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .bp-level-badge { background: linear-gradient(135deg, #a855f7, #6366f1); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
-    .bp-xp-info { text-align: right; font-size: 14px; color: #aaa; }
-    .bp-progress-bar-container { background: #222; border-radius: 10px; height: 20px; margin: 10px 0; overflow: hidden; }
-    .bp-progress-fill { height: 100%; background: linear-gradient(90deg, #a855f7, #6366f1, #ec4899); width: 0%; transition: width 0.5s ease; border-radius: 10px; }
-    .bp-tiers { display: flex; gap: 15px; margin-top: 20px; }
-    .bp-tier { flex: 1; background: #111; border-radius: 12px; padding: 15px; border: 1px solid #333; }
-    .bp-tier.free { border-color: #666; }
-    .bp-tier.premium { border-color: #a855f7; background: linear-gradient(135deg, #111 0%, #1a1025 100%); }
-    .bp-tier h4 { text-align: center; margin-bottom: 15px; font-size: 18px; }
-    .bp-tier.free h4 { color: #aaa; } .bp-tier.premium h4 { color: #a855f7; }
-    .bp-reward-item { display: flex; align-items: center; gap: 10px; padding: 8px; margin: 5px 0; border-radius: 8px; font-size: 14px; }
-    .bp-reward-item.claimed { background: rgba(0, 255, 166, 0.1); color: #00ffa6; }
-    .bp-reward-item.available { background: rgba(168, 85, 247, 0.2); color: #a855f7; cursor: pointer; }
-    .bp-reward-item.locked { color: #555; }
-    .bp-reward-icon { font-size: 24px; width: 30px; text-align: center; }
-    .bp-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-    .bp-claim-all-btn { background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; padding: 12px 30px; border-radius: 25px; font-weight: bold; border: none; cursor: pointer; font-size: 16px; }
-    .bp-claim-all-btn:disabled { background: #555; cursor: not-allowed; }
     .admin-badge { background: #ff4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 5px; }
     #adminToggle { position: fixed; bottom: 20px; right: 20px; width: 40px; height: 40px; background: #ff4444; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 20px; z-index: 9998; cursor: pointer; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); border: none; color: #fff; }
     #adminToggle.visible { display: flex; }
@@ -139,7 +112,6 @@
       #settings { width: 90% !important; max-width: 320px; } .booster-card { width: 100%; max-width: 280px; }
       .tabs { flex-direction: column; } .tab-button { border-radius: 0; font-size: 13px; }
       #leaderboardTable { font-size: 11px; } .score-popup { font-size: 16px; }
-      .bp-tiers { flex-direction: column; } #battlePassPanel { padding: 15px; }
       #adminPanel { bottom: 10px; right: 10px; max-width: 250px; }
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
@@ -196,16 +168,9 @@
       <div id="counter">Tokens: 0</div><div id="message"></div>
       <div id="buttonGroup">
         <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
-        <button class="click-button" id="battlePassBtn" onclick="togglePanel('battlePass')">🎫 Battle Pass ▼</button>
         <button class="click-button" id="achievementsBtn" onclick="togglePanel('achievements')">🏆 Achievements ▼</button>
         <button class="click-button" id="tasksBtn" onclick="togglePanel('tasks')">📋 Tasks ▼</button>
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
-      </div>
-      <div id="battlePassPanel">
-        <div class="bp-header"><h2>🎫 BATTLE PASS</h2><div class="bp-season-info">Season <span id="bpSeasonNumber">1</span> • <span id="bpDaysLeft">30</span> days left</div></div>
-        <div class="bp-progress-section"><div class="bp-level-display"><div class="bp-level-badge" id="bpLevelBadge">1</div><div class="bp-xp-info"><div>Level <span id="bpCurrentLevel">1</span>/100</div><div>XP: <span id="bpCurrentXP">0</span> / <span id="bpXPRequired">500</span></div></div></div><div class="bp-progress-bar-container"><div class="bp-progress-fill" id="bpProgressFill"></div></div></div>
-        <div class="bp-tiers"><div class="bp-tier free"><h4>🆓 FREE</h4><div id="bpFreeRewards"></div></div><div class="bp-tier premium"><h4>💎 PREMIUM</h4><div id="bpPremiumLocked" style="text-align:center;padding:20px;color:#888;"><p>🔒 Premium locked</p></div></div></div>
-        <div class="bp-actions"><button class="bp-claim-all-btn" id="bpClaimAllBtn" onclick="claimAllBPRewards()" disabled>🎁 Claim All Rewards</button></div>
       </div>
       <div id="shop" class="panel">
         <h2>🛒 Upgrades</h2><p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p><p>Current: <span id="clickPowerDisplay">1</span> / 8</p><div class="progress-container"><div class="progress-bar" id="clickPowerBar"></div></div><button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
@@ -223,16 +188,6 @@
               <div><i class="fas fa-check"></i> Priority support</div>
             </div>
             <button class="click-button" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">👑 Subscribe</button>
-          </div>
-          <div class="booster-card">
-            <h3>🎫 Battle Pass</h3>
-            <div class="price">$9.99<span style="font-size:14px;">/season</span></div>
-            <p style="color:#a855f7; font-size:13px;">Earn XP by playing to unlock rewards</p>
-            <div class="battle-pass-progress"><div class="battle-pass-progress-bar" id="battlePassProgressBar" style="width:35%;"></div></div>
-            <p style="font-size:11px; color:#888;">Season progress: 35/100</p>
-            <div class="rewards-preview"><span>🎨</span><span>💎</span><span>🏆</span><span>✨</span></div>
-            <p style="font-size:10px; color:#a855f7;">Unlock skins, crystals & exclusive badges</p>
-            <button class="click-button" onclick="showComingSoon('Battle Pass')" style="background: linear-gradient(135deg, #a855f7, #6366f1); width:100%;">🚀 Get Battle Pass</button>
           </div>
           <div class="booster-card" id="resonanceBooster"><h3>🔮 Resonance</h3><p style="color:#ccc;">Every 100th click gives +1 💎</p><div class="price" style="color:#b388ff;">750 💎</div><p class="requirement-text" id="resonanceRequirement">Requires: 10,000 clicks (You have: <span id="resonanceClickCount">0</span>)</p><button class="click-button" id="buyResonanceBtn" onclick="buyResonance()" disabled>🔮 Buy Resonance</button></div>
           <div class="booster-card" id="cloneBooster"><h3>👥 Clone</h3><p style="color:#ccc;">Second button (100 min)</p><div class="price" style="color:#00bcd4;">300 💎</div><button class="click-button" id="buyCloneBtn">👥 Activate Clone</button><div class="booster-timer" id="cloneTimerDisplay"></div></div>
@@ -266,7 +221,6 @@
         nextIn: 'Следующий через',
         claimNow: 'Забрать сейчас!',
         shop: 'Магазин',
-        battlePass: '🎫 Battle Pass',
         achievements: '🏆 Достижения',
         tasks: '📋 Задания',
         miniGame: 'Мини-игра',
@@ -309,7 +263,6 @@
         nextIn: 'Next in',
         claimNow: 'Claim now!',
         shop: 'Shop',
-        battlePass: '🎫 Battle Pass',
         achievements: '🏆 Achievements',
         tasks: '📋 Tasks',
         miniGame: 'Mini-Game',
@@ -563,7 +516,6 @@
       document.getElementById('gameSection').style.display = 'block';
       await loadPlayerData(user.uid);
       setupCrossPlatformSync();
-      loadBattlePassData();
       startBonusTimer();
       startOnlineTimer();
       checkWeeklyReset();
@@ -639,21 +591,11 @@
     function savePlayerScore() { if (user) { db.ref(`player_data/${user.uid}/score`).set(score); db.ref(`leaderboard/${user.uid}/score`).set(score); } }
     function savePlayerCrystals() { if (user) { db.ref(`player_data/${user.uid}/crystals`).set(crystals); db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); } }
 
-    // ==================== BATTLE PASS ====================
-    let bpData = { xp: 0, level: 1, isPremium: false, claimedFree: [], claimedPremium: [], seasonNumber: 1, dailyXP: 0, lastXPDay: '' };
-    const BP_FREE_REWARDS = { 2: { icon: '🪙', name: '100 Tokens', claim: () => { score += 100; savePlayerScore(); } }, 5: { icon: '💎', name: '5 Crystals', claim: () => { crystals += 5; savePlayerCrystals(); } }, 10: { icon: '🏅', name: 'Bronze Badge', claim: () => {} }, 20: { icon: '💎', name: '25 Crystals', claim: () => { crystals += 25; savePlayerCrystals(); } }, 30: { icon: '🏅', name: 'Silver Badge', claim: () => {} }, 50: { icon: '🎨', name: 'Rare Skin', claim: () => {} }, 100: { icon: '🏆', name: 'Legendary Badge', claim: () => {} } };
-    function getXPForLevel(l) { return l <= 10 ? 500 : l <= 25 ? 750 : l <= 50 ? 1000 : l <= 75 ? 1500 : 2000; }
-    function addBPXP(a) { if (!user) return; const t = new Date().toDateString(); if (bpData.lastXPDay !== t) { bpData.dailyXP = 0; bpData.lastXPDay = t; } if (bpData.dailyXP >= 5000) return; const add = Math.min(a, 5000 - bpData.dailyXP); bpData.dailyXP += add; bpData.xp += add; while (bpData.level < 100) { const n = getXPForLevel(bpData.level); if (bpData.xp >= n) { bpData.xp -= n; bpData.level++; } else break; } db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); updateBattlePassUI(); }
-    function claimBPReward(lv) { if (!user || bpData.claimedFree.includes(lv) || bpData.level < lv) return; const r = BP_FREE_REWARDS[lv]; if (!r) return; r.claim(); bpData.claimedFree.push(lv); db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); updateBattlePassUI(); updateCounterDisplay(); }
-    function claimAllBPRewards() { if (!user) return; for (const l in BP_FREE_REWARDS) { const lv = parseInt(l); if (bpData.level >= lv && !bpData.claimedFree.includes(lv)) { BP_FREE_REWARDS[lv].claim(); bpData.claimedFree.push(lv); } } db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); updateBattlePassUI(); updateCounterDisplay(); }
-    function updateBattlePassUI() { const p = document.getElementById('battlePassPanel'); if (!p || !p.classList.contains('open')) return; const xp = bpData.xp, n = getXPForLevel(bpData.level); document.getElementById('bpLevelBadge').textContent = bpData.level; document.getElementById('bpCurrentXP').textContent = xp; document.getElementById('bpXPRequired').textContent = n; document.getElementById('bpProgressFill').style.width = Math.min(100,(xp/n)*100)+'%'; document.getElementById('bpDaysLeft').textContent = Math.max(0,Math.ceil((new Date(new Date().getFullYear(),new Date().getMonth()+1,1).getTime()-Date.now())/86400000)); const fc = document.getElementById('bpFreeRewards'); fc.innerHTML = ''; for (const l in BP_FREE_REWARDS) { const lv = parseInt(l), r = BP_FREE_REWARDS[lv], cl = bpData.claimedFree.includes(lv), av = bpData.level >= lv && !cl; const d = document.createElement('div'); d.className = 'bp-reward-item '+(cl?'claimed':av?'available':'locked'); d.innerHTML = `<span class="bp-reward-icon">${r.icon}</span><span>Lv.${lv}: ${r.name}</span>${cl?' ✅':''}`; if (av) d.onclick = () => claimBPReward(lv); fc.appendChild(d); } document.getElementById('bpClaimAllBtn').disabled = !Object.keys(BP_FREE_REWARDS).some(l => bpData.level >= parseInt(l) && !bpData.claimedFree.includes(parseInt(l))); }
-    function loadBattlePassData() { if (!user) return; db.ref(`battlePass/${user.uid}`).once('value').then(s => { if (s.val()) bpData = s.val(); else { bpData = { xp: 0, level: 1, isPremium: false, claimedFree: [], claimedPremium: [], seasonNumber: 1, dailyXP: 0, lastXPDay: new Date().toDateString() }; db.ref(`battlePass/${user.uid}`).set(bpData).catch(() => {}); } updateBattlePassUI(); }); }
-
     // ==================== АДМИН ====================
     function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
     function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; db.ref(`leaderboard/${user.uid}/score`).set(score); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
     function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
-    function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; bpData.level = Math.min(l, 100); bpData.xp = 0; db.ref(`battlePass/${user.uid}`).set(bpData); updateBattlePassUI(); showMessage(`🛡️ BP Lv.${l}`); }
+    function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; showMessage('🛡️ Battle Pass removed from UI'); }
     window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags; window.adminSetBPLevel = adminSetBPLevel;
 
     // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
@@ -714,7 +656,7 @@
       updateTaskProgress("collectTokens", clickPower);
       updateTaskProgress("collectBigTokens", clickPower);
       updateTaskProgress("clickMasterWeekly", 1);
-      checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel(); addBPXP(1);
+      checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel();
       if (hasResonance && totalClicks % 100 === 0) { crystals++; savePlayerCrystals(); showMessage(`🔮 Resonance! +1 💎`); updateProfilePanel(); }
       updateResonanceUI();
       const btn = document.getElementById("mainClickButton"); if (btn) { btn.classList.add("pulse"); setTimeout(() => { if (btn) btn.classList.remove("pulse"); isAnimating = false; }, 200); } else isAnimating = false;
@@ -853,19 +795,18 @@
     function togglePanel(pn) {
       if (miniGameActive) endMiniGame(false, true);
       document.getElementById("miniGamePanel").style.display = "none";
-      const targetId = pn === 'battlePass' ? 'battlePassPanel' : pn;
-      const panel = document.getElementById(targetId);
+      const panel = document.getElementById(pn);
       if (!panel) return;
       const isOpen = panel.classList.contains('open');
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-      document.getElementById('battlePassPanel').classList.remove('open');
       document.getElementById('shopBtn').innerHTML = 'Shop ▼';
-      document.getElementById('battlePassBtn').innerHTML = '🎫 Battle Pass ▼';
       document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
       document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
       if (!isOpen) {
-        if (pn === 'battlePass') { document.getElementById('battlePassPanel').classList.add('open'); document.getElementById('battlePassBtn').innerHTML = '🎫 Battle Pass ▲'; updateBattlePassUI(); }
-        else { panel.classList.add('open'); if (pn === 'shop') { document.getElementById('shopBtn').innerHTML = 'Shop ▲'; updateResonanceUI(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); } else if (pn === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); } else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); } }
+        panel.classList.add('open');
+        if (pn === 'shop') { document.getElementById('shopBtn').innerHTML = 'Shop ▲'; updateResonanceUI(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); }
+        else if (pn === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); }
+        else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); }
       }
     }
 
@@ -880,9 +821,7 @@
         if (data.lastReset !== today) { data.gamesPlayed = 0; data.lastReset = today; }
         if (data.gamesPlayed >= MAX_MINI_GAMES_PER_DAY) { showMessage(`Daily limit reached! (${MAX_MINI_GAMES_PER_DAY} games)`); return; }
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-        document.getElementById('battlePassPanel').classList.remove('open');
         document.getElementById('shopBtn').innerHTML = 'Shop ▼';
-        document.getElementById('battlePassBtn').innerHTML = '🎫 Battle Pass ▼';
         document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
         document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
         score -= MINI_GAME_ENTRY_FEE; savePlayerScore();
@@ -1092,7 +1031,6 @@
         document.getElementById('gameSection').style.display = 'block';
         await loadPlayerData(user.uid);
         setupCrossPlatformSync();
-        loadBattlePassData();
         startBonusTimer();
         startOnlineTimer();
         checkWeeklyReset();
