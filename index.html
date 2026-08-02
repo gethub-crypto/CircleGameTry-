@@ -98,7 +98,7 @@
 
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
-      .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; padding-top: 15px; }
+      .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
       #profilePanel { width: 100%; max-width: 400px; font-size: 13px; max-height: 44px; overflow: hidden; transition: max-height 0.4s ease; cursor: pointer; padding: 12px 35px 12px 15px; }
       #profilePanel .collapse-arrow { display: block; }
       #profilePanel.expanded { max-height: 600px; overflow-y: auto; }
@@ -107,75 +107,14 @@
       #mainButtonContainer { width: 250px; height: 250px; gap: 15px; }
       .main-click-button { width: 100px; height: 100px; } .main-click-button .icon { font-size: 40px; }
       #counter { font-size: 24px; } .click-button { padding: 10px 18px; font-size: 13px; }
-      
-      /* Новое позиционирование для кнопок меню на мобильных */
-      #buttonGroup {
-        position: fixed;
-        bottom: 60px;
-        left: 5px;
-        right: 5px;
-        z-index: 999;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        gap: 5px;
-        padding: 8px;
-        background: rgba(15, 15, 15, 0.95);
-        border-radius: 15px;
-        box-shadow: 0 -2px 10px rgba(0, 195, 255, 0.3);
-        margin: 0;
-      }
-      
-      #buttonGroup .click-button {
-        flex: 1;
-        min-width: 0;
-        padding: 10px 5px;
-        font-size: 11px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-      }
-      
-      /* Отступ для контента, чтобы не перекрывался нижней панелью */
-      .main-content {
-        padding-bottom: 120px;
-      }
-      
-      /* Кнопки языка на мобильных */
-      .language-switch { 
-        top: auto;
-        bottom: 20px; 
-        right: 10px;
-        z-index: 10000;
-      }
-      
+      #buttonGroup { flex-direction: column; align-items: center; gap: 8px; }
+      #buttonGroup .click-button { width: 85%; max-width: 300px; }
       #settings { width: 90% !important; max-width: 320px; } .booster-card { width: 100%; max-width: 280px; }
       .tabs { flex-direction: column; } .tab-button { border-radius: 0; font-size: 13px; }
       #leaderboardTable { font-size: 11px; } .score-popup { font-size: 16px; }
       #adminPanel { bottom: 10px; right: 10px; max-width: 250px; }
-      #adminToggle { bottom: 130px; }
     }
-    @media (max-width: 480px) { 
-      h1 { font-size: 1.4em; } 
-      .main-click-button { width: 90px; height: 90px; } 
-      .main-click-button .icon { font-size: 35px; } 
-      #mainButtonContainer { width: 220px; height: 220px; } 
-      #counter { font-size: 22px; } 
-      .score-popup { font-size: 14px; } 
-      
-      /* Дополнительная оптимизация для маленьких экранов */
-      #buttonGroup {
-        bottom: 55px;
-        gap: 3px;
-        padding: 6px;
-      }
-      
-      #buttonGroup .click-button {
-        padding: 8px 3px;
-        font-size: 10px;
-      }
-    }
+    @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     @media (min-width: 1024px) {
       .game-header { padding: 20px; } #profilePanel { width: 250px; font-size: 16px; max-height: none; overflow: visible; }
       #profilePanel .collapse-arrow { display: none; } .bonus-card { width: 220px; }
@@ -197,6 +136,7 @@
     <button class="admin-btn" onclick="adminAddCrystals(1000)">+1000 💎</button>
     <button class="admin-btn" onclick="adminAddTokens(100000)">+100k Tokens</button>
     <button class="admin-btn" onclick="adminResetFlags()">Reset Flags</button>
+    <button class="admin-btn" onclick="adminSetBPLevel(50)">Set BP Lv.50</button>
     <button class="admin-btn" onclick="adminAddCrystals(10000)" style="background:linear-gradient(135deg,#ffd700,#ffaa00);">+10k 💎</button>
     <button class="admin-btn" onclick="adminAddTokens(1000000)" style="background:linear-gradient(135deg,#ffd700,#ffaa00);">+1M Tokens</button>
     <div id="adminUid"></div>
@@ -596,7 +536,7 @@
       });
     }
 
-    // ==================== ЗАГРУЗКА ДАННЫХ ====================
+    // ==================== ЗАГРУЗКА ДАННЫХ (С ВОССТАНОВЛЕНИЕМ АВТОКЛИКЕРА) ====================
     async function loadPlayerData(uid) {
       return new Promise((resolve) => {
         db.ref(`player_data/${uid}`).once('value').then(snapshot => {
@@ -618,15 +558,19 @@
             autoclickerLevel = data.autoclickerLevel || 1;
             hasResonance = data.hasResonance || false;
             
+            // Восстанавливаем обычный автокликер
             if (data.autoclickActive && data.autoclickEndTime && data.autoclickEndTime > Date.now()) {
               const remaining = data.autoclickEndTime - Date.now();
+              console.log('Восстановление автокликера, осталось:', Math.floor(remaining/1000), 'сек');
               startAutoclicker(remaining, false);
             }
             
+            // Восстанавливаем instant автокликер
             if (data.instantAutoclickActive && data.instantAutoclickEndTime && data.instantAutoclickEndTime > Date.now()) {
               startInstantAutoclick(data.instantAutoclickEndTime - Date.now());
             }
             
+            // Восстанавливаем клон
             if (data.cloneEndTime && data.cloneEndTime > Date.now()) {
               cloneEndTime = data.cloneEndTime;
               resumeCloneIfActive();
@@ -651,7 +595,8 @@
     function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
     function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; db.ref(`leaderboard/${user.uid}/score`).set(score); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
     function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
-    window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags;
+    function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; showMessage('🛡️ Battle Pass removed from UI'); }
+    window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags; window.adminSetBPLevel = adminSetBPLevel;
 
     // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
     function showComingSoon(f) { showMessage(`🚧 ${f} is coming soon!`); }
@@ -719,7 +664,7 @@
 
     function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } clickToken(); }
 
-    // ==================== АВТОКЛИКЕР ====================
+    // ==================== АВТОКЛИКЕР (С СОХРАНЕНИЕМ ВРЕМЕНИ) ====================
     function startAutoclicker(duration, extendTime = false) {
       if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only! Deactivate Clone first.'); return; }
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
