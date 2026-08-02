@@ -472,7 +472,7 @@
           });
           await db.ref(`leaderboard/${uid}`).set({ 
             id: uid, name: displayName, score: 0, crystals: 0, 
-            clickPower: 1, totalClicks: 0, lastUpdate: Date.now() 
+            clickPower: 1, totalClicks: 0, hasResonance: false, lastUpdate: Date.now() 
           });
           await db.ref(`auth_lookup/tg_user_id_${tgId}`).set(uid);
           showMessage(`${t('welcome')}, ${displayName}!`);
@@ -534,6 +534,14 @@
         const newCrystals = snapshot.val();
         if (newCrystals !== null && newCrystals !== crystals) { crystals = newCrystals; updateProfilePanel(); }
       });
+      db.ref(`player_data/${user.uid}/hasResonance`).on('value', (snapshot) => {
+        const newResonance = snapshot.val();
+        if (newResonance !== null && newResonance !== hasResonance) { 
+          hasResonance = newResonance; 
+          updateResonanceUI(); 
+          updateProfilePanel(); 
+        }
+      });
     }
 
     // ==================== ЗАГРУЗКА ДАННЫХ (С ВОССТАНОВЛЕНИЕМ АВТОКЛИКЕРА) ====================
@@ -588,12 +596,37 @@
       });
     }
 
-    function savePlayerScore() { if (user) { db.ref(`player_data/${user.uid}/score`).set(score); db.ref(`leaderboard/${user.uid}/score`).set(score); } }
-    function savePlayerCrystals() { if (user) { db.ref(`player_data/${user.uid}/crystals`).set(crystals); db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); } }
+    function savePlayerScore() { 
+      if (user) { 
+        db.ref(`player_data/${user.uid}`).update({
+          score: score,
+          hasResonance: hasResonance,
+          totalClicks: totalClicks
+        }); 
+        db.ref(`leaderboard/${user.uid}`).update({
+          score: score,
+          totalClicks: totalClicks,
+          hasResonance: hasResonance
+        }); 
+      } 
+    }
+    
+    function savePlayerCrystals() { 
+      if (user) { 
+        db.ref(`player_data/${user.uid}`).update({
+          crystals: crystals,
+          hasResonance: hasResonance
+        }); 
+        db.ref(`leaderboard/${user.uid}`).update({
+          crystals: crystals,
+          hasResonance: hasResonance
+        }); 
+      } 
+    }
 
     // ==================== АДМИН ====================
-    function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; db.ref(`leaderboard/${user.uid}/crystals`).set(crystals); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
-    function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; db.ref(`leaderboard/${user.uid}/score`).set(score); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
+    function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; savePlayerCrystals(); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
+    function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; savePlayerScore(); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
     function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
     function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; showMessage('🛡️ Battle Pass removed from UI'); }
     window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags; window.adminSetBPLevel = adminSetBPLevel;
@@ -627,6 +660,7 @@
         db.ref(`player_data/${user.uid}`).update({
           autoclickActive: true,
           autoclickEndTime: autoclickEndTime,
+          hasResonance: hasResonance,
           lastActive: firebase.database.ServerValue.TIMESTAMP
         }).catch(() => {});
       }
@@ -650,14 +684,42 @@
       lastClickTime = Date.now(); isAnimating = true;
       if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
       score += clickPower; totalClicks++;
-      savePlayerScore();
-      db.ref(`leaderboard/${user.uid}/totalClicks`).set(totalClicks).catch(() => {});
+      
+      // Сохраняем состояние, включая hasResonance
+      if (user) {
+        db.ref(`player_data/${user.uid}`).update({
+          score: score,
+          totalClicks: totalClicks,
+          hasResonance: hasResonance
+        });
+        db.ref(`leaderboard/${user.uid}`).update({
+          score: score,
+          totalClicks: totalClicks,
+          hasResonance: hasResonance
+        });
+      }
+      
       updateTaskProgress("clickMarathon", 1);
       updateTaskProgress("collectTokens", clickPower);
       updateTaskProgress("collectBigTokens", clickPower);
       updateTaskProgress("clickMasterWeekly", 1);
       checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel();
-      if (hasResonance && totalClicks % 100 === 0) { crystals++; savePlayerCrystals(); showMessage(`🔮 Resonance! +1 💎`); updateProfilePanel(); }
+      
+      if (hasResonance && totalClicks % 100 === 0) { 
+        crystals++; 
+        if (user) {
+          db.ref(`player_data/${user.uid}`).update({
+            crystals: crystals,
+            hasResonance: true
+          });
+          db.ref(`leaderboard/${user.uid}`).update({
+            crystals: crystals,
+            hasResonance: true
+          });
+        }
+        showMessage(`🔮 Resonance! +1 💎`); 
+        updateProfilePanel(); 
+      }
       updateResonanceUI();
       const btn = document.getElementById("mainClickButton"); if (btn) { btn.classList.add("pulse"); setTimeout(() => { if (btn) btn.classList.remove("pulse"); isAnimating = false; }, 200); } else isAnimating = false;
     }
@@ -671,11 +733,11 @@
       if (autoclickActive && extendTime) { autoclickEndTime = Math.max(autoclickEndTime, Date.now()) + duration; }
       else { autoclickActive = true; autoclickEndTime = Date.now() + duration; }
       autoclickInterval = setInterval(autoclickTick, 1000);
-      if (user) { db.ref(`player_data/${user.uid}`).update({ autoclickActive: true, autoclickEndTime: autoclickEndTime }).catch(() => {}); }
+      if (user) { db.ref(`player_data/${user.uid}`).update({ autoclickActive: true, autoclickEndTime: autoclickEndTime, hasResonance: hasResonance }).catch(() => {}); }
       updateProfilePanel(); updateAutoclickerShopUI();
     }
 
-    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); if (user) { db.ref(`player_data/${user.uid}`).update({ autoclickActive: false, autoclickEndTime: 0 }).catch(() => {}); } }
+    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); if (user) { db.ref(`player_data/${user.uid}`).update({ autoclickActive: false, autoclickEndTime: 0, hasResonance: hasResonance }).catch(() => {}); } }
     function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); } }
     function activateFreeAutoclicker() { if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only!'); return; } if (autoclickActive) showMessage("Already active!"); else startAutoclicker(getAutoclickerDuration()); }
 
@@ -688,9 +750,9 @@
       instantAutoclickInterval = setInterval(autoclickTick, 1000);
       instantAutoclickTimerInterval = setInterval(updateInstantAutoclickTimer, 1000);
       updateInstantAutoclickTimer(); updateCloneButtonState();
-      db.ref(`player_data/${user.uid}`).update({ instantAutoclickActive: true, instantAutoclickEndTime }).catch(() => {});
+      db.ref(`player_data/${user.uid}`).update({ instantAutoclickActive: true, instantAutoclickEndTime, hasResonance: hasResonance }).catch(() => {});
     }
-    function stopInstantAutoclick() { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); db.ref(`player_data/${user.uid}`).update({ instantAutoclickActive: false, instantAutoclickEndTime: 0 }).catch(() => {}); }
+    function stopInstantAutoclick() { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); db.ref(`player_data/${user.uid}`).update({ instantAutoclickActive: false, instantAutoclickEndTime: 0, hasResonance: hasResonance }).catch(() => {}); }
 
     function updateInstantAutoclickTimer() {
       const d = document.getElementById('instantAutoclickTimerDisplay'), b = document.getElementById('buyInstantAutoclickBtn');
@@ -713,7 +775,7 @@
       cloneTimerInterval = setInterval(updateCloneTimer, 1000);
       cloneTimeout = setTimeout(() => stopClone(), duration);
       updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI();
-      db.ref(`player_data/${user.uid}`).update({ cloneEndTime }).catch(() => {});
+      db.ref(`player_data/${user.uid}`).update({ cloneEndTime, hasResonance: hasResonance }).catch(() => {});
     }
 
     function stopClone() {
@@ -721,7 +783,7 @@
       if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
       deactivateDualClick(); cloneEndTime = 0;
       updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI();
-      db.ref(`player_data/${user.uid}`).update({ cloneEndTime: 0 }).catch(() => {});
+      db.ref(`player_data/${user.uid}`).update({ cloneEndTime: 0, hasResonance: hasResonance }).catch(() => {});
     }
 
     function resumeCloneIfActive() {
@@ -758,7 +820,22 @@
     // ==================== ПОКУПКИ ====================
     function buyUpgrade(type) { if (type === "clickPower" && clickPower < 8) { const c = getClickPowerUpgradeCost(); if (score < c) { showMessage(t('notEnoughTokens')); return; } score -= c; clickPower++; savePlayerScore(); db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower); updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); updateCounterDisplay(); } else if (clickPower >= 8) showMessage(t('maxLevel')); }
     function upgradeAutoclicker() { if (autoclickerLevel >= 20) { showMessage(t('maxLevel')); return; } const c = getAutoclickerUpgradeCost(); if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } score -= c.tokens; crystals -= c.crystals; autoclickerLevel++; savePlayerScore(); savePlayerCrystals(); db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); updateProfilePanel(); updateAutoclickerShopUI(); updateCounterDisplay(); }
-    function buyResonance() { if (!user) return; if (hasResonance) { showMessage('Already have Resonance!'); return; } if (totalClicks < RESONANCE_CLICK_REQUIREMENT) { showMessage(`Need ${RESONANCE_CLICK_REQUIREMENT} clicks!`); return; } if (crystals < RESONANCE_COST) { showMessage(`Need ${RESONANCE_COST} 💎!`); return; } crystals -= RESONANCE_COST; hasResonance = true; savePlayerCrystals(); db.ref(`leaderboard/${user.uid}/hasResonance`).set(true); updateProfilePanel(); updateResonanceUI(); }
+    
+    function buyResonance() { 
+      if (!user) return; 
+      if (hasResonance) { showMessage('Already have Resonance!'); return; } 
+      if (totalClicks < RESONANCE_CLICK_REQUIREMENT) { showMessage(`Need ${RESONANCE_CLICK_REQUIREMENT} clicks!`); return; } 
+      if (crystals < RESONANCE_COST) { showMessage(`Need ${RESONANCE_COST} 💎!`); return; } 
+      crystals -= RESONANCE_COST; 
+      hasResonance = true; 
+      savePlayerCrystals(); 
+      // Сохраняем hasResonance в player_data и leaderboard
+      db.ref(`player_data/${user.uid}/hasResonance`).set(true);
+      db.ref(`leaderboard/${user.uid}/hasResonance`).set(true); 
+      updateProfilePanel(); 
+      updateResonanceUI(); 
+      showMessage('🔮 Resonance activated! Every 100th click gives +1 💎');
+    }
 
     function updateResonanceUI() { const b = document.getElementById('buyResonanceBtn'), r = document.getElementById('resonanceClickCount'); if (r) r.textContent = totalClicks; if (hasResonance) { if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } } else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } } else { if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } } }
     
@@ -895,9 +972,9 @@
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
         const g = td.goal || task.goal;
         if ((td.progress||0) >= g) { const rw = td.reward || task.reward;
-          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); }
+          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); savePlayerCrystals(); }
           else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); }
-          else { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+rw); showMessage(`✅ +${rw} tokens!`); }
+          else { score += rw; savePlayerScore(); showMessage(`✅ +${rw} tokens!`); }
           db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); updateCounterDisplay(); renderTasks(); });
         } else showMessage(`${td.progress}/${g}`);
       });
@@ -908,7 +985,7 @@
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
         const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
-        db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+task.reward); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); });
+        db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); });
       });
     }
 
@@ -983,6 +1060,7 @@
         await db.ref(`player_data/${user.uid}`).update({
           autoclickActive: true,
           autoclickEndTime: autoclickEndTime,
+          hasResonance: hasResonance,
           lastActive: firebase.database.ServerValue.TIMESTAMP
         }).catch(() => {});
       }
