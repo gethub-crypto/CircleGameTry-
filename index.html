@@ -387,11 +387,10 @@
       lastWatchTime: 0,
       watchCountToday: 0,
       watchDate: new Date().toDateString(),
-      pendingRewardType: null, // 'task', 'minigame', 'hourly'
+      pendingRewardType: null,
       isAdLoading: false
     };
 
-    // Загружаем состояние рекламы
     function loadAdState() {
       const saved = localStorage.getItem('cryptoClickerAdState');
       if (saved) {
@@ -415,8 +414,7 @@
     
     function canWatchAd() {
       const now = Date.now();
-      const todayReset = adState.watchDate !== new Date().toDateString();
-      if (todayReset) {
+      if (adState.watchDate !== new Date().toDateString()) {
         adState.watchCountToday = 0;
         adState.lastWatchTime = 0;
         adState.watchDate = new Date().toDateString();
@@ -489,27 +487,20 @@
       document.getElementById('adWatchBtn').textContent = t('adLoading');
       
       try {
-        // Проверяем доступность функции show_11486843
         if (typeof show_11486843 !== 'function') {
-          // Для тестирования без реальной рекламы
           console.log('Ad SDK not loaded, simulating ad completion for testing');
           await simulateAdCompletion(rewardType);
           return;
         }
         
-        // Вызываем rewarded interstitial
         await show_11486843();
-        
-        // Пользователь досмотрел рекламу
         await handleAdCompletion(rewardType);
         
       } catch (error) {
         console.error('Ad error:', error);
-        // Если реклама не загрузилась, даем награду для тестирования
         if (error.message && error.message.includes('not loaded')) {
           showMessage(t('adNotAvailable'));
         } else {
-          // Для отладки: даем награду даже при ошибке
           await handleAdCompletion(rewardType);
         }
       } finally {
@@ -521,7 +512,6 @@
     }
     
     async function simulateAdCompletion(rewardType) {
-      // Симуляция для тестирования
       return new Promise((resolve) => {
         setTimeout(() => {
           handleAdCompletion(rewardType).then(resolve);
@@ -532,7 +522,6 @@
     async function handleAdCompletion(rewardType) {
       if (!user) return;
       
-      // Обновляем счетчики
       adState.lastWatchTime = Date.now();
       adState.watchCountToday++;
       saveAdState();
@@ -553,7 +542,6 @@
           break;
           
         case 'hourly':
-          // Удваиваем последний часовой бонус
           const bonusSnap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
           const bonusData = bonusSnap.val() || {};
           const lastBonus = bonusData.lastBonusAmount || 50;
@@ -570,9 +558,6 @@
     }
     
     function updateAdTaskUI() {
-      const adTaskElement = document.getElementById('adTaskContainer');
-      if (!adTaskElement) return;
-      
       const adButton = document.getElementById('watchAdButton');
       if (!adButton) return;
       
@@ -818,18 +803,19 @@
       });
     }
 
-    // ==================== ЗАГРУЗКА ДАННЫХ ====================
+    // ==================== ЗАГРУЗКА ДАННЫХ (ИСПРАВЛЕНО СОХРАНЕНИЕ CLICK POWER) ====================
     async function loadPlayerData(uid) {
       return new Promise((resolve) => {
         db.ref(`player_data/${uid}`).once('value').then(snapshot => {
           const data = snapshot.val();
           if (!data) {
-            db.ref(`player_data/${uid}`).set({
+            const defaultData = {
               score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
               autoclickerLevel: 1, hasResonance: false,
               autoclickActive: false, autoclickEndTime: 0,
               lastActive: firebase.database.ServerValue.TIMESTAMP
-            });
+            };
+            db.ref(`player_data/${uid}`).set(defaultData);
             score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
             autoclickerLevel = 1; hasResonance = false;
           } else {
@@ -864,6 +850,34 @@
           resolve();
         }).catch(() => { score = 0; crystals = 0; clickPower = 1; resolve(); });
       });
+    }
+
+    function savePlayerData() {
+      if (!user) return;
+      const data = {
+        score: score,
+        crystals: crystals,
+        clickPower: clickPower,
+        totalClicks: totalClicks,
+        autoclickerLevel: autoclickerLevel,
+        hasResonance: hasResonance,
+        autoclickActive: autoclickActive,
+        autoclickEndTime: autoclickEndTime,
+        instantAutoclickActive: instantAutoclickActive,
+        instantAutoclickEndTime: instantAutoclickEndTime,
+        cloneEndTime: cloneEndTime || 0,
+        lastActive: firebase.database.ServerValue.TIMESTAMP
+      };
+      db.ref(`player_data/${user.uid}`).update(data).catch(() => {});
+      db.ref(`leaderboard/${user.uid}`).update({
+        score: score,
+        crystals: crystals,
+        clickPower: clickPower,
+        totalClicks: totalClicks,
+        hasResonance: hasResonance,
+        cloneEndTime: cloneEndTime || 0,
+        lastUpdate: Date.now()
+      }).catch(() => {});
     }
 
     function savePlayerScore() { 
@@ -925,16 +939,20 @@
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
       if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
     }
+
+    // Сохраняем ВСЕ данные игры при закрытии
     window.addEventListener('beforeunload', () => {
-      if (user && autoclickActive) {
-        db.ref(`player_data/${user.uid}`).update({
-          autoclickActive: true,
-          autoclickEndTime: autoclickEndTime,
-          hasResonance: hasResonance,
-          lastActive: firebase.database.ServerValue.TIMESTAMP
-        }).catch(() => {});
+      if (user) {
+        savePlayerData();
       }
       cleanupAllTimers();
+    });
+
+    // Дополнительно сохраняем при сворачивании
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && user) {
+        savePlayerData();
+      }
     });
 
     function spawnScorePopup(x, y, amount) {
@@ -955,18 +973,7 @@
       if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
       score += clickPower; totalClicks++;
       
-      if (user) {
-        db.ref(`player_data/${user.uid}`).update({
-          score: score,
-          totalClicks: totalClicks,
-          hasResonance: hasResonance
-        });
-        db.ref(`leaderboard/${user.uid}`).update({
-          score: score,
-          totalClicks: totalClicks,
-          hasResonance: hasResonance
-        });
-      }
+      savePlayerScore();
       
       updateTaskProgress("clickMarathon", 1);
       updateTaskProgress("collectTokens", clickPower);
@@ -976,16 +983,7 @@
       
       if (hasResonance && totalClicks % 100 === 0) { 
         crystals++; 
-        if (user) {
-          db.ref(`player_data/${user.uid}`).update({
-            crystals: crystals,
-            hasResonance: true
-          });
-          db.ref(`leaderboard/${user.uid}`).update({
-            crystals: crystals,
-            hasResonance: true
-          });
-        }
+        savePlayerCrystals();
         showMessage(`🔮 Resonance! +1 💎`); 
         updateProfilePanel(); 
       }
@@ -1002,11 +1000,11 @@
       if (autoclickActive && extendTime) { autoclickEndTime = Math.max(autoclickEndTime, Date.now()) + duration; }
       else { autoclickActive = true; autoclickEndTime = Date.now() + duration; }
       autoclickInterval = setInterval(autoclickTick, 1000);
-      if (user) { db.ref(`player_data/${user.uid}`).update({ autoclickActive: true, autoclickEndTime: autoclickEndTime, hasResonance: hasResonance }).catch(() => {}); }
+      savePlayerData();
       updateProfilePanel(); updateAutoclickerShopUI();
     }
 
-    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); if (user) { db.ref(`player_data/${user.uid}`).update({ autoclickActive: false, autoclickEndTime: 0, hasResonance: hasResonance }).catch(() => {}); } }
+    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); savePlayerData(); }
     function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); } }
     function activateFreeAutoclicker() { if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only!'); return; } if (autoclickActive) showMessage("Already active!"); else startAutoclicker(getAutoclickerDuration()); }
 
@@ -1019,9 +1017,9 @@
       instantAutoclickInterval = setInterval(autoclickTick, 1000);
       instantAutoclickTimerInterval = setInterval(updateInstantAutoclickTimer, 1000);
       updateInstantAutoclickTimer(); updateCloneButtonState();
-      db.ref(`player_data/${user.uid}`).update({ instantAutoclickActive: true, instantAutoclickEndTime, hasResonance: hasResonance }).catch(() => {});
+      savePlayerData();
     }
-    function stopInstantAutoclick() { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); db.ref(`player_data/${user.uid}`).update({ instantAutoclickActive: false, instantAutoclickEndTime: 0, hasResonance: hasResonance }).catch(() => {}); }
+    function stopInstantAutoclick() { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); savePlayerData(); }
 
     function updateInstantAutoclickTimer() {
       const d = document.getElementById('instantAutoclickTimerDisplay'), b = document.getElementById('buyInstantAutoclickBtn');
@@ -1044,7 +1042,7 @@
       cloneTimerInterval = setInterval(updateCloneTimer, 1000);
       cloneTimeout = setTimeout(() => stopClone(), duration);
       updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI();
-      db.ref(`player_data/${user.uid}`).update({ cloneEndTime, hasResonance: hasResonance }).catch(() => {});
+      savePlayerData();
     }
 
     function stopClone() {
@@ -1052,7 +1050,7 @@
       if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
       deactivateDualClick(); cloneEndTime = 0;
       updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI();
-      db.ref(`player_data/${user.uid}`).update({ cloneEndTime: 0, hasResonance: hasResonance }).catch(() => {});
+      savePlayerData();
     }
 
     function resumeCloneIfActive() {
@@ -1087,8 +1085,38 @@
     function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
 
     // ==================== ПОКУПКИ ====================
-    function buyUpgrade(type) { if (type === "clickPower" && clickPower < 8) { const c = getClickPowerUpgradeCost(); if (score < c) { showMessage(t('notEnoughTokens')); return; } score -= c; clickPower++; savePlayerScore(); db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower); updateClickPowerBar(); updateProfilePanel(); updateClickPowerCostText(); updateCounterDisplay(); } else if (clickPower >= 8) showMessage(t('maxLevel')); }
-    function upgradeAutoclicker() { if (autoclickerLevel >= 20) { showMessage(t('maxLevel')); return; } const c = getAutoclickerUpgradeCost(); if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } score -= c.tokens; crystals -= c.crystals; autoclickerLevel++; savePlayerScore(); savePlayerCrystals(); db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); updateProfilePanel(); updateAutoclickerShopUI(); updateCounterDisplay(); }
+    function buyUpgrade(type) { 
+      if (type === "clickPower" && clickPower < 8) { 
+        const c = getClickPowerUpgradeCost(); 
+        if (score < c) { showMessage(t('notEnoughTokens')); return; } 
+        score -= c; 
+        clickPower++; 
+        savePlayerScore(); 
+        // ЯВНО сохраняем clickPower в базу данных
+        db.ref(`player_data/${user.uid}/clickPower`).set(clickPower);
+        db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower);
+        updateClickPowerBar(); 
+        updateProfilePanel(); 
+        updateClickPowerCostText(); 
+        updateCounterDisplay(); 
+      } else if (clickPower >= 8) showMessage(t('maxLevel')); 
+    }
+    
+    function upgradeAutoclicker() { 
+      if (autoclickerLevel >= 20) { showMessage(t('maxLevel')); return; } 
+      const c = getAutoclickerUpgradeCost(); 
+      if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } 
+      score -= c.tokens; 
+      crystals -= c.crystals; 
+      autoclickerLevel++; 
+      savePlayerScore(); 
+      savePlayerCrystals(); 
+      db.ref(`player_data/${user.uid}/autoclickerLevel`).set(autoclickerLevel);
+      db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); 
+      updateProfilePanel(); 
+      updateAutoclickerShopUI(); 
+      updateCounterDisplay(); 
+    }
     
     function buyResonance() { 
       if (!user) return; 
@@ -1192,7 +1220,6 @@
       else if (leftManually) { showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
       else { 
         showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`);
-        // Предлагаем посмотреть рекламу после проигрыша
         setTimeout(() => {
           if (canWatchAd()) {
             showAdPopup('minigame');
@@ -1211,14 +1238,14 @@
         const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
         list.innerHTML = "";
         
-        // Добавляем рекламное задание первым
+        // Добавляем рекламное задание с обычной обводкой
         const adTaskDiv = document.createElement("div");
         adTaskDiv.id = "adTaskContainer";
-        adTaskDiv.style.cssText = "margin-bottom:10px;padding:10px;border:2px solid #ffd700;border-radius:8px;background-color:#2a2a1a;";
+        adTaskDiv.style.cssText = "margin-bottom:10px;padding:10px;border:1px solid #00c3ff;border-radius:8px;background-color:#222;";
         adTaskDiv.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div style="text-align:left;">
-              <strong style="color:#ffd700;">📺 ${t('watchAd')}</strong><br>
+              <strong>📺 ${t('watchAd')}</strong><br>
               <small style="color:#aaa;">${t('adCooldown')}: 15 ${currentLanguage === 'ru' ? 'мин' : 'min'} | ${t('maxLevel')}: ${AD_SETTINGS.dailyLimit}/${currentLanguage === 'ru' ? 'день' : 'day'}</small>
             </div>
             <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;">
@@ -1229,7 +1256,7 @@
         list.appendChild(adTaskDiv);
         
         at.forEach(task => {
-          if (task.isAdTask) return; // Пропускаем, так как уже добавили
+          if (task.isAdTask) return;
           let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
           const rk = task.period === "weekly" ? sow : today;
           if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
@@ -1330,10 +1357,8 @@
       if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { 
         const rw = Math.floor(Math.random()*191)+10; 
         
-        // Сохраняем сумму бонуса для возможного удвоения через рекламу
         await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
         
-        // Предлагаем удвоить через рекламу
         if (canWatchAd()) {
           const wantsDouble = confirm(t('adHourlyBonus'));
           if (wantsDouble) {
@@ -1370,17 +1395,12 @@
       });
     }
 
-    function resetAllBoosters() { stopAllAutoclickers(); stopClone(); cloneEndTime = 0; instantAutoclickActive = false; instantAutoclickEndTime = 0; dualClickActive = false; deactivateDualClick(); updateCloneTimer(); updateCloneButtonState(); updateInstantAutoclickTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); if (user) db.ref(`leaderboard/${user.uid}`).update({ cloneEndTime: 0, instantAutoclickActive: false, instantAutoclickEndTime: 0 }).catch(() => {}); showMessage('🔄 Boosters reset!'); }
+    function resetAllBoosters() { stopAllAutoclickers(); stopClone(); cloneEndTime = 0; instantAutoclickActive = false; instantAutoclickEndTime = 0; dualClickActive = false; deactivateDualClick(); updateCloneTimer(); updateCloneButtonState(); updateInstantAutoclickTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); savePlayerData(); showMessage('🔄 Boosters reset!'); }
     window.resetAllBoosters = resetAllBoosters;
 
     async function signOut() {
-      if (user && autoclickActive) {
-        await db.ref(`player_data/${user.uid}`).update({
-          autoclickActive: true,
-          autoclickEndTime: autoclickEndTime,
-          hasResonance: hasResonance,
-          lastActive: firebase.database.ServerValue.TIMESTAMP
-        }).catch(() => {});
+      if (user) {
+        savePlayerData();
       }
       cleanupAllTimers();
       localStorage.removeItem('cryptoClickerSession');
