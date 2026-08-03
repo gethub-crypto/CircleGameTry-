@@ -269,7 +269,7 @@
         instructionStep3: '3. Игра откроется в Telegram. Ваш прогресс будет синхронизирован!',
         instructionTip: '💡 Совет: Откройте эту страницу на телефоне для автоматического входа',
         backBtn: '← Назад',
-        watchAd: '📺 Посмотри рекламу (+50 токенов)',
+        watchAd: '📺 +50 токенов за рекламу',
         adAvailable: 'Доступна',
         adCooldown: 'Подождите',
         adRewardTitle: '📺 Реклама за вознаграждение',
@@ -282,7 +282,10 @@
         adHourlyBonus: '🎁 Хочешь x2 бонус? Посмотри короткую рекламу!',
         adHourlyReward: '✅ Часовой бонус удвоен!',
         adNotAvailable: 'Реклама пока недоступна. Попробуйте позже.',
-        adLoading: 'Загрузка рекламы...'
+        adLoading: 'Загрузка...',
+        adBtnWatch: '▶️ Watch',
+        adBtnWait: '⏳ Жди',
+        adBtnLimit: '🚫 Лимит'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -325,7 +328,7 @@
         instructionStep3: '3. The game will open in Telegram. Your progress will be synced!',
         instructionTip: '💡 Tip: Open this page on your phone for automatic login',
         backBtn: '← Back',
-        watchAd: '📺 Watch ad (+50 tokens)',
+        watchAd: '📺 +50 tokens for ad',
         adAvailable: 'Available',
         adCooldown: 'Wait',
         adRewardTitle: '📺 Rewarded Ad',
@@ -338,7 +341,10 @@
         adHourlyBonus: '🎁 Want x2 bonus? Watch a short ad!',
         adHourlyReward: '✅ Hourly bonus doubled!',
         adNotAvailable: 'Ad not available. Try again later.',
-        adLoading: 'Loading ad...'
+        adLoading: 'Loading...',
+        adBtnWatch: '▶️ Watch',
+        adBtnWait: '⏳ Wait',
+        adBtnLimit: '🚫 Limit'
       }
     };
     
@@ -563,17 +569,17 @@
       
       if (canWatchAd()) {
         adButton.disabled = false;
-        adButton.textContent = `📺 ${t('watchAd')} (${t('adAvailable')})`;
+        adButton.textContent = t('adBtnWatch');
         adButton.className = 'ad-button';
       } else {
         adButton.disabled = true;
         if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) {
-          adButton.textContent = `📺 ${t('watchAd')} (${t('maxLevel')})`;
+          adButton.textContent = t('adBtnLimit');
         } else {
           const sec = getAdCooldownRemaining();
           const m = Math.floor(sec / 60);
           const s = sec % 60;
-          adButton.textContent = `📺 ${t('adCooldown')}: ${m}:${String(s).padStart(2, '0')}`;
+          adButton.textContent = `${t('adBtnWait')} ${m}:${String(s).padStart(2, '0')}`;
         }
         adButton.className = 'click-button';
       }
@@ -1245,11 +1251,9 @@
         const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
         list.innerHTML = "";
         
-        // Рекламное задание — теперь просто строка внутри tasksList, без вложенного div
+        // Рекламное задание — одна строка, без дублирования иконок
         const adTaskDiv = document.createElement("div");
         adTaskDiv.id = "adTaskContainer";
-        // Используем те же стили что и для остальных заданий: border:1px solid #00c3ff и background-color:#222
-        // Эти стили уже применены через CSS правило #tasksList > div
         adTaskDiv.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
             <div style="text-align:left;flex:1;min-width:150px;">
@@ -1257,7 +1261,7 @@
               <small style="color:#aaa;">${t('adCooldown')}: 15 ${currentLanguage === 'ru' ? 'мин' : 'min'} | ${t('maxLevel')}: ${AD_SETTINGS.dailyLimit}/${currentLanguage === 'ru' ? 'день' : 'day'}</small>
             </div>
             <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;flex-shrink:0;">
-              ${canWatchAd() ? `📺 ${t('watchAd')} (${t('adAvailable')})` : `📺 ${t('adCooldown')}`}
+              ${t('adBtnWatch')}
             </button>
           </div>
         `;
