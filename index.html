@@ -48,7 +48,7 @@
     .progress-bar { height: 100%; background: linear-gradient(90deg, #00ffc8 0%, #00c3ff 100%); width: 0%; transition: width 0.3s ease-in-out; border-radius: 10px; }
     .panel { display: none; margin-top: 20px; background-color: #1a1a1a; border-radius: 10px; box-shadow: 0 0 10px #00c3ff; padding: 15px; }
     .panel.open { display: block; }
-    #tasksList div { margin-bottom: 10px; padding: 10px; border: 1px solid #00c3ff; border-radius: 8px; background-color: #222; }
+    #tasksList > div { margin-bottom: 10px; padding: 10px; border: 1px solid #00c3ff; border-radius: 8px; background-color: #222; }
     #autoclickerShop { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
     .booster-card { background: #1a1a1a; padding: 20px; border-radius: 12px; width: 220px; box-shadow: 0 0 10px #00c3ff; text-align: center; }
     .booster-card.premium { border: 2px solid #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); background: linear-gradient(135deg, #1a1a1a 0%, #2a2a1a 100%); position: relative; overflow: hidden; }
@@ -374,12 +374,12 @@
 
     // ==================== РЕКЛАМНЫЕ НАСТРОЙКИ ====================
     const AD_SETTINGS = {
-      cooldown: 15 * 60 * 1000, // 15 минут между просмотрами
+      cooldown: 15 * 60 * 1000,
       dailyLimit: 10,
       rewards: {
-        taskAd: 50,        // награда за просмотр через задания
-        miniGameFail: 100, // награда после проигрыша в мини-игре
-        hourlyBonusMultiplier: 2 // множитель часового бонуса
+        taskAd: 50,
+        miniGameFail: 100,
+        hourlyBonusMultiplier: 2
       }
     };
     
@@ -793,6 +793,14 @@
         const newCrystals = snapshot.val();
         if (newCrystals !== null && newCrystals !== crystals) { crystals = newCrystals; updateProfilePanel(); }
       });
+      db.ref(`player_data/${user.uid}/clickPower`).on('value', (snapshot) => {
+        const newClickPower = snapshot.val();
+        if (newClickPower !== null && newClickPower !== clickPower) { 
+          clickPower = newClickPower; 
+          updateClickPowerBar(); 
+          updateProfilePanel(); 
+        }
+      });
       db.ref(`player_data/${user.uid}/hasResonance`).on('value', (snapshot) => {
         const newResonance = snapshot.val();
         if (newResonance !== null && newResonance !== hasResonance) { 
@@ -803,7 +811,7 @@
       });
     }
 
-    // ==================== ЗАГРУЗКА ДАННЫХ (ИСПРАВЛЕНО СОХРАНЕНИЕ CLICK POWER) ====================
+    // ==================== ЗАГРУЗКА ДАННЫХ ====================
     async function loadPlayerData(uid) {
       return new Promise((resolve) => {
         db.ref(`player_data/${uid}`).once('value').then(snapshot => {
@@ -884,11 +892,13 @@
       if (user) { 
         db.ref(`player_data/${user.uid}`).update({
           score: score,
+          clickPower: clickPower,
           hasResonance: hasResonance,
           totalClicks: totalClicks
         }); 
         db.ref(`leaderboard/${user.uid}`).update({
           score: score,
+          clickPower: clickPower,
           totalClicks: totalClicks,
           hasResonance: hasResonance
         }); 
@@ -940,7 +950,6 @@
       if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
     }
 
-    // Сохраняем ВСЕ данные игры при закрытии
     window.addEventListener('beforeunload', () => {
       if (user) {
         savePlayerData();
@@ -948,7 +957,6 @@
       cleanupAllTimers();
     });
 
-    // Дополнительно сохраняем при сворачивании
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden' && user) {
         savePlayerData();
@@ -1091,8 +1099,7 @@
         if (score < c) { showMessage(t('notEnoughTokens')); return; } 
         score -= c; 
         clickPower++; 
-        savePlayerScore(); 
-        // ЯВНО сохраняем clickPower в базу данных
+        savePlayerScore();
         db.ref(`player_data/${user.uid}/clickPower`).set(clickPower);
         db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower);
         updateClickPowerBar(); 
@@ -1238,17 +1245,18 @@
         const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
         list.innerHTML = "";
         
-        // Добавляем рекламное задание с обычной обводкой
+        // Рекламное задание — теперь просто строка внутри tasksList, без вложенного div
         const adTaskDiv = document.createElement("div");
         adTaskDiv.id = "adTaskContainer";
-        adTaskDiv.style.cssText = "margin-bottom:10px;padding:10px;border:1px solid #00c3ff;border-radius:8px;background-color:#222;";
+        // Используем те же стили что и для остальных заданий: border:1px solid #00c3ff и background-color:#222
+        // Эти стили уже применены через CSS правило #tasksList > div
         adTaskDiv.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-            <div style="text-align:left;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
+            <div style="text-align:left;flex:1;min-width:150px;">
               <strong>📺 ${t('watchAd')}</strong><br>
               <small style="color:#aaa;">${t('adCooldown')}: 15 ${currentLanguage === 'ru' ? 'мин' : 'min'} | ${t('maxLevel')}: ${AD_SETTINGS.dailyLimit}/${currentLanguage === 'ru' ? 'день' : 'day'}</small>
             </div>
-            <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;">
+            <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;flex-shrink:0;">
               ${canWatchAd() ? `📺 ${t('watchAd')} (${t('adAvailable')})` : `📺 ${t('adCooldown')}`}
             </button>
           </div>
