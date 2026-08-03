@@ -7,6 +7,7 @@
   <meta name="590b08291eaf7810856a6e6c3e9506ae51ac29da" content="590b08291eaf7810856a6e6c3e9506ae51ac29da" />
   <title>Crypto Clicker</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src='//libtl.com/sdk.js' data-zone='11486843' data-sdk='show_11486843'></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; min-height: 100vh; overflow-x: hidden; overscroll-behavior: none; }
@@ -15,6 +16,10 @@
     .click-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 195, 255, 0.4); }
     .click-button:active { transform: translateY(0); }
     .click-button:disabled { background: #555; cursor: not-allowed; transform: none; }
+    .ad-button { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-weight: bold; padding: 12px 24px; font-size: 16px; border-radius: 12px; cursor: pointer; margin: 5px; border: none; transition: all 0.3s ease; touch-action: manipulation; }
+    .ad-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
+    .ad-button:active { transform: translateY(0); }
+    .ad-button:disabled { background: #555; cursor: not-allowed; transform: none; }
     .game-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px; position: relative; z-index: 10; }
     #profilePanel { background-color: #1a1a1a; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px #00c3ff; width: 220px; text-align: left; transition: all 0.3s ease; position: relative; overflow: hidden; }
     #profilePanel div { margin: 8px 0; font-size: 14px; }
@@ -96,6 +101,12 @@
     .telegram-login-btn { background: linear-gradient(135deg, #0088cc, #00c3ff) !important; color: #fff !important; font-size: 18px !important; padding: 15px 40px !important; }
     .telegram-login-btn:hover { box-shadow: 0 5px 20px rgba(0, 136, 204, 0.5) !important; }
 
+    #adRewardPopup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 25px; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 195, 255, 0.5); z-index: 10001; text-align: center; max-width: 350px; width: 90%; }
+    #adRewardPopup h3 { color: #ffd700; margin-bottom: 15px; font-size: 20px; }
+    #adRewardPopup p { color: #fff; margin-bottom: 20px; font-size: 16px; }
+    #adRewardPopup .button-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 10000; }
+
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
       .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
@@ -106,9 +117,9 @@
       #hourlyBonus { width: 100%; max-width: 400px; } .bonus-card { width: 100%; }
       #mainButtonContainer { width: 250px; height: 250px; gap: 15px; }
       .main-click-button { width: 100px; height: 100px; } .main-click-button .icon { font-size: 40px; }
-      #counter { font-size: 24px; } .click-button { padding: 10px 18px; font-size: 13px; }
+      #counter { font-size: 24px; } .click-button { padding: 10px 18px; font-size: 13px; } .ad-button { padding: 10px 18px; font-size: 13px; }
       #buttonGroup { flex-direction: column; align-items: center; gap: 8px; }
-      #buttonGroup .click-button { width: 85%; max-width: 300px; }
+      #buttonGroup .click-button, #buttonGroup .ad-button { width: 85%; max-width: 300px; }
       #settings { width: 90% !important; max-width: 320px; } .booster-card { width: 100%; max-width: 280px; }
       .tabs { flex-direction: column; } .tab-button { border-radius: 0; font-size: 13px; }
       #leaderboardTable { font-size: 11px; } .score-popup { font-size: 16px; }
@@ -125,6 +136,15 @@
   </style>
 </head>
 <body>
+  <div class="popup-overlay" id="popupOverlay"></div>
+  <div id="adRewardPopup">
+    <h3 id="adRewardTitle">📺 Реклама</h3>
+    <p id="adRewardText">Посмотрите рекламу и получите награду!</p>
+    <div class="button-group">
+      <button class="ad-button" id="adWatchBtn" onclick="watchRewardedAd()">▶️ Смотреть</button>
+      <button class="click-button" onclick="closeAdPopup()">✖️ Закрыть</button>
+    </div>
+  </div>
   <div class="language-switch">
     <button class="lang-btn active" onclick="switchLanguage('ru')">RU</button>
     <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
@@ -248,7 +268,21 @@
         instructionStep2: '2. Затем нажмите кнопку <b>🎮 Играть</b> в меню бота',
         instructionStep3: '3. Игра откроется в Telegram. Ваш прогресс будет синхронизирован!',
         instructionTip: '💡 Совет: Откройте эту страницу на телефоне для автоматического входа',
-        backBtn: '← Назад'
+        backBtn: '← Назад',
+        watchAd: '📺 Посмотри рекламу (+50 токенов)',
+        adAvailable: 'Доступна',
+        adCooldown: 'Подождите',
+        adRewardTitle: '📺 Реклама за вознаграждение',
+        adRewardText: 'Посмотрите короткую рекламу и получите награду!',
+        adWatch: '▶️ Смотреть',
+        adClose: '✖️ Закрыть',
+        adRewardReceived: '✅ Получено {amount} токенов за просмотр рекламы!',
+        adMiniGameFail: '😢 Не расстраивайся! Посмотри рекламу и получи 100 токенов!',
+        adMiniGameReward: '✅ Получено 100 токенов за просмотр рекламы!',
+        adHourlyBonus: '🎁 Хочешь x2 бонус? Посмотри короткую рекламу!',
+        adHourlyReward: '✅ Часовой бонус удвоен!',
+        adNotAvailable: 'Реклама пока недоступна. Попробуйте позже.',
+        adLoading: 'Загрузка рекламы...'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -290,7 +324,21 @@
         instructionStep2: '2. Then press the <b>🎮 Play</b> button in the bot menu',
         instructionStep3: '3. The game will open in Telegram. Your progress will be synced!',
         instructionTip: '💡 Tip: Open this page on your phone for automatic login',
-        backBtn: '← Back'
+        backBtn: '← Back',
+        watchAd: '📺 Watch ad (+50 tokens)',
+        adAvailable: 'Available',
+        adCooldown: 'Wait',
+        adRewardTitle: '📺 Rewarded Ad',
+        adRewardText: 'Watch a short ad and get a reward!',
+        adWatch: '▶️ Watch',
+        adClose: '✖️ Close',
+        adRewardReceived: '✅ Received {amount} tokens for watching ad!',
+        adMiniGameFail: '😢 Don\'t worry! Watch an ad and get 100 tokens!',
+        adMiniGameReward: '✅ Received 100 tokens for watching ad!',
+        adHourlyBonus: '🎁 Want x2 bonus? Watch a short ad!',
+        adHourlyReward: '✅ Hourly bonus doubled!',
+        adNotAvailable: 'Ad not available. Try again later.',
+        adLoading: 'Loading ad...'
       }
     };
     
@@ -304,6 +352,7 @@
       });
       if (!user) setupAuthUI();
       updateProfilePanel();
+      updateAdTaskUI();
     }
     window.switchLanguage = switchLanguage;
 
@@ -322,6 +371,228 @@
     function escapeHTML(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
     function sanitizeInput(s) { return typeof s === 'string' ? s.replace(/[<>"'&]/g, m => ({'<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','&':'&amp;'})[m]) : s; }
     const rateLimiter = { clicks: [], maxClicksPerSecond: 20, maxClicksPerMinute: 200, canClick() { const n = Date.now(); this.clicks = this.clicks.filter(t => n - t < 60000); if (this.clicks.filter(t => n - t < 1000).length >= this.maxClicksPerSecond || this.clicks.length >= this.maxClicksPerMinute) return false; this.clicks.push(n); return true; } };
+
+    // ==================== РЕКЛАМНЫЕ НАСТРОЙКИ ====================
+    const AD_SETTINGS = {
+      cooldown: 15 * 60 * 1000, // 15 минут между просмотрами
+      dailyLimit: 10,
+      rewards: {
+        taskAd: 50,        // награда за просмотр через задания
+        miniGameFail: 100, // награда после проигрыша в мини-игре
+        hourlyBonusMultiplier: 2 // множитель часового бонуса
+      }
+    };
+    
+    let adState = {
+      lastWatchTime: 0,
+      watchCountToday: 0,
+      watchDate: new Date().toDateString(),
+      pendingRewardType: null, // 'task', 'minigame', 'hourly'
+      isAdLoading: false
+    };
+
+    // Загружаем состояние рекламы
+    function loadAdState() {
+      const saved = localStorage.getItem('cryptoClickerAdState');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.watchDate === new Date().toDateString()) {
+            adState = { ...adState, ...parsed };
+          }
+        } catch (e) {}
+      }
+    }
+    
+    function saveAdState() {
+      adState.watchDate = new Date().toDateString();
+      localStorage.setItem('cryptoClickerAdState', JSON.stringify({
+        lastWatchTime: adState.lastWatchTime,
+        watchCountToday: adState.watchCountToday,
+        watchDate: adState.watchDate
+      }));
+    }
+    
+    function canWatchAd() {
+      const now = Date.now();
+      const todayReset = adState.watchDate !== new Date().toDateString();
+      if (todayReset) {
+        adState.watchCountToday = 0;
+        adState.lastWatchTime = 0;
+        adState.watchDate = new Date().toDateString();
+        saveAdState();
+      }
+      if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) return false;
+      if (now - adState.lastWatchTime < AD_SETTINGS.cooldown) return false;
+      if (adState.isAdLoading) return false;
+      return true;
+    }
+    
+    function getAdCooldownRemaining() {
+      const now = Date.now();
+      const remaining = AD_SETTINGS.cooldown - (now - adState.lastWatchTime);
+      return Math.max(0, Math.floor(remaining / 1000));
+    }
+    
+    function showAdPopup(rewardType) {
+      if (!canWatchAd()) {
+        if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) {
+          showMessage(t('adNotAvailable'));
+        } else {
+          const sec = getAdCooldownRemaining();
+          const m = Math.floor(sec / 60);
+          const s = sec % 60;
+          showMessage(`${t('adCooldown')}: ${m}:${String(s).padStart(2, '0')}`);
+        }
+        return;
+      }
+      
+      adState.pendingRewardType = rewardType;
+      
+      let rewardText = '';
+      let rewardTitle = t('adRewardTitle');
+      
+      switch (rewardType) {
+        case 'task':
+          rewardText = `+${AD_SETTINGS.rewards.taskAd} ${t('tokens')}`;
+          break;
+        case 'minigame':
+          rewardText = `+${AD_SETTINGS.rewards.miniGameFail} ${t('tokens')}`;
+          rewardTitle = t('adMiniGameFail');
+          break;
+        case 'hourly':
+          rewardText = `x${AD_SETTINGS.rewards.hourlyBonusMultiplier} ${t('claimBonus')}`;
+          rewardTitle = t('adHourlyBonus');
+          break;
+      }
+      
+      document.getElementById('adRewardTitle').textContent = rewardTitle;
+      document.getElementById('adRewardText').textContent = `${t('adRewardText')}\n${rewardText}`;
+      document.getElementById('popupOverlay').style.display = 'block';
+      document.getElementById('adRewardPopup').style.display = 'block';
+    }
+    
+    function closeAdPopup() {
+      document.getElementById('popupOverlay').style.display = 'none';
+      document.getElementById('adRewardPopup').style.display = 'none';
+      adState.pendingRewardType = null;
+    }
+    
+    async function watchRewardedAd() {
+      if (adState.isAdLoading) return;
+      
+      const rewardType = adState.pendingRewardType;
+      if (!rewardType) return;
+      
+      adState.isAdLoading = true;
+      document.getElementById('adWatchBtn').disabled = true;
+      document.getElementById('adWatchBtn').textContent = t('adLoading');
+      
+      try {
+        // Проверяем доступность функции show_11486843
+        if (typeof show_11486843 !== 'function') {
+          // Для тестирования без реальной рекламы
+          console.log('Ad SDK not loaded, simulating ad completion for testing');
+          await simulateAdCompletion(rewardType);
+          return;
+        }
+        
+        // Вызываем rewarded interstitial
+        await show_11486843();
+        
+        // Пользователь досмотрел рекламу
+        await handleAdCompletion(rewardType);
+        
+      } catch (error) {
+        console.error('Ad error:', error);
+        // Если реклама не загрузилась, даем награду для тестирования
+        if (error.message && error.message.includes('not loaded')) {
+          showMessage(t('adNotAvailable'));
+        } else {
+          // Для отладки: даем награду даже при ошибке
+          await handleAdCompletion(rewardType);
+        }
+      } finally {
+        adState.isAdLoading = false;
+        document.getElementById('adWatchBtn').disabled = false;
+        document.getElementById('adWatchBtn').textContent = t('adWatch');
+        closeAdPopup();
+      }
+    }
+    
+    async function simulateAdCompletion(rewardType) {
+      // Симуляция для тестирования
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          handleAdCompletion(rewardType).then(resolve);
+        }, 1500);
+      });
+    }
+    
+    async function handleAdCompletion(rewardType) {
+      if (!user) return;
+      
+      // Обновляем счетчики
+      adState.lastWatchTime = Date.now();
+      adState.watchCountToday++;
+      saveAdState();
+      
+      let rewardAmount = 0;
+      
+      switch (rewardType) {
+        case 'task':
+          rewardAmount = AD_SETTINGS.rewards.taskAd;
+          score += rewardAmount;
+          showMessage(t('adRewardReceived').replace('{amount}', rewardAmount));
+          break;
+          
+        case 'minigame':
+          rewardAmount = AD_SETTINGS.rewards.miniGameFail;
+          score += rewardAmount;
+          showMessage(t('adMiniGameReward'));
+          break;
+          
+        case 'hourly':
+          // Удваиваем последний часовой бонус
+          const bonusSnap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+          const bonusData = bonusSnap.val() || {};
+          const lastBonus = bonusData.lastBonusAmount || 50;
+          rewardAmount = lastBonus * (AD_SETTINGS.rewards.hourlyBonusMultiplier - 1);
+          score += rewardAmount;
+          showMessage(t('adHourlyReward'));
+          break;
+      }
+      
+      savePlayerScore();
+      updateCounterDisplay();
+      updateProfilePanel();
+      updateAdTaskUI();
+    }
+    
+    function updateAdTaskUI() {
+      const adTaskElement = document.getElementById('adTaskContainer');
+      if (!adTaskElement) return;
+      
+      const adButton = document.getElementById('watchAdButton');
+      if (!adButton) return;
+      
+      if (canWatchAd()) {
+        adButton.disabled = false;
+        adButton.textContent = `📺 ${t('watchAd')} (${t('adAvailable')})`;
+        adButton.className = 'ad-button';
+      } else {
+        adButton.disabled = true;
+        if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) {
+          adButton.textContent = `📺 ${t('watchAd')} (${t('maxLevel')})`;
+        } else {
+          const sec = getAdCooldownRemaining();
+          const m = Math.floor(sec / 60);
+          const s = sec % 60;
+          adButton.textContent = `📺 ${t('adCooldown')}: ${m}:${String(s).padStart(2, '0')}`;
+        }
+        adButton.className = 'click-button';
+      }
+    }
 
     // ==================== АВТОРИЗАЦИЯ ====================
     const unifiedAuth = {
@@ -384,6 +655,7 @@
       { id: "clickMarathon", description: "Make 100 clicks", goal: 100, reward: 50, period: "daily" },
       { id: "collectTokens", description: "Collect tokens", goalOptions: [1000, 3000, 5000], rewards: [100, 350, 600], period: "daily" },
       { id: "subscribeTwitter", description: "Follow @CircleGameTry on X", goal: 1, reward: 20, period: "daily", link: "https://x.com/CircleGameTry" },
+      { id: "watchRewardedAd", description: "Watch rewarded ad", goal: 1, reward: AD_SETTINGS.rewards.taskAd, period: "daily", isAdTask: true },
       { id: "clickMasterWeekly", description: "Make 500 clicks in a week", goal: 500, reward: 500, period: "weekly" },
       { id: "autoclickerMaster", description: "Activate autoclicker 5 times in a week", goal: 5, reward: "Free 5-minute autoclicker", period: "weekly", alternate: true },
       { id: "collectBigTokens", description: "Collect tokens in a week", goalOptions: [10000, 12000, 15000], rewards: [1000, 1200, 1500], period: "weekly", alternate: true },
@@ -519,6 +791,8 @@
       startBonusTimer();
       startOnlineTimer();
       checkWeeklyReset();
+      loadAdState();
+      updateAdTaskUI();
       const ref = new URLSearchParams(window.location.search).get('ref');
       if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
     }
@@ -544,7 +818,7 @@
       });
     }
 
-    // ==================== ЗАГРУЗКА ДАННЫХ (С ВОССТАНОВЛЕНИЕМ АВТОКЛИКЕРА) ====================
+    // ==================== ЗАГРУЗКА ДАННЫХ ====================
     async function loadPlayerData(uid) {
       return new Promise((resolve) => {
         db.ref(`player_data/${uid}`).once('value').then(snapshot => {
@@ -566,19 +840,15 @@
             autoclickerLevel = data.autoclickerLevel || 1;
             hasResonance = data.hasResonance || false;
             
-            // Восстанавливаем обычный автокликер
             if (data.autoclickActive && data.autoclickEndTime && data.autoclickEndTime > Date.now()) {
               const remaining = data.autoclickEndTime - Date.now();
-              console.log('Восстановление автокликера, осталось:', Math.floor(remaining/1000), 'сек');
               startAutoclicker(remaining, false);
             }
             
-            // Восстанавливаем instant автокликер
             if (data.instantAutoclickActive && data.instantAutoclickEndTime && data.instantAutoclickEndTime > Date.now()) {
               startInstantAutoclick(data.instantAutoclickEndTime - Date.now());
             }
             
-            // Восстанавливаем клон
             if (data.cloneEndTime && data.cloneEndTime > Date.now()) {
               cloneEndTime = data.cloneEndTime;
               resumeCloneIfActive();
@@ -685,7 +955,6 @@
       if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
       score += clickPower; totalClicks++;
       
-      // Сохраняем состояние, включая hasResonance
       if (user) {
         db.ref(`player_data/${user.uid}`).update({
           score: score,
@@ -726,7 +995,7 @@
 
     function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } clickToken(); }
 
-    // ==================== АВТОКЛИКЕР (С СОХРАНЕНИЕМ ВРЕМЕНИ) ====================
+    // ==================== АВТОКЛИКЕР ====================
     function startAutoclicker(duration, extendTime = false) {
       if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only! Deactivate Clone first.'); return; }
       if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
@@ -829,7 +1098,6 @@
       crystals -= RESONANCE_COST; 
       hasResonance = true; 
       savePlayerCrystals(); 
-      // Сохраняем hasResonance в player_data и leaderboard
       db.ref(`player_data/${user.uid}/hasResonance`).set(true);
       db.ref(`leaderboard/${user.uid}/hasResonance`).set(true); 
       updateProfilePanel(); 
@@ -922,7 +1190,15 @@
       if (!user) return;
       if (won) { score += MINI_GAME_REWARD; savePlayerScore(); showMessage(`${t('victory')} +${MINI_GAME_REWARD} tokens!`); updateTaskProgress("miniGameChallenge", 1); updateProfilePanel(); updateCounterDisplay(); }
       else if (leftManually) { showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
-      else { showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
+      else { 
+        showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`);
+        // Предлагаем посмотреть рекламу после проигрыша
+        setTimeout(() => {
+          if (canWatchAd()) {
+            showAdPopup('minigame');
+          }
+        }, 1500);
+      }
     }
 
     // ==================== ЗАДАНИЯ ====================
@@ -934,7 +1210,26 @@
         const td = s.val() || {}, today = new Date().toDateString(), sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), wn = getWeekNumber(), ew = wn % 2 === 0;
         const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
         list.innerHTML = "";
+        
+        // Добавляем рекламное задание первым
+        const adTaskDiv = document.createElement("div");
+        adTaskDiv.id = "adTaskContainer";
+        adTaskDiv.style.cssText = "margin-bottom:10px;padding:10px;border:2px solid #ffd700;border-radius:8px;background-color:#2a2a1a;";
+        adTaskDiv.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div style="text-align:left;">
+              <strong style="color:#ffd700;">📺 ${t('watchAd')}</strong><br>
+              <small style="color:#aaa;">${t('adCooldown')}: 15 ${currentLanguage === 'ru' ? 'мин' : 'min'} | ${t('maxLevel')}: ${AD_SETTINGS.dailyLimit}/${currentLanguage === 'ru' ? 'день' : 'day'}</small>
+            </div>
+            <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;">
+              ${canWatchAd() ? `📺 ${t('watchAd')} (${t('adAvailable')})` : `📺 ${t('adCooldown')}`}
+            </button>
+          </div>
+        `;
+        list.appendChild(adTaskDiv);
+        
         at.forEach(task => {
+          if (task.isAdTask) return; // Пропускаем, так как уже добавили
           let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
           const rk = task.period === "weekly" ? sow : today;
           if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
@@ -947,6 +1242,7 @@
             else { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; } }
           list.appendChild(div);
         });
+        updateAdTaskUI();
         isRenderingTasks = false;
       }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; });
     }
@@ -954,6 +1250,7 @@
     function updateTaskProgress(taskId, inc) {
       if (!user) return;
       const task = dailyTasks.find(t => t.id === taskId); if (!task) return;
+      if (task.isAdTask) return;
       if (task.alternate) { const wn = getWeekNumber(), ew = wn % 2 === 0; if (task.id==="autoclickerMaster"&&!ew) return; if (task.id==="collectBigTokens"&&ew) return; }
       const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today;
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
@@ -1030,7 +1327,28 @@
     async function claimHourlyBonus() {
       if (!user) return;
       const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 };
-      if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { const rw = Math.floor(Math.random()*191)+10; score += rw; savePlayerScore(); await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now() }); showMessage(`✅ +${rw} tokens!`, true); updateCounterDisplay(); }
+      if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { 
+        const rw = Math.floor(Math.random()*191)+10; 
+        
+        // Сохраняем сумму бонуса для возможного удвоения через рекламу
+        await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
+        
+        // Предлагаем удвоить через рекламу
+        if (canWatchAd()) {
+          const wantsDouble = confirm(t('adHourlyBonus'));
+          if (wantsDouble) {
+            await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
+            showAdPopup('hourly');
+            return;
+          }
+        }
+        
+        score += rw; 
+        savePlayerScore(); 
+        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw }); 
+        showMessage(`✅ +${rw} tokens!`, true); 
+        updateCounterDisplay(); 
+      }
     }
 
     // ==================== ЛИДЕРБОРД ====================
@@ -1087,7 +1405,7 @@
     db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${getRewardForRank(i+1)}</td></tr>`).join(''); });
     function getRewardForRank(r) { return r <= 3 ? 10000 : r <= 5 ? 7000 : 5000; }
     showTab("overall");
-    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); }, 1000);
+    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); updateAdTaskUI(); }, 1000);
     setInterval(checkWeeklyReset, 600000);
 
     let mi = 0; const me = document.getElementById("motiveText");
@@ -1103,6 +1421,8 @@
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === currentLanguage);
       });
       
+      loadAdState();
+      
       const loggedIn = await autoLogin();
       if (loggedIn) {
         document.getElementById('authSection').style.display = 'none';
@@ -1112,6 +1432,7 @@
         startBonusTimer();
         startOnlineTimer();
         checkWeeklyReset();
+        updateAdTaskUI();
       } else {
         setupAuthUI();
       }
