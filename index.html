@@ -285,7 +285,13 @@
         adLoading: 'Загрузка...',
         adBtnWatch: '▶️ Watch',
         adBtnWait: '⏳ Жди',
-        adBtnLimit: '🚫 Лимит'
+        adBtnLimit: '🚫 Лимит',
+        adTaskProgress: 'Прогресс рекламы',
+        adTaskReward: 'Награда',
+        adTaskClaim: 'Забрать',
+        adTaskInProgress: 'В процессе',
+        adTaskDone: 'Выполнено',
+        adTaskCrystal: '1 💎'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -344,7 +350,13 @@
         adLoading: 'Loading...',
         adBtnWatch: '▶️ Watch',
         adBtnWait: '⏳ Wait',
-        adBtnLimit: '🚫 Limit'
+        adBtnLimit: '🚫 Limit',
+        adTaskProgress: 'Ad Progress',
+        adTaskReward: 'Reward',
+        adTaskClaim: 'Claim',
+        adTaskInProgress: 'In Progress',
+        adTaskDone: 'Done',
+        adTaskCrystal: '1 💎'
       }
     };
     
@@ -359,6 +371,7 @@
       if (!user) setupAuthUI();
       updateProfilePanel();
       updateAdTaskUI();
+      renderTasks();
     }
     window.switchLanguage = switchLanguage;
 
@@ -387,6 +400,15 @@
         miniGameFail: 100,
         hourlyBonusMultiplier: 2
       }
+    };
+
+    // Настройки задания "5 реклам = 1 кристалл"
+    const AD_CRYSTAL_TASK = {
+      id: "watchAdsForCrystal",
+      goal: 5,
+      reward: 1,
+      rewardType: "crystals",
+      period: "daily"
     };
     
     let adState = {
@@ -425,6 +447,7 @@
         adState.lastWatchTime = 0;
         adState.watchDate = new Date().toDateString();
         saveAdState();
+        resetAdCrystalTask();
       }
       if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) return false;
       if (now - adState.lastWatchTime < AD_SETTINGS.cooldown) return false;
@@ -436,6 +459,60 @@
       const now = Date.now();
       const remaining = AD_SETTINGS.cooldown - (now - adState.lastWatchTime);
       return Math.max(0, Math.floor(remaining / 1000));
+    }
+
+    // Функция сброса задания на кристалл
+    function resetAdCrystalTask() {
+      if (!user) return;
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set({
+        progress: 0,
+        lastReset: today,
+        completions: 0,
+        completed: false,
+        goal: AD_CRYSTAL_TASK.goal,
+        reward: AD_CRYSTAL_TASK.reward
+      }).catch(() => {});
+    }
+
+    // Обновление прогресса задания на кристалл
+    function updateAdCrystalTaskProgress() {
+      if (!user) return;
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+        let td = s.val() || { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+        if (td.lastReset !== today) {
+          td = { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+        }
+        if (td.completed || td.completions >= 1) return;
+        td.progress = Math.min((td.progress || 0) + 1, td.goal);
+        db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set(td).then(() => {
+          renderTasks();
+        }).catch(() => {});
+      }).catch(() => {});
+    }
+
+    // Проверка и выдача награды за задание
+    function checkAdCrystalTaskCompletion() {
+      if (!user) return;
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+        const td = s.val();
+        if (!td) return;
+        if (td.completed || td.completions >= 1) return;
+        if ((td.progress || 0) >= (td.goal || AD_CRYSTAL_TASK.goal)) {
+          crystals += (td.reward || AD_CRYSTAL_TASK.reward);
+          savePlayerCrystals();
+          db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).update({
+            completed: true,
+            completions: 1
+          }).then(() => {
+            showMessage(`✅ ${t('adTaskDone')}! +${td.reward || AD_CRYSTAL_TASK.reward} 💎`);
+            updateProfilePanel();
+            renderTasks();
+          }).catch(() => {});
+        }
+      }).catch(() => {});
     }
     
     function showAdPopup(rewardType) {
@@ -532,6 +609,9 @@
       adState.watchCountToday++;
       saveAdState();
       
+      // Обновляем прогресс задания на кристалл
+      updateAdCrystalTaskProgress();
+      
       let rewardAmount = 0;
       
       switch (rewardType) {
@@ -561,6 +641,9 @@
       updateCounterDisplay();
       updateProfilePanel();
       updateAdTaskUI();
+      
+      // Проверяем, не выполнено ли задание на кристалл
+      setTimeout(() => checkAdCrystalTaskCompletion(), 500);
     }
     
     function updateAdTaskUI() {
@@ -647,6 +730,7 @@
       { id: "collectTokens", description: "Collect tokens", goalOptions: [1000, 3000, 5000], rewards: [100, 350, 600], period: "daily" },
       { id: "subscribeTwitter", description: "Follow @CircleGameTry on X", goal: 1, reward: 20, period: "daily", link: "https://x.com/CircleGameTry" },
       { id: "watchRewardedAd", description: "Watch rewarded ad", goal: 1, reward: AD_SETTINGS.rewards.taskAd, period: "daily", isAdTask: true },
+      { id: AD_CRYSTAL_TASK.id, description: "Watch 5 ads", goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward, rewardType: "crystals", period: "daily", isAdCrystalTask: true },
       { id: "clickMasterWeekly", description: "Make 500 clicks in a week", goal: 500, reward: 500, period: "weekly" },
       { id: "autoclickerMaster", description: "Activate autoclicker 5 times in a week", goal: 5, reward: "Free 5-minute autoclicker", period: "weekly", alternate: true },
       { id: "collectBigTokens", description: "Collect tokens in a week", goalOptions: [10000, 12000, 15000], rewards: [1000, 1200, 1500], period: "weekly", alternate: true },
@@ -784,6 +868,7 @@
       checkWeeklyReset();
       loadAdState();
       updateAdTaskUI();
+      checkAdCrystalTaskCompletion();
       const ref = new URLSearchParams(window.location.search).get('ref');
       if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
     }
@@ -1251,7 +1336,7 @@
         const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
         list.innerHTML = "";
         
-        // Рекламное задание — одна строка, без дублирования иконок
+        // Рекламное задание — кнопка Watch
         const adTaskDiv = document.createElement("div");
         adTaskDiv.id = "adTaskContainer";
         adTaskDiv.innerHTML = `
@@ -1267,8 +1352,41 @@
         `;
         list.appendChild(adTaskDiv);
         
+        // Задание "5 реклам = 1 кристалл"
+        const crystalTask = dailyTasks.find(t => t.id === AD_CRYSTAL_TASK.id);
+        if (crystalTask) {
+          let ctd = td[AD_CRYSTAL_TASK.id] || { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+          if (ctd.lastReset !== today) {
+            ctd = { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+            db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set(ctd).catch(() => {});
+          }
+          const crystalDiv = document.createElement("div");
+          const progress = ctd.progress || 0;
+          const goal = ctd.goal || AD_CRYSTAL_TASK.goal;
+          const reward = ctd.reward || AD_CRYSTAL_TASK.reward;
+          const completed = ctd.completed || ctd.completions >= 1;
+          
+          if (completed) {
+            crystalDiv.innerHTML = `<span style="color:#00ffa6;">✅ ${t('adTaskProgress')}: ${goal}/${goal} - ${t('adTaskDone')}! (+${reward} 💎)</span>`;
+          } else {
+            const canClaim = progress >= goal;
+            crystalDiv.innerHTML = `
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
+                <div style="text-align:left;flex:1;min-width:150px;">
+                  <strong>📺 ${t('adTaskProgress')}: ${progress}/${goal}</strong><br>
+                  <small style="color:#aaa;">${t('adTaskReward')}: ${reward} 💎</small>
+                </div>
+                <button class="click-button" onclick="claimAdCrystalTask()" ${!canClaim ? 'disabled' : ''} style="white-space:nowrap;flex-shrink:0;padding:8px 15px;font-size:13px;">
+                  ${canClaim ? t('adTaskClaim') : t('adTaskInProgress')}
+                </button>
+              </div>
+            `;
+          }
+          list.appendChild(crystalDiv);
+        }
+        
         at.forEach(task => {
-          if (task.isAdTask) return;
+          if (task.isAdTask || task.isAdCrystalTask) return;
           let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
           const rk = task.period === "weekly" ? sow : today;
           if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
@@ -1285,11 +1403,38 @@
         isRenderingTasks = false;
       }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; });
     }
+
+    // Функция для клейма задания на кристалл
+    function claimAdCrystalTask() {
+      if (!user) return showMessage(t('signIn'));
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+        const td = s.val();
+        if (!td) return;
+        if (td.completed || td.completions >= 1) return showMessage(t('adTaskDone'));
+        if ((td.progress || 0) >= (td.goal || AD_CRYSTAL_TASK.goal)) {
+          const reward = td.reward || AD_CRYSTAL_TASK.reward;
+          crystals += reward;
+          savePlayerCrystals();
+          db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).update({
+            completed: true,
+            completions: 1
+          }).then(() => {
+            showMessage(`✅ ${t('adTaskDone')}! +${reward} 💎`);
+            updateProfilePanel();
+            renderTasks();
+          }).catch(() => {});
+        } else {
+          showMessage(`${t('adTaskInProgress')}: ${td.progress || 0}/${td.goal || AD_CRYSTAL_TASK.goal}`);
+        }
+      }).catch(() => {});
+    }
+    window.claimAdCrystalTask = claimAdCrystalTask;
     
     function updateTaskProgress(taskId, inc) {
       if (!user) return;
       const task = dailyTasks.find(t => t.id === taskId); if (!task) return;
-      if (task.isAdTask) return;
+      if (task.isAdTask || task.isAdCrystalTask) return;
       if (task.alternate) { const wn = getWeekNumber(), ew = wn % 2 === 0; if (task.id==="autoclickerMaster"&&!ew) return; if (task.id==="collectBigTokens"&&ew) return; }
       const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today;
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
@@ -1303,6 +1448,7 @@
     
     function claimTask(taskId) {
       if (!user) return showMessage(t('signIn'));
+      if (taskId === AD_CRYSTAL_TASK.id) { claimAdCrystalTask(); return; }
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
         const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
@@ -1465,6 +1611,7 @@
         startOnlineTimer();
         checkWeeklyReset();
         updateAdTaskUI();
+        checkAdCrystalTaskCompletion();
       } else {
         setupAuthUI();
       }
