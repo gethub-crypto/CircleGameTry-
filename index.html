@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <meta name="590b08291eaf7810856a6e6c3e9506ae51ac29da" content="590b08291eaf7810856a6e6c3e9506ae51ac29da" />
-  <title>Crypto Clicker</title>
+  <title>Crypto Clicker — Mining Farm</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src='//libtl.com/sdk.js' data-zone='11486843' data-sdk='show_11486843'></script>
   <style>
@@ -97,7 +96,7 @@
     .language-switch { position: fixed; top: 10px; right: 10px; z-index: 10000; display: flex; gap: 5px; }
     .lang-btn { background: #2a2a2a; color: #fff; border: 1px solid #00c3ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
     .lang-btn.active { background: linear-gradient(135deg, #00c3ff, #00ffa6); color: #000; font-weight: bold; }
-    
+
     .telegram-login-btn { background: linear-gradient(135deg, #0088cc, #00c3ff) !important; color: #fff !important; font-size: 18px !important; padding: 15px 40px !important; }
     .telegram-login-btn:hover { box-shadow: 0 5px 20px rgba(0, 136, 204, 0.5) !important; }
 
@@ -106,6 +105,69 @@
     #adRewardPopup p { color: #fff; margin-bottom: 20px; font-size: 16px; }
     #adRewardPopup .button-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 10000; }
+
+    /* ====== FARM SYSTEM ====== */
+    .farm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px auto; max-width: 500px; }
+    .farm-slot { border: 2px dashed #444; border-radius: 12px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s ease; position: relative; min-height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1a1a1a; }
+    .farm-slot:hover { border-color: #00c3ff; }
+    .farm-slot.occupied { border-style: solid; border-color: #333; }
+    .farm-slot.occupied:hover { border-color: #00c3ff; }
+    .farm-slot.locked { border-style: solid; border-color: #222; background: #111; opacity: 0.5; }
+    .farm-slot.overheated { border-color: #ff4444; animation: overheatPulse 1s infinite; }
+    @keyframes overheatPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.3); } 50% { box-shadow: 0 0 0 6px rgba(255,68,68,0); } }
+    .farm-slot.merged { border-color: #00ffa6; }
+    .farm-slot.calibrating { border-color: #ffd700; }
+    .farm-slot .slot-number { position: absolute; top: 6px; left: 8px; font-size: 10px; color: #555; font-weight: 500; }
+    .farm-slot .slot-empty { font-size: 12px; color: #555; }
+    .farm-slot .rig-name { font-size: 12px; font-weight: 500; margin: 4px 0 2px; }
+    .farm-slot .rig-speed { font-size: 11px; color: #888; }
+    .farm-slot .rig-energy { font-size: 10px; color: #ff4444; margin-top: 2px; }
+    .farm-slot .heat-bar { width: 80%; height: 4px; background: #222; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .farm-slot .heat-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+    .farm-slot .heat-low { background: #00ffa6; }
+    .farm-slot .heat-med { background: #ffd700; }
+    .farm-slot .heat-high { background: #ff4444; }
+    .farm-slot .merge-badge { position: absolute; top: 6px; right: 6px; background: #00ffa6; color: #000; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
+    .farm-slot .overheat-overlay { position: absolute; inset: 0; background: rgba(255,68,68,0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .farm-slot .overheat-text { color: #ff4444; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 6px; }
+    .farm-slot .calibrate-text { color: #ffd700; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 6px; }
+
+    .energy-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; }
+    .energy-panel-farm .energy-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #222; flex-shrink: 0; }
+    .energy-panel-farm .energy-info { flex: 1; text-align: left; }
+    .energy-panel-farm .energy-label { font-size: 12px; color: #888; }
+    .energy-panel-farm .energy-value { font-size: 16px; font-weight: bold; }
+    .energy-panel-farm .energy-bar { width: 100%; height: 8px; background: #222; border-radius: 4px; margin-top: 4px; overflow: hidden; }
+    .energy-panel-farm .energy-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+    .energy-panel-farm .energy-fill.high { background: #00c3ff; }
+    .energy-panel-farm .energy-fill.med { background: #ffd700; }
+    .energy-panel-farm .energy-fill.low { background: #ff4444; }
+
+    .warehouse-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; }
+    .warehouse-panel-farm .warehouse-info { flex: 1; text-align: left; }
+    .warehouse-panel-farm .warehouse-label { font-size: 12px; color: #888; }
+    .warehouse-panel-farm .warehouse-value { font-size: 16px; font-weight: bold; }
+    .warehouse-panel-farm .collect-btn { padding: 8px 16px; border-radius: 8px; border: none; background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-size: 13px; font-weight: bold; cursor: pointer; }
+    .warehouse-panel-farm .collect-btn:disabled { background: #555; cursor: not-allowed; }
+
+    .stats-grid-farm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px auto; max-width: 500px; }
+    .stats-grid-farm .stat-box { border: 1px solid #333; border-radius: 8px; padding: 10px; text-align: center; background: #1a1a1a; }
+    .stats-grid-farm .stat-box-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+    .stats-grid-farm .stat-box-value { font-size: 18px; font-weight: bold; }
+
+    .rig-detail-panel { border: 1px solid #333; border-radius: 10px; padding: 14px; margin: 15px auto; max-width: 500px; background: #1a1a1a; display: none; }
+    .rig-detail-panel.open { display: block; }
+    .rig-detail-panel .upgrade-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #222; font-size: 13px; }
+    .rig-detail-panel .upgrade-row:last-child { border-bottom: none; }
+    .rig-detail-panel .upgrade-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid #444; background: #222; color: #fff; font-size: 12px; cursor: pointer; }
+    .rig-detail-panel .upgrade-btn:hover { background: #333; }
+    .rig-detail-panel .upgrade-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
+
+    /* Fan animations */
+    @keyframes fanSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .fan-spin-slow { animation: fanSpin 2s linear infinite; }
+    .fan-spin { animation: fanSpin 1s linear infinite; }
+    .fan-spin-fast { animation: fanSpin 0.5s linear infinite; }
 
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
@@ -124,6 +186,7 @@
       .tabs { flex-direction: column; } .tab-button { border-radius: 0; font-size: 13px; }
       #leaderboardTable { font-size: 11px; } .score-popup { font-size: 16px; }
       #adminPanel { bottom: 10px; right: 10px; max-width: 250px; }
+      .farm-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     @media (min-width: 1024px) {
@@ -134,6 +197,7 @@
       .score-popup { font-size: 24px; }
     }
   </style>
+<base target="_blank">
 </head>
 <body>
   <div class="popup-overlay" id="popupOverlay"></div>
@@ -170,6 +234,7 @@
       <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
       <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
       <div><strong>Crystals:</strong> <span id="profileCrystals">0 💎</span></div>
+      <div><strong>Energy:</strong> <span id="profileEnergy">50/50 ⚡</span></div>
       <div><strong>Referral Link:</strong> <input id="referralLink" readonly></div>
       <div><strong>Invited:</strong> <span id="invitedCount">0</span></div>
       <div style="text-align:center;"><button class="click-button" onclick="copyReferralLink()">Copy Link</button></div>
@@ -186,6 +251,75 @@
     <div id="gameSection" style="display:none;">
       <div id="mainButtonContainer"><button id="mainClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button><button id="secondClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button></div>
       <div id="counter">Tokens: 0</div><div id="message"></div>
+
+      <!-- ====== FARM SYSTEM ====== -->
+      <div id="farmSection" style="margin: 20px 0;">
+        <h2 style="font-size:1.4em;margin-bottom:10px;">⛏️ Mining Farm</h2>
+
+        <div class="energy-panel-farm">
+          <div class="energy-icon">⚡</div>
+          <div class="energy-info">
+            <div class="energy-label">Energy</div>
+            <div class="energy-value" id="farmEnergyDisplay">50 / 50 ⚡</div>
+            <div class="energy-bar"><div class="energy-fill high" id="farmEnergyBar" style="width:100%"></div></div>
+          </div>
+          <div style="font-size:12px;color:#888">+1 / 5 min</div>
+        </div>
+
+        <div class="warehouse-panel-farm">
+          <div class="warehouse-info">
+            <div class="warehouse-label">Warehouse</div>
+            <div class="warehouse-value" id="farmWarehouseDisplay">0 / 12 🪙</div>
+          </div>
+          <button class="collect-btn" id="collectWarehouseBtn" onclick="collectWarehouse()">Collect</button>
+        </div>
+
+        <div class="stats-grid-farm">
+          <div class="stat-box">
+            <div class="stat-box-label">Income/min</div>
+            <div class="stat-box-value" id="farmIncomeMin">0.00</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">⚡/hour</div>
+            <div class="stat-box-value" id="farmEnergyHour">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">Time to stop</div>
+            <div class="stat-box-value" id="farmTimeToStop">∞</div>
+          </div>
+        </div>
+
+        <div class="farm-grid" id="farmGrid">
+          <!-- Slots generated by JS -->
+        </div>
+
+        <div class="rig-detail-panel" id="rigDetailPanel">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div id="detailRigIcon" style="font-size:30px;">🖥️</div>
+            <div style="text-align:left;">
+              <div style="font-weight:bold;" id="detailRigName">CPU Miner</div>
+              <div style="font-size:12px;color:#888;" id="detailRigSub">0.10/min · 1 ⚡/h</div>
+            </div>
+          </div>
+          <div class="upgrade-row">
+            <span>Overclock: Lv.<span id="detailOverclockLevel">0</span> (+<span id="detailOverclockBonus">0</span>%)</span>
+            <button class="upgrade-btn" id="btnUpgradeOverclock" onclick="upgradeRigOverclock()">Upgrade</button>
+          </div>
+          <div class="upgrade-row">
+            <span>Efficiency: Lv.<span id="detailEfficiencyLevel">0</span> (-<span id="detailEfficiencyBonus">0</span>% ⚡)</span>
+            <button class="upgrade-btn" id="btnUpgradeEfficiency" onclick="upgradeRigEfficiency()">Upgrade</button>
+          </div>
+          <div class="upgrade-row">
+            <span>Luck: Lv.<span id="detailLuckLevel">0</span> (<span id="detailLuckBonus">0</span>% crit)</span>
+            <button class="upgrade-btn" id="btnUpgradeLuck" onclick="upgradeRigLuck()">Upgrade</button>
+          </div>
+          <div class="upgrade-row" id="mergeRow" style="display:none;">
+            <span>Merge with another <span id="detailRigType">CPU</span></span>
+            <button class="upgrade-btn" onclick="mergeRig()">Merge</button>
+          </div>
+        </div>
+      </div>
+
       <div id="buttonGroup">
         <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
         <button class="click-button" id="achievementsBtn" onclick="togglePanel('achievements')">🏆 Achievements ▼</button>
@@ -193,9 +327,21 @@
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
       </div>
       <div id="shop" class="panel">
-        <h2>🛒 Upgrades</h2><p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p><p>Current: <span id="clickPowerDisplay">1</span> / 8</p><div class="progress-container"><div class="progress-bar" id="clickPowerBar"></div></div><button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
+        <h2>🛒 Upgrades</h2>
+        <p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p>
+        <p>Current: <span id="clickPowerDisplay">1</span> / 20</p>
+        <div class="progress-container"><div class="progress-bar" id="clickPowerBar"></div></div>
+        <button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
+
         <h2 style="margin-top:20px;">⚡ Autoclickers</h2>
-        <div id="settings"><h3>Autoclicker Level: <span id="autoclickerLevel">1</span> / 20</h3><p id="autoclickerDurationValue">Duration: <span id="timeLeft">1:00</span></p><p id="autoclickerUpgradeCost">Upgrade: 100 🪙 + 10 💎</p><button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width:100%;">Upgrade Autoclicker</button><button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width:100%;margin-top:5px;">Activate Free Autoclicker</button></div>
+        <div id="settings">
+          <h3>Autoclicker Level: <span id="autoclickerLevel">1</span> / 10</h3>
+          <p id="autoclickerDurationValue">Duration: <span id="timeLeft">1:00</span></p>
+          <p id="autoclickerUpgradeCost">Upgrade: 500 🪙 + 5 💎</p>
+          <button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width:100%;">Upgrade Autoclicker</button>
+          <button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width:100%;margin-top:5px;">Activate Free Autoclicker</button>
+        </div>
+
         <h2 style="margin-top:20px;">🎮 Boosters</h2>
         <div id="autoclickerShop" style="margin-top:15px;">
           <div class="booster-card premium">
@@ -209,24 +355,58 @@
             </div>
             <button class="click-button" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">👑 Subscribe</button>
           </div>
-          <div class="booster-card" id="resonanceBooster"><h3>🔮 Resonance</h3><p style="color:#ccc;">Every 100th click gives +1 💎</p><div class="price" style="color:#b388ff;">750 💎</div><p class="requirement-text" id="resonanceRequirement">Requires: 10,000 clicks (You have: <span id="resonanceClickCount">0</span>)</p><button class="click-button" id="buyResonanceBtn" onclick="buyResonance()" disabled>🔮 Buy Resonance</button></div>
-          <div class="booster-card" id="cloneBooster"><h3>👥 Clone</h3><p style="color:#ccc;">Second button (100 min)</p><div class="price" style="color:#00bcd4;">300 💎</div><button class="click-button" id="buyCloneBtn">👥 Activate Clone</button><div class="booster-timer" id="cloneTimerDisplay"></div></div>
-          <div class="booster-card" id="instantAutoclickBooster"><h3>⚡ Instant Autoclick</h3><p style="color:#ccc;">1 hour autoclicker</p><div class="price" style="color:#00ffa6;">50 💎</div><button class="click-button" id="buyInstantAutoclickBtn">⚡ Activate (1 hour)</button><div class="booster-timer" id="instantAutoclickTimerDisplay"></div></div>
+          <div class="booster-card" id="resonanceBooster">
+            <h3>🔮 Resonance</h3>
+            <p style="color:#ccc;">Every 500th click gives +1 💎</p>
+            <div class="price" style="color:#b388ff;">500 💎</div>
+            <p class="requirement-text" id="resonanceRequirement">Requires: 5,000 clicks (You have: <span id="resonanceClickCount">0</span>)</p>
+            <button class="click-button" id="buyResonanceBtn" onclick="buyResonance()" disabled>🔮 Buy Resonance</button>
+          </div>
+          <div class="booster-card" id="cloneBooster">
+            <h3>👥 Clone</h3>
+            <p style="color:#ccc;">Second button (100 min)</p>
+            <div class="price" style="color:#00bcd4;">150 💎</div>
+            <button class="click-button" id="buyCloneBtn">👥 Activate Clone</button>
+            <div class="booster-timer" id="cloneTimerDisplay"></div>
+          </div>
+          <div class="booster-card" id="instantAutoclickBooster">
+            <h3>⚡ Instant Autoclick</h3>
+            <p style="color:#ccc;">1 hour autoclicker</p>
+            <div class="price" style="color:#00ffa6;">30 💎</div>
+            <button class="click-button" id="buyInstantAutoclickBtn">⚡ Activate (1 hour)</button>
+            <div class="booster-timer" id="instantAutoclickTimerDisplay"></div>
+          </div>
         </div>
       </div>
       <div id="achievements" class="panel"><h2>🏆 Achievements</h2><div id="achievementsList"></div></div>
       <div id="tasks" class="panel"><h2>📋 Daily Tasks</h2><div id="tasksList"></div></div>
-      <div id="miniGamePanel" style="display:none;margin-top:20px;background:#1a1a1a;padding:20px;border-radius:12px;box-shadow:0 0 10px #00c3ff;"><h2>Mini-Game: Clicker Race!</h2><p>Click 50 times in 10 seconds!</p><p>Time Left: <span id="miniGameTimer">10</span> sec</p><p>Clicks: <span id="miniGameClicks">0</span>/50</p><button class="click-button" onclick="miniGameClick()">Click!</button></div>
-      <div id="leaderboardContainer"><div class="tabs"><button class="tab-button active" onclick="showTab('overall')">Overall</button><button class="tab-button" onclick="showTab('weekly')">Weekly Winners</button></div><table id="leaderboardTable"><thead id="tableHeader"></thead><tbody id="leaderboardBody"></tbody></table></div>
+      <div id="miniGamePanel" style="display:none;margin-top:20px;background:#1a1a1a;padding:20px;border-radius:12px;box-shadow:0 0 10px #00c3ff;">
+        <h2>Mini-Game: Clicker Race!</h2>
+        <p>Click 50 times in 10 seconds!</p>
+        <p>Time Left: <span id="miniGameTimer">10</span> sec</p>
+        <p>Clicks: <span id="miniGameClicks">0</span>/50</p>
+        <button class="click-button" onclick="miniGameClick()">Click!</button>
+      </div>
+      <div id="leaderboardContainer">
+        <div class="tabs">
+          <button class="tab-button active" onclick="showTab('overall')">Overall</button>
+          <button class="tab-button" onclick="showTab('weekly')">Weekly Winners</button>
+        </div>
+        <table id="leaderboardTable">
+          <thead id="tableHeader"></thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <script>
+
     // ==================== МУЛЬТИЯЗЫЧНОСТЬ ====================
     let currentLanguage = localStorage.getItem('cryptoClickerLang') || 'ru';
-    
+
     const translations = {
       ru: {
         authTitle: 'Войдите через Telegram',
@@ -250,6 +430,7 @@
         autoclicker: 'Автокликер',
         tokens: 'Токены',
         crystals: 'Кристаллы',
+        energy: 'Энергия',
         referralLink: 'Реферальная ссылка',
         invited: 'Приглашено',
         inactive: 'Неактивен',
@@ -257,6 +438,7 @@
         maxLevel: 'Макс. уровень!',
         notEnoughTokens: 'Недостаточно токенов!',
         notEnoughCrystals: 'Недостаточно кристаллов!',
+        notEnoughEnergy: 'Недостаточно энергии!',
         signIn: 'Войдите в аккаунт!',
         slowDown: 'Не так быстро!',
         victory: '🎉 Победа!',
@@ -264,8 +446,8 @@
         error: 'Ошибка. Попробуйте позже.',
         loginBtn: '🚀 Войти через Telegram',
         instructionTitle: 'Инструкция по входу',
-        instructionStep1: '1. В открывшемся Telegram нажмите кнопку <b>START</b> или <b>/start</b>',
-        instructionStep2: '2. Затем нажмите кнопку <b>🎮 Играть</b> в меню бота',
+        instructionStep1: '1. В открывшемся Telegram нажмите кнопку START или /start',
+        instructionStep2: '2. Затем нажмите кнопку 🎮 Играть в меню бота',
         instructionStep3: '3. Игра откроется в Telegram. Ваш прогресс будет синхронизирован!',
         instructionTip: '💡 Совет: Откройте эту страницу на телефоне для автоматического входа',
         backBtn: '← Назад',
@@ -291,7 +473,31 @@
         adTaskClaim: 'Забрать',
         adTaskInProgress: 'В процессе',
         adTaskDone: 'Выполнено',
-        adTaskCrystal: '1 💎'
+        adTaskCrystal: '1 💎',
+        farmTitle: '⛏️ Майнинг-ферма',
+        energyLabel: 'Энергия',
+        warehouseLabel: 'Хранилище',
+        collectBtn: 'Собрать',
+        incomeMin: 'Доход/мин',
+        energyHour: '⚡/час',
+        timeToStop: 'До остановки',
+        emptySlot: 'Пустой слот',
+        lockedSlot: 'Заблокирован',
+        requiresLevel: 'Требуется ур.',
+        overheat: 'ПЕРЕГРЕВ',
+        calibrating: 'Калибровка',
+        overclock: 'Разгон',
+        efficiency: 'Эффективность',
+        luck: 'Удача',
+        merge: 'Слияние',
+        rigStopped: 'ОСТАНОВЛЕН',
+        rigRepair: 'Починить',
+        warehouseFull: 'Хранилище заполнено!',
+        energyDepleted: 'Энергия на нуле! Риги остановлены.',
+        rigOverheated: 'перегрелся! Почините за 10 💎.',
+        hourlyBonusReady: 'Часовой бонус готов!',
+        taskCompleted: 'Задание выполнено!',
+        friendOvertook: 'Вы упали в топе!'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -315,6 +521,7 @@
         autoclicker: 'Autoclicker',
         tokens: 'Tokens',
         crystals: 'Crystals',
+        energy: 'Energy',
         referralLink: 'Referral Link',
         invited: 'Invited',
         inactive: 'Inactive',
@@ -322,15 +529,16 @@
         maxLevel: 'Max level!',
         notEnoughTokens: 'Not enough tokens!',
         notEnoughCrystals: 'Not enough crystals!',
+        notEnoughEnergy: 'Not enough energy!',
         signIn: 'Sign in!',
         slowDown: 'Slow down!',
         victory: '🎉 Victory!',
-        timeUp: '⏰ Time\'s up!',
+        timeUp: "⏰ Time's up!",
         error: 'Error. Please try again.',
         loginBtn: '🚀 Login with Telegram',
         instructionTitle: 'Login Instructions',
-        instructionStep1: '1. In the opened Telegram, press <b>START</b> or type <b>/start</b>',
-        instructionStep2: '2. Then press the <b>🎮 Play</b> button in the bot menu',
+        instructionStep1: '1. In the opened Telegram, press START or type /start',
+        instructionStep2: '2. Then press the 🎮 Play button in the bot menu',
         instructionStep3: '3. The game will open in Telegram. Your progress will be synced!',
         instructionTip: '💡 Tip: Open this page on your phone for automatic login',
         backBtn: '← Back',
@@ -342,9 +550,9 @@
         adWatch: '▶️ Watch',
         adClose: '✖️ Close',
         adRewardReceived: '✅ Received {amount} tokens for watching ad!',
-        adMiniGameFail: '😢 Don\'t worry! Watch an ad and get 100 tokens!',
+        adMiniGameFail: "😢 Don't worry! Watch an ad and get 100 tokens!",
         adMiniGameReward: '✅ Received 100 tokens for watching ad!',
-        adHourlyBonus: '🎁 Want x2 bonus? Watch a short ad!',
+        adHourlyBonus: "🎁 Want x2 bonus? Watch a short ad!",
         adHourlyReward: '✅ Hourly bonus doubled!',
         adNotAvailable: 'Ad not available. Try again later.',
         adLoading: 'Loading...',
@@ -356,12 +564,36 @@
         adTaskClaim: 'Claim',
         adTaskInProgress: 'In Progress',
         adTaskDone: 'Done',
-        adTaskCrystal: '1 💎'
+        adTaskCrystal: '1 💎',
+        farmTitle: '⛏️ Mining Farm',
+        energyLabel: 'Energy',
+        warehouseLabel: 'Warehouse',
+        collectBtn: 'Collect',
+        incomeMin: 'Income/min',
+        energyHour: '⚡/hour',
+        timeToStop: 'Time to stop',
+        emptySlot: 'Empty slot',
+        lockedSlot: 'Locked',
+        requiresLevel: 'Requires Lv.',
+        overheat: 'OVERHEAT',
+        calibrating: 'Calibrating',
+        overclock: 'Overclock',
+        efficiency: 'Efficiency',
+        luck: 'Luck',
+        merge: 'Merge',
+        rigStopped: 'STOPPED',
+        rigRepair: 'Repair',
+        warehouseFull: 'Warehouse full!',
+        energyDepleted: 'Energy depleted! Rigs stopped.',
+        rigOverheated: 'overheated! Repair for 10 💎.',
+        hourlyBonusReady: 'Hourly bonus ready!',
+        taskCompleted: 'Task completed!',
+        friendOvertook: 'You dropped in the leaderboard!'
       }
     };
-    
+
     function t(key) { return translations[currentLanguage]?.[key] || translations.en[key] || key; }
-    
+
     function switchLanguage(lang) {
       currentLanguage = lang;
       localStorage.setItem('cryptoClickerLang', lang);
@@ -372,6 +604,7 @@
       updateProfilePanel();
       updateAdTaskUI();
       renderTasks();
+      updateFarmUI();
     }
     window.switchLanguage = switchLanguage;
 
@@ -388,7 +621,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     function escapeHTML(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-    function sanitizeInput(s) { return typeof s === 'string' ? s.replace(/[<>"'&]/g, m => ({'<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','&':'&amp;'})[m]) : s; }
+    function sanitizeInput(s) { return typeof s === 'string' ? s.replace(/[<>'&]/g, m => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'})[m]) : s; }
     const rateLimiter = { clicks: [], maxClicksPerSecond: 20, maxClicksPerMinute: 200, canClick() { const n = Date.now(); this.clicks = this.clicks.filter(t => n - t < 60000); if (this.clicks.filter(t => n - t < 1000).length >= this.maxClicksPerSecond || this.clicks.length >= this.maxClicksPerMinute) return false; this.clicks.push(n); return true; } };
 
     // ==================== РЕКЛАМНЫЕ НАСТРОЙКИ ====================
@@ -402,7 +635,6 @@
       }
     };
 
-    // Настройки задания "5 реклам = 1 кристалл"
     const AD_CRYSTAL_TASK = {
       id: "watchAdsForCrystal",
       goal: 5,
@@ -410,7 +642,7 @@
       rewardType: "crystals",
       period: "daily"
     };
-    
+
     let adState = {
       lastWatchTime: 0,
       watchCountToday: 0,
@@ -430,7 +662,7 @@
         } catch (e) {}
       }
     }
-    
+
     function saveAdState() {
       adState.watchDate = new Date().toDateString();
       localStorage.setItem('cryptoClickerAdState', JSON.stringify({
@@ -439,7 +671,7 @@
         watchDate: adState.watchDate
       }));
     }
-    
+
     function canWatchAd() {
       const now = Date.now();
       if (adState.watchDate !== new Date().toDateString()) {
@@ -454,18 +686,17 @@
       if (adState.isAdLoading) return false;
       return true;
     }
-    
+
     function getAdCooldownRemaining() {
       const now = Date.now();
       const remaining = AD_SETTINGS.cooldown - (now - adState.lastWatchTime);
       return Math.max(0, Math.floor(remaining / 1000));
     }
 
-    // Функция сброса задания на кристалл
     function resetAdCrystalTask() {
       if (!user) return;
       const today = new Date().toDateString();
-      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set({
+      db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).set({
         progress: 0,
         lastReset: today,
         completions: 0,
@@ -475,46 +706,44 @@
       }).catch(() => {});
     }
 
-    // Обновление прогресса задания на кристалл
     function updateAdCrystalTaskProgress() {
       if (!user) return;
       const today = new Date().toDateString();
-      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+      db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).once("value").then(s => {
         let td = s.val() || { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
         if (td.lastReset !== today) {
           td = { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
         }
         if (td.completed || td.completions >= 1) return;
         td.progress = Math.min((td.progress || 0) + 1, td.goal);
-        db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set(td).then(() => {
+        db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).set(td).then(() => {
           renderTasks();
         }).catch(() => {});
       }).catch(() => {});
     }
 
-    // Проверка и выдача награды за задание
     function checkAdCrystalTaskCompletion() {
       if (!user) return;
       const today = new Date().toDateString();
-      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+      db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).once("value").then(s => {
         const td = s.val();
         if (!td) return;
         if (td.completed || td.completions >= 1) return;
         if ((td.progress || 0) >= (td.goal || AD_CRYSTAL_TASK.goal)) {
           crystals += (td.reward || AD_CRYSTAL_TASK.reward);
           savePlayerCrystals();
-          db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).update({
+          db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).update({
             completed: true,
             completions: 1
           }).then(() => {
-            showMessage(`✅ ${t('adTaskDone')}! +${td.reward || AD_CRYSTAL_TASK.reward} 💎`);
+            showMessage('✅ ' + t('adTaskDone') + '! +' + (td.reward || AD_CRYSTAL_TASK.reward) + ' 💎');
             updateProfilePanel();
             renderTasks();
           }).catch(() => {});
         }
       }).catch(() => {});
     }
-    
+
     function showAdPopup(rewardType) {
       if (!canWatchAd()) {
         if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) {
@@ -523,62 +752,45 @@
           const sec = getAdCooldownRemaining();
           const m = Math.floor(sec / 60);
           const s = sec % 60;
-          showMessage(`${t('adCooldown')}: ${m}:${String(s).padStart(2, '0')}`);
+          showMessage(t('adCooldown') + ': ' + m + ':' + String(s).padStart(2, '0'));
         }
         return;
       }
-      
       adState.pendingRewardType = rewardType;
-      
       let rewardText = '';
       let rewardTitle = t('adRewardTitle');
-      
       switch (rewardType) {
-        case 'task':
-          rewardText = `+${AD_SETTINGS.rewards.taskAd} ${t('tokens')}`;
-          break;
-        case 'minigame':
-          rewardText = `+${AD_SETTINGS.rewards.miniGameFail} ${t('tokens')}`;
-          rewardTitle = t('adMiniGameFail');
-          break;
-        case 'hourly':
-          rewardText = `x${AD_SETTINGS.rewards.hourlyBonusMultiplier} ${t('claimBonus')}`;
-          rewardTitle = t('adHourlyBonus');
-          break;
+        case 'task': rewardText = '+' + AD_SETTINGS.rewards.taskAd + ' ' + t('tokens'); break;
+        case 'minigame': rewardText = '+' + AD_SETTINGS.rewards.miniGameFail + ' ' + t('tokens'); rewardTitle = t('adMiniGameFail'); break;
+        case 'hourly': rewardText = 'x' + AD_SETTINGS.rewards.hourlyBonusMultiplier + ' ' + t('claimBonus'); rewardTitle = t('adHourlyBonus'); break;
       }
-      
       document.getElementById('adRewardTitle').textContent = rewardTitle;
-      document.getElementById('adRewardText').textContent = `${t('adRewardText')}\n${rewardText}`;
+      document.getElementById('adRewardText').textContent = t('adRewardText') + '\n' + rewardText;
       document.getElementById('popupOverlay').style.display = 'block';
       document.getElementById('adRewardPopup').style.display = 'block';
     }
-    
+
     function closeAdPopup() {
       document.getElementById('popupOverlay').style.display = 'none';
       document.getElementById('adRewardPopup').style.display = 'none';
       adState.pendingRewardType = null;
     }
-    
+
     async function watchRewardedAd() {
       if (adState.isAdLoading) return;
-      
       const rewardType = adState.pendingRewardType;
       if (!rewardType) return;
-      
       adState.isAdLoading = true;
       document.getElementById('adWatchBtn').disabled = true;
       document.getElementById('adWatchBtn').textContent = t('adLoading');
-      
       try {
         if (typeof show_11486843 !== 'function') {
-          console.log('Ad SDK not loaded, simulating ad completion for testing');
+          console.log('Ad SDK not loaded, simulating ad completion');
           await simulateAdCompletion(rewardType);
           return;
         }
-        
         await show_11486843();
         await handleAdCompletion(rewardType);
-        
       } catch (error) {
         console.error('Ad error:', error);
         if (error.message && error.message.includes('not loaded')) {
@@ -593,42 +805,33 @@
         closeAdPopup();
       }
     }
-    
+
     async function simulateAdCompletion(rewardType) {
       return new Promise((resolve) => {
-        setTimeout(() => {
-          handleAdCompletion(rewardType).then(resolve);
-        }, 1500);
+        setTimeout(() => { handleAdCompletion(rewardType).then(resolve); }, 1500);
       });
     }
-    
+
     async function handleAdCompletion(rewardType) {
       if (!user) return;
-      
       adState.lastWatchTime = Date.now();
       adState.watchCountToday++;
       saveAdState();
-      
-      // Обновляем прогресс задания на кристалл
       updateAdCrystalTaskProgress();
-      
       let rewardAmount = 0;
-      
       switch (rewardType) {
         case 'task':
           rewardAmount = AD_SETTINGS.rewards.taskAd;
           score += rewardAmount;
           showMessage(t('adRewardReceived').replace('{amount}', rewardAmount));
           break;
-          
         case 'minigame':
           rewardAmount = AD_SETTINGS.rewards.miniGameFail;
           score += rewardAmount;
           showMessage(t('adMiniGameReward'));
           break;
-          
         case 'hourly':
-          const bonusSnap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+          const bonusSnap = await db.ref('hourlyBonus/' + user.uid).once('value');
           const bonusData = bonusSnap.val() || {};
           const lastBonus = bonusData.lastBonusAmount || 50;
           rewardAmount = lastBonus * (AD_SETTINGS.rewards.hourlyBonusMultiplier - 1);
@@ -636,20 +839,16 @@
           showMessage(t('adHourlyReward'));
           break;
       }
-      
       savePlayerScore();
       updateCounterDisplay();
       updateProfilePanel();
       updateAdTaskUI();
-      
-      // Проверяем, не выполнено ли задание на кристалл
       setTimeout(() => checkAdCrystalTaskCompletion(), 500);
     }
-    
+
     function updateAdTaskUI() {
       const adButton = document.getElementById('watchAdButton');
       if (!adButton) return;
-      
       if (canWatchAd()) {
         adButton.disabled = false;
         adButton.textContent = t('adBtnWatch');
@@ -662,7 +861,7 @@
           const sec = getAdCooldownRemaining();
           const m = Math.floor(sec / 60);
           const s = sec % 60;
-          adButton.textContent = `${t('adBtnWait')} ${m}:${String(s).padStart(2, '0')}`;
+          adButton.textContent = t('adBtnWait') + ' ' + m + ':' + String(s).padStart(2, '0');
         }
         adButton.className = 'click-button';
       }
@@ -671,9 +870,9 @@
     // ==================== АВТОРИЗАЦИЯ ====================
     const unifiedAuth = {
       async findUserByIdentifier(type, id) {
-        let snap = await db.ref(`auth_lookup/${type}_${id}`).once('value');
+        let snap = await db.ref('auth_lookup/' + type + '_' + id).once('value');
         if (snap.exists()) return snap.val();
-        snap = await db.ref('users').orderByChild(`auth_methods/${type}`).equalTo(id).once('value');
+        snap = await db.ref('users').orderByChild('auth_methods/' + type).equalTo(id).once('value');
         if (snap.exists()) return Object.keys(snap.val())[0];
         return null;
       }
@@ -707,33 +906,57 @@
     let suspiciousFlags = 0;
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let isRenderingTasks = false, isProcessingReferrer = false;
-    
-    const MAX_CLICK_POWER = 100, MAX_SUSPICIOUS_FLAGS = 5;
-    const INSTANT_AUTOCLICK_COST = 50, INSTANT_AUTOCLICK_DURATION = 3600000;
-    const RESONANCE_COST = 750, RESONANCE_CLICK_REQUIREMENT = 10000;
-    const CLONE_COST = 300, CLONE_DURATION = 6000000;
+
+    // ====== FARM SYSTEM VARIABLES ======
+    let energy = 50, maxEnergy = 50;
+    let warehouseTokens = 0, warehouseLimit = 12; // 2 hours at 0.1/min
+    let farmSlots = [
+      { type: 'cpu', level: 1, overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 },
+      null, null, null, null, null
+    ];
+    let slotUnlockLevels = [1, 2, 3, 5, 7, 10];
+    let activeBoosters = [];
+    let farmTickInterval = null;
+    let energyRegenInterval = null;
+    let lastFarmTick = 0;
+
+    const RIG_TYPES = {
+      cpu: { name: 'CPU Miner', speed: 0.1, energy: 1, costTokens: 100, costCrystals: 0, icon: '🖥️', color: '#6b7280' },
+      gpu: { name: 'GPU Rig', speed: 0.4, energy: 3, costTokens: 2000, costCrystals: 5, icon: '🎮', color: '#2563eb' },
+      asic: { name: 'ASIC Miner', speed: 1.5, energy: 8, costTokens: 20000, costCrystals: 50, icon: '🔥', color: '#dc2626' },
+      quantum: { name: 'Quantum Rig', speed: 5.0, energy: 20, costTokens: 100000, costCrystals: 200, icon: '💎', color: '#9333ea' }
+    };
+
+    const MAX_CLICK_POWER = 20;
+    const INSTANT_AUTOCLICK_COST = 30, INSTANT_AUTOCLICK_DURATION = 3600000;
+    const RESONANCE_COST = 500, RESONANCE_CLICK_REQUIREMENT = 5000;
+    const CLONE_COST = 150, CLONE_DURATION = 6000000;
     const MAX_MINI_GAMES_PER_DAY = 10;
     const MINI_GAME_ENTRY_FEE = 100;
     const MINI_GAME_REWARD = 500;
-    const levelUpRequirements = [50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000];
+    const levelUpRequirements = [5000, 15000, 50000, 150000, 500000, 2000000, 8000000, 32000000, 100000000];
     const isTelegramMiniApp = !!(window.Telegram?.WebApp?.initData);
     const isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
 
     const allAchievements = {
-      superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
-      tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2min)" },
+      superClicker: { name: "Super Clicker", description: "Click 5,000 times", reward: "+2 Click Power (2 min)" },
+      tokenHoarder: { name: "Token Hoarder", description: "Collect 100,000 tokens", reward: "+2 Click Power (2min)" },
       level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
+      firstGPU: { name: "First GPU", description: "Buy your first GPU", reward: "+10 💎" },
+      firstASIC: { name: "ASIC Master", description: "Buy your first ASIC", reward: "+25 💎" },
+      fullFarm: { name: "Full Farm", description: "Fill all 6 slots", reward: "+50 💎" },
+      prestige1: { name: "First Prestige", description: "Complete first prestige", reward: "+3% hashrate" }
     };
 
     const dailyTasks = [
       { id: "clickMarathon", description: "Make 100 clicks", goal: 100, reward: 50, period: "daily" },
-      { id: "collectTokens", description: "Collect tokens", goalOptions: [1000, 3000, 5000], rewards: [100, 350, 600], period: "daily" },
+      { id: "collectTokens", description: "Collect tokens", goalOptions: [500, 1500, 3000], rewards: [50, 150, 300], period: "daily" },
       { id: "subscribeTwitter", description: "Follow @CircleGameTry on X", goal: 1, reward: 20, period: "daily", link: "https://x.com/CircleGameTry" },
       { id: "watchRewardedAd", description: "Watch rewarded ad", goal: 1, reward: AD_SETTINGS.rewards.taskAd, period: "daily", isAdTask: true },
       { id: AD_CRYSTAL_TASK.id, description: "Watch 5 ads", goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward, rewardType: "crystals", period: "daily", isAdCrystalTask: true },
       { id: "clickMasterWeekly", description: "Make 500 clicks in a week", goal: 500, reward: 500, period: "weekly" },
       { id: "autoclickerMaster", description: "Activate autoclicker 5 times in a week", goal: 5, reward: "Free 5-minute autoclicker", period: "weekly", alternate: true },
-      { id: "collectBigTokens", description: "Collect tokens in a week", goalOptions: [10000, 12000, 15000], rewards: [1000, 1200, 1500], period: "weekly", alternate: true },
+      { id: "collectBigTokens", description: "Collect tokens in a week", goalOptions: [5000, 8000, 12000], rewards: [500, 800, 1200], period: "weekly", alternate: true },
       { id: "miniGameChallenge", description: "Play 5 mini-games", goal: 5, reward: 1, rewardType: "crystals", period: "daily" },
       { id: "onlineTime", description: "Stay online for 30 minutes", goal: 1800, reward: 2, rewardType: "crystals", period: "daily" }
     ];
@@ -742,45 +965,21 @@
     function setupAuthUI() {
       const ab = document.getElementById('authButtons');
       const signOutBtn = document.getElementById('signOutBtn');
-      
       if (signOutBtn) signOutBtn.classList.remove('visible');
-      
       if (isTelegramMiniApp) { 
-        ab.innerHTML = `<div class="auth-loading">${t('authLoading')}</div>`; 
+        ab.innerHTML = '<div class="auth-loading">' + t('authLoading') + '</div>'; 
         setTimeout(() => signInWithTelegramMiniApp(), 500); 
         try { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } catch (e) {} 
       } else { 
-        ab.innerHTML = `
-          <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-            <h3 style="color: #00c3ff; margin-bottom: 10px;">${t('authTitle')}</h3>
-            <p style="color: #aaa; font-size: 14px;">${t('authSubtitle')}</p>
-            <button class="click-button telegram-login-btn" onclick="loginWithTelegramPC()">
-              ${t('loginBtn')}
-            </button>
-          </div>
-        `;
+        ab.innerHTML = '<div style="display:flex;flex-direction:column;gap:15px;align-items:center;"><h3 style="color:#00c3ff;margin-bottom:10px;">' + t('authTitle') + '</h3><p style="color:#aaa;font-size:14px;">' + t('authSubtitle') + '</p><button class="click-button telegram-login-btn" onclick="loginWithTelegramPC()">' + t('loginBtn') + '</button></div>';
       }
     }
 
     function loginWithTelegramPC() {
       const botUrl = 'https://t.me/circlegametry_bot';
       window.open(botUrl, '_blank');
-      
       const ab = document.getElementById('authButtons');
-      ab.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-          <h3 style="color: #00c3ff; margin-bottom: 10px;">${t('instructionTitle')}</h3>
-          <div style="background: #1a1a2e; padding: 20px; border-radius: 12px; text-align: left; max-width: 400px; box-shadow: 0 0 15px rgba(0,195,255,0.3);">
-            <p style="color: #fff; margin-bottom: 15px; line-height: 1.6;">${t('instructionStep1')}</p>
-            <p style="color: #fff; margin-bottom: 15px; line-height: 1.6;">${t('instructionStep2')}</p>
-            <p style="color: #fff; margin-bottom: 15px; line-height: 1.6;">${t('instructionStep3')}</p>
-            <p style="color: #ffd700; font-size: 14px; line-height: 1.6;">${t('instructionTip')}</p>
-          </div>
-          <button class="click-button" onclick="setupAuthUI()" style="background: #555; color: #fff;">
-            ${t('backBtn')}
-          </button>
-        </div>
-      `;
+      ab.innerHTML = '<div style="display:flex;flex-direction:column;gap:15px;align-items:center;"><h3 style="color:#00c3ff;margin-bottom:10px;">' + t('instructionTitle') + '</h3><div style="background:#1a1a2e;padding:20px;border-radius:12px;text-align:left;max-width:400px;box-shadow:0 0 15px rgba(0,195,255,0.3);"><p style="color:#fff;margin-bottom:15px;line-height:1.6;">' + t('instructionStep1') + '</p><p style="color:#fff;margin-bottom:15px;line-height:1.6;">' + t('instructionStep2') + '</p><p style="color:#fff;margin-bottom:15px;line-height:1.6;">' + t('instructionStep3') + '</p><p style="color:#ffd700;font-size:14px;line-height:1.6;">' + t('instructionTip') + '</p></div><button class="click-button" onclick="setupAuthUI()" style="background:#555;color:#fff;">' + t('backBtn') + '</button></div>';
     }
 
     async function signInWithTelegramMiniApp() {
@@ -788,12 +987,12 @@
         const tg = window.Telegram.WebApp;
         const u = tg.initDataUnsafe?.user;
         if (!u?.id) { 
-          document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
+          document.getElementById('authButtons').innerHTML = '<div class="auth-error">' + t('authError') + '</div>'; 
           return; 
         }
         await handleTelegramUser(u);
       } catch (e) { 
-        document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
+        document.getElementById('authButtons').innerHTML = '<div class="auth-error">' + t('authError') + '</div>'; 
       }
     }
 
@@ -802,7 +1001,6 @@
         const tgId = telegramUser.id;
         const displayName = sanitizeInput(telegramUser.first_name || telegramUser.username || t('player'));
         let uid = await unifiedAuth.findUserByIdentifier('tg_user_id', tgId);
-        
         if (!uid) {
           const userRef = db.ref('users').push();
           uid = userRef.key;
@@ -811,33 +1009,32 @@
             display_name: displayName,
             created_at: firebase.database.ServerValue.TIMESTAMP
           });
-          await db.ref(`player_data/${uid}`).set({
+          await db.ref('player_data/' + uid).set({
             score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
             autoclickerLevel: 1, hasResonance: false,
             autoclickActive: false, autoclickEndTime: 0,
+            energy: 50, maxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
+            farmSlots: farmSlots,
             lastActive: firebase.database.ServerValue.TIMESTAMP
           });
-          await db.ref(`leaderboard/${uid}`).set({ 
+          await db.ref('leaderboard/' + uid).set({ 
             id: uid, name: displayName, score: 0, crystals: 0, 
             clickPower: 1, totalClicks: 0, hasResonance: false, lastUpdate: Date.now() 
           });
-          await db.ref(`auth_lookup/tg_user_id_${tgId}`).set(uid);
-          showMessage(`${t('welcome')}, ${displayName}!`);
+          await db.ref('auth_lookup/tg_user_id_' + tgId).set(uid);
+          showMessage(t('welcome') + ', ' + displayName + '!');
         } else {
-          await db.ref(`users/${uid}`).update({ 
+          await db.ref('users/' + uid).update({ 
             display_name: displayName,
             last_login_at: firebase.database.ServerValue.TIMESTAMP
           });
-          showMessage(`${t('welcomeBack')}, ${displayName}!`);
+          showMessage(t('welcomeBack') + ', ' + displayName + '!');
         }
-        
         user = { uid, tgUid: 'tg_' + tgId, displayName };
         if (isWhitelisted(user.tgUid) || isWhitelisted(uid)) showAdminPanel();
         saveSession(uid, tgId);
-        
         const signOutBtn = document.getElementById('signOutBtn');
         if (signOutBtn) signOutBtn.classList.add('visible');
-        
         startGameAfterAuth();
       } catch (error) {
         showMessage(t('error'));
@@ -848,7 +1045,7 @@
       const session = restoreSession();
       if (!session) return false;
       try {
-        const userSnap = await db.ref(`users/${session.uid}`).once('value');
+        const userSnap = await db.ref('users/' + session.uid).once('value');
         if (!userSnap.exists()) { localStorage.removeItem('cryptoClickerSession'); return false; }
         user = { uid: session.uid, tgUid: 'tg_' + session.tgId, displayName: userSnap.val().display_name || t('player') };
         if (isWhitelisted(user.tgUid) || isWhitelisted(user.uid)) showAdminPanel();
@@ -869,6 +1066,7 @@
       loadAdState();
       updateAdTaskUI();
       checkAdCrystalTaskCompletion();
+      startFarmSystem();
       const ref = new URLSearchParams(window.location.search).get('ref');
       if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
     }
@@ -876,15 +1074,15 @@
     // ==================== СИНХРОНИЗАЦИЯ ====================
     function setupCrossPlatformSync() {
       if (!user) return;
-      db.ref(`player_data/${user.uid}/score`).on('value', (snapshot) => {
+      db.ref('player_data/' + user.uid + '/score').on('value', (snapshot) => {
         const newScore = snapshot.val();
         if (newScore !== null && newScore !== score) { score = newScore; updateCounterDisplay(); updateProfilePanel(); }
       });
-      db.ref(`player_data/${user.uid}/crystals`).on('value', (snapshot) => {
+      db.ref('player_data/' + user.uid + '/crystals').on('value', (snapshot) => {
         const newCrystals = snapshot.val();
         if (newCrystals !== null && newCrystals !== crystals) { crystals = newCrystals; updateProfilePanel(); }
       });
-      db.ref(`player_data/${user.uid}/clickPower`).on('value', (snapshot) => {
+      db.ref('player_data/' + user.uid + '/clickPower').on('value', (snapshot) => {
         const newClickPower = snapshot.val();
         if (newClickPower !== null && newClickPower !== clickPower) { 
           clickPower = newClickPower; 
@@ -892,7 +1090,7 @@
           updateProfilePanel(); 
         }
       });
-      db.ref(`player_data/${user.uid}/hasResonance`).on('value', (snapshot) => {
+      db.ref('player_data/' + user.uid + '/hasResonance').on('value', (snapshot) => {
         const newResonance = snapshot.val();
         if (newResonance !== null && newResonance !== hasResonance) { 
           hasResonance = newResonance; 
@@ -900,23 +1098,34 @@
           updateProfilePanel(); 
         }
       });
+      db.ref('player_data/' + user.uid + '/energy').on('value', (snapshot) => {
+        const newEnergy = snapshot.val();
+        if (newEnergy !== null && newEnergy !== energy) { energy = newEnergy; updateFarmUI(); }
+      });
+      db.ref('player_data/' + user.uid + '/farmSlots').on('value', (snapshot) => {
+        const newSlots = snapshot.val();
+        if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); }
+      });
     }
 
     // ==================== ЗАГРУЗКА ДАННЫХ ====================
     async function loadPlayerData(uid) {
       return new Promise((resolve) => {
-        db.ref(`player_data/${uid}`).once('value').then(snapshot => {
+        db.ref('player_data/' + uid).once('value').then(snapshot => {
           const data = snapshot.val();
           if (!data) {
             const defaultData = {
               score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
               autoclickerLevel: 1, hasResonance: false,
               autoclickActive: false, autoclickEndTime: 0,
+              energy: 50, maxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
+              farmSlots: farmSlots,
               lastActive: firebase.database.ServerValue.TIMESTAMP
             };
-            db.ref(`player_data/${uid}`).set(defaultData);
+            db.ref('player_data/' + uid).set(defaultData);
             score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
             autoclickerLevel = 1; hasResonance = false;
+            energy = 50; maxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
           } else {
             score = data.score || 0;
             crystals = data.crystals || 0;
@@ -924,16 +1133,18 @@
             totalClicks = data.totalClicks || 0;
             autoclickerLevel = data.autoclickerLevel || 1;
             hasResonance = data.hasResonance || false;
-            
+            energy = data.energy || 50;
+            maxEnergy = data.maxEnergy || 50;
+            warehouseTokens = data.warehouseTokens || 0;
+            warehouseLimit = data.warehouseLimit || 12;
+            if (data.farmSlots) farmSlots = data.farmSlots;
             if (data.autoclickActive && data.autoclickEndTime && data.autoclickEndTime > Date.now()) {
               const remaining = data.autoclickEndTime - Date.now();
               startAutoclicker(remaining, false);
             }
-            
             if (data.instantAutoclickActive && data.instantAutoclickEndTime && data.instantAutoclickEndTime > Date.now()) {
               startInstantAutoclick(data.instantAutoclickEndTime - Date.now());
             }
-            
             if (data.cloneEndTime && data.cloneEndTime > Date.now()) {
               cloneEndTime = data.cloneEndTime;
               resumeCloneIfActive();
@@ -946,6 +1157,7 @@
           updateAutoclickerShopUI();
           updateInstantAutoclickTimer();
           updateCloneTimer();
+          updateFarmUI();
           resolve();
         }).catch(() => { score = 0; crystals = 0; clickPower = 1; resolve(); });
       });
@@ -965,10 +1177,15 @@
         instantAutoclickActive: instantAutoclickActive,
         instantAutoclickEndTime: instantAutoclickEndTime,
         cloneEndTime: cloneEndTime || 0,
+        energy: energy,
+        maxEnergy: maxEnergy,
+        warehouseTokens: warehouseTokens,
+        warehouseLimit: warehouseLimit,
+        farmSlots: farmSlots,
         lastActive: firebase.database.ServerValue.TIMESTAMP
       };
-      db.ref(`player_data/${user.uid}`).update(data).catch(() => {});
-      db.ref(`leaderboard/${user.uid}`).update({
+      db.ref('player_data/' + user.uid).update(data).catch(() => {});
+      db.ref('leaderboard/' + user.uid).update({
         score: score,
         crystals: crystals,
         clickPower: clickPower,
@@ -981,13 +1198,13 @@
 
     function savePlayerScore() { 
       if (user) { 
-        db.ref(`player_data/${user.uid}`).update({
+        db.ref('player_data/' + user.uid).update({
           score: score,
           clickPower: clickPower,
           hasResonance: hasResonance,
           totalClicks: totalClicks
         }); 
-        db.ref(`leaderboard/${user.uid}`).update({
+        db.ref('leaderboard/' + user.uid).update({
           score: score,
           clickPower: clickPower,
           totalClicks: totalClicks,
@@ -995,14 +1212,14 @@
         }); 
       } 
     }
-    
+
     function savePlayerCrystals() { 
       if (user) { 
-        db.ref(`player_data/${user.uid}`).update({
+        db.ref('player_data/' + user.uid).update({
           crystals: crystals,
           hasResonance: hasResonance
         }); 
-        db.ref(`leaderboard/${user.uid}`).update({
+        db.ref('leaderboard/' + user.uid).update({
           crystals: crystals,
           hasResonance: hasResonance
         }); 
@@ -1010,24 +1227,27 @@
     }
 
     // ==================== АДМИН ====================
-    function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; savePlayerCrystals(); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
-    function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; savePlayerScore(); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
+    function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; savePlayerCrystals(); updateProfilePanel(); showMessage('🛡️ +' + a + ' 💎'); }
+    function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; savePlayerScore(); updateProfilePanel(); updateCounterDisplay(); showMessage('🛡️ +' + a + ' tokens'); }
     function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
     function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; showMessage('🛡️ Battle Pass removed from UI'); }
     window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags; window.adminSetBPLevel = adminSetBPLevel;
 
     // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
-    function showComingSoon(f) { showMessage(`🚧 ${f} is coming soon!`); }
-    function formatTimeFromSeconds(s) { const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60; return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`; }
-    function updateCounterDisplay() { document.getElementById("counter").innerText = `Tokens: ${score}`; document.getElementById("profileTokens").innerText = score; }
+    function showComingSoon(f) { showMessage('🚧 ' + f + ' is coming soon!'); }
+    function formatTimeFromSeconds(s) { const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60; return h > 0 ? h + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0') : m + ':' + String(sec).padStart(2,'0'); }
+    function updateCounterDisplay() { document.getElementById("counter").innerText = 'Tokens: ' + score; document.getElementById("profileTokens").innerText = score; }
     function animateCounter() { const c = document.getElementById('counter'); c.classList.add('bounce'); setTimeout(() => c.classList.remove('bounce'), 200); }
     function showMessage(msg, isBonus) { if (isBonus) { const bm = document.getElementById("bonusMessage"); bm.innerText = msg; bm.style.opacity = 1; setTimeout(() => { bm.style.opacity = 0; }, 3000); } else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); } }
-    function getClickPowerUpgradeCost() { return Math.floor(500 * Math.pow(6, clickPower - 1)); }
-    function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel-1)*(14400000-60000)/19); }
-    function getAutoclickerUpgradeCost() { if (autoclickerLevel >= 10) return { tokens: 1500000, crystals: 1000 }; if (autoclickerLevel >= 6) return { tokens: 1000000+125000*(autoclickerLevel-6), crystals: 500+125*(autoclickerLevel-6) }; return { tokens: Math.round(1000*Math.pow(Math.pow(1000,1/5),autoclickerLevel-1)), crystals: 10+98*(autoclickerLevel-1) }; }
+    function getClickPowerUpgradeCost() { return Math.floor(50 * Math.pow(clickPower, 1.8)); }
+    function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel-1) * (600000-60000) / 9); }
+    function getAutoclickerUpgradeCost() { 
+      if (autoclickerLevel >= 10) return { tokens: 1000000, crystals: 500 }; 
+      return { tokens: Math.floor(500 * Math.pow(3, autoclickerLevel-1)), crystals: 5 * autoclickerLevel }; 
+    }
     function getWeekNumber() { const n = new Date(); const s = new Date(n.getFullYear(), 0, 1); return Math.ceil(((n - s) / 86400000 + s.getDay() + 1) / 7); }
-    function getWeekKey() { return `${new Date().getFullYear()}_${getWeekNumber()}`; }
-    function generateReferralLink() { return user ? `${window.location.origin}/?ref=${user.uid}` : ''; }
+    function getWeekKey() { return new Date().getFullYear() + '_' + getWeekNumber(); }
+    function generateReferralLink() { return user ? window.location.origin + '/?ref=' + user.uid : ''; }
     function copyReferralLink() { const r = document.getElementById('referralLink'); r.select(); document.execCommand('copy'); showMessage('Referral link copied!'); }
 
     function cleanupAllTimers() {
@@ -1039,28 +1259,394 @@
       if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
       if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
       if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
+      if (farmTickInterval) { clearInterval(farmTickInterval); farmTickInterval = null; }
+      if (energyRegenInterval) { clearInterval(energyRegenInterval); energyRegenInterval = null; }
     }
 
     window.addEventListener('beforeunload', () => {
-      if (user) {
-        savePlayerData();
-      }
+      if (user) savePlayerData();
       cleanupAllTimers();
     });
 
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden' && user) {
-        savePlayerData();
-      }
+      if (document.visibilityState === 'hidden' && user) savePlayerData();
     });
 
     function spawnScorePopup(x, y, amount) {
-      const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = `+${amount}`;
-      popup.style.left = `${x + (Math.random()-0.5)*60}px`; popup.style.top = `${y}px`;
-      popup.style.setProperty('--dx20', `${(Math.random()-0.5)*40}px`); popup.style.setProperty('--dx50', `${(Math.random()-0.5)*80}px`); popup.style.setProperty('--dx100', `${(Math.random()-0.5)*120}px`);
-      popup.style.setProperty('--rot20', `${(Math.random()-0.5)*40}deg`); popup.style.setProperty('--rot50', `${(Math.random()-0.5)*80}deg`); popup.style.setProperty('--rot100', `${(Math.random()-0.5)*150}deg`);
+      const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = '+' + amount;
+      popup.style.left = (x + (Math.random()-0.5)*60) + 'px'; popup.style.top = y + 'px';
+      popup.style.setProperty('--dx20', (Math.random()-0.5)*40 + 'px'); popup.style.setProperty('--dx50', (Math.random()-0.5)*80 + 'px'); popup.style.setProperty('--dx100', (Math.random()-0.5)*120 + 'px');
+      popup.style.setProperty('--rot20', (Math.random()-0.5)*40 + 'deg'); popup.style.setProperty('--rot50', (Math.random()-0.5)*80 + 'deg'); popup.style.setProperty('--rot100', (Math.random()-0.5)*150 + 'deg');
       popup.style.color = ['#ffd700','#ffcc00','#ffe44d','#ffaa00','#ffc107','#ffeb3b','#ffdf00','#fff176'][Math.floor(Math.random()*8)];
-      popup.style.fontSize = `${16+Math.random()*12}px`; document.body.appendChild(popup); setTimeout(() => popup.remove(), 800);
+      popup.style.fontSize = (16+Math.random()*12) + 'px'; document.body.appendChild(popup); setTimeout(() => popup.remove(), 800);
+    }
+
+    // ==================== FARM SYSTEM ====================
+    function startFarmSystem() {
+      if (farmTickInterval) clearInterval(farmTickInterval);
+      if (energyRegenInterval) clearInterval(energyRegenInterval);
+      lastFarmTick = Date.now();
+      farmTickInterval = setInterval(farmTick, 60000); // every minute
+      energyRegenInterval = setInterval(energyRegenTick, 300000); // every 5 minutes
+    }
+
+    function farmTick() {
+      if (!user) return;
+      const now = Date.now();
+      const minutesPassed = Math.floor((now - lastFarmTick) / 60000);
+      lastFarmTick = now;
+
+      let totalIncome = 0;
+      let totalEnergyCost = 0;
+      let hasOverheat = false;
+
+      for (let i = 0; i < farmSlots.length; i++) {
+        const slot = farmSlots[i];
+        if (!slot) continue;
+        if (slot.overheated && slot.overheatEnd > now) continue;
+        if (slot.calibrateEnd && slot.calibrateEnd > now) continue;
+
+        const rig = RIG_TYPES[slot.type];
+        if (!rig) continue;
+
+        // Diminishing returns
+        const sameTypeCount = farmSlots.filter(s => s && s.type === slot.type).length;
+        const slotIndex = farmSlots.filter((s, idx) => s && s.type === slot.type).indexOf(slot);
+        const dimReturn = Math.max(0.5, 1 - slotIndex * 0.1);
+
+        // Overclock bonus
+        const overclockBonus = 1 + (slot.overclock || 0) * 0.1;
+
+        // Merge bonus
+        const mergeBonus = slot.merged ? 1.4 : 1;
+
+        // Efficiency reduction
+        const efficiencyReduction = 1 - (slot.efficiency || 0) * 0.1;
+
+        const income = rig.speed * dimReturn * overclockBonus * mergeBonus * minutesPassed;
+        const energyCost = rig.energy * efficiencyReduction * minutesPassed / 60;
+
+        totalIncome += income;
+        totalEnergyCost += energyCost;
+
+        // Overheat check
+        const overheatChance = (slot.overclock || 0) >= 4 ? 0.05 + (slot.overclock - 3) * 0.05 : 0;
+        if (overheatChance > 0 && Math.random() < overheatChance) {
+          slot.overheated = true;
+          slot.overheatEnd = now + 600000; // 10 min
+          hasOverheat = true;
+        }
+
+        // Overheat recovery
+        if (slot.overheated && slot.overheatEnd <= now) {
+          slot.overheated = false;
+          slot.overheatEnd = 0;
+        }
+      }
+
+      // Energy check
+      if (energy >= totalEnergyCost) {
+        energy -= totalEnergyCost;
+        warehouseTokens += totalIncome;
+        // Cap warehouse
+        const maxWarehouse = warehouseLimit;
+        if (warehouseTokens > maxWarehouse) warehouseTokens = maxWarehouse;
+      } else {
+        // Partial income based on available energy
+        const ratio = energy / totalEnergyCost;
+        energy = 0;
+        warehouseTokens += totalIncome * ratio;
+        if (warehouseTokens > warehouseLimit) warehouseTokens = warehouseLimit;
+      }
+
+      savePlayerData();
+      updateFarmUI();
+
+      if (hasOverheat) showMessage('🔥 ' + t('rigOverheated'));
+    }
+
+    function energyRegenTick() {
+      if (!user) return;
+      energy = Math.min(maxEnergy, energy + 1);
+      savePlayerData();
+      updateFarmUI();
+    }
+
+    function collectWarehouse() {
+      if (!user) return;
+      if (warehouseTokens <= 0) return;
+      const amount = Math.floor(warehouseTokens);
+      score += amount;
+      warehouseTokens = 0;
+      savePlayerScore();
+      updateCounterDisplay();
+      updateProfilePanel();
+      updateFarmUI();
+      showMessage('✅ +' + amount + ' ' + t('tokens') + '!');
+      updateTaskProgress("collectTokens", amount);
+    }
+
+    function getFarmIncomePerMin() {
+      let total = 0;
+      for (let i = 0; i < farmSlots.length; i++) {
+        const slot = farmSlots[i];
+        if (!slot) continue;
+        if (slot.overheated) continue;
+        if (slot.calibrateEnd && slot.calibrateEnd > Date.now()) continue;
+        const rig = RIG_TYPES[slot.type];
+        if (!rig) continue;
+        const sameTypeCount = farmSlots.filter(s => s && s.type === slot.type).length;
+        const slotIndex = farmSlots.filter((s, idx) => s && s.type === slot.type).indexOf(slot);
+        const dimReturn = Math.max(0.5, 1 - slotIndex * 0.1);
+        const overclockBonus = 1 + (slot.overclock || 0) * 0.1;
+        const mergeBonus = slot.merged ? 1.4 : 1;
+        total += rig.speed * dimReturn * overclockBonus * mergeBonus;
+      }
+      return total;
+    }
+
+    function getFarmEnergyPerHour() {
+      let total = 0;
+      for (let i = 0; i < farmSlots.length; i++) {
+        const slot = farmSlots[i];
+        if (!slot) continue;
+        const rig = RIG_TYPES[slot.type];
+        if (!rig) continue;
+        const efficiencyReduction = 1 - (slot.efficiency || 0) * 0.1;
+        total += rig.energy * efficiencyReduction;
+      }
+      return total;
+    }
+
+    function updateFarmUI() {
+      const income = getFarmIncomePerMin();
+      const energyCost = getFarmEnergyPerHour();
+      const timeToStop = energyCost > 0 ? (energy / energyCost) : 999;
+
+      document.getElementById('farmEnergyDisplay').textContent = Math.floor(energy) + ' / ' + maxEnergy + ' ⚡';
+      const energyPct = maxEnergy > 0 ? (energy / maxEnergy) * 100 : 0;
+      const energyBar = document.getElementById('farmEnergyBar');
+      energyBar.style.width = energyPct + '%';
+      energyBar.className = 'energy-fill ' + (energyPct > 50 ? 'high' : energyPct > 20 ? 'med' : 'low');
+
+      document.getElementById('farmWarehouseDisplay').textContent = Math.floor(warehouseTokens) + ' / ' + warehouseLimit + ' 🪙';
+      document.getElementById('collectWarehouseBtn').disabled = warehouseTokens <= 0;
+
+      document.getElementById('farmIncomeMin').textContent = income.toFixed(2);
+      document.getElementById('farmEnergyHour').textContent = energyCost.toFixed(1);
+      document.getElementById('farmTimeToStop').textContent = timeToStop >= 999 ? '∞' : timeToStop.toFixed(1) + 'ч';
+
+      // Render farm grid
+      const grid = document.getElementById('farmGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const slot = farmSlots[i];
+        const slotDiv = document.createElement('div');
+        const playerLevel = getPlayerLevel();
+
+        if (!slot && playerLevel < slotUnlockLevels[i]) {
+          slotDiv.className = 'farm-slot locked';
+          slotDiv.innerHTML = '<span class="slot-number">#' + (i+1) + '</span><div class="slot-empty">' + t('lockedSlot') + '</div><div style="font-size:11px;color:#555;margin-top:4px">' + t('requiresLevel') + ' ' + slotUnlockLevels[i] + '</div>';
+        } else if (!slot) {
+          slotDiv.className = 'farm-slot';
+          slotDiv.onclick = () => openRigShop(i);
+          slotDiv.innerHTML = '<span class="slot-number">#' + (i+1) + '</span><div class="slot-empty">' + t('emptySlot') + '</div><div style="font-size:11px;color:#555;margin-top:4px">' + t('clickToBuy') + '</div>';
+        } else {
+          const rig = RIG_TYPES[slot.type];
+          const isOverheated = slot.overheated && slot.overheatEnd > Date.now();
+          const isCalibrating = slot.calibrateEnd && slot.calibrateEnd > Date.now();
+          let className = 'farm-slot occupied';
+          if (isOverheated) className += ' overheated';
+          else if (isCalibrating) className += ' calibrating';
+          if (slot.merged) className += ' merged';
+          slotDiv.className = className;
+          slotDiv.onclick = () => showRigDetail(i);
+
+          let html = '<span class="slot-number">#' + (i+1) + '</span>';
+          if (slot.merged) html += '<span class="merge-badge">M</span>';
+
+          if (isOverheated) {
+            html += '<div class="overheat-overlay"><span class="overheat-text">🔥 ' + t('overheat') + '</span></div>';
+            html += '<div style="font-size:24px;margin-bottom:4px">' + rig.icon + '</div>';
+            html += '<div class="rig-name" style="color:#ff4444">' + rig.name + '</div>';
+            html += '<div class="rig-speed" style="color:#ff4444">' + t('rigStopped') + '</div>';
+          } else if (isCalibrating) {
+            const remaining = Math.ceil((slot.calibrateEnd - Date.now()) / 60000);
+            html += '<div style="font-size:24px;margin-bottom:4px;opacity:0.5">' + rig.icon + '</div>';
+            html += '<div class="rig-name">' + rig.name + '</div>';
+            html += '<div class="rig-speed" style="color:#ffd700">' + t('calibrating') + ' ' + remaining + 'м</div>';
+          } else {
+            const sameTypeCount = farmSlots.filter(s => s && s.type === slot.type).length;
+            const slotIndex = farmSlots.filter((s, idx) => s && s.type === slot.type).indexOf(slot);
+            const dimReturn = Math.max(0.5, 1 - slotIndex * 0.1);
+            const overclockBonus = 1 + (slot.overclock || 0) * 0.1;
+            const mergeBonus = slot.merged ? 1.4 : 1;
+            const actualSpeed = rig.speed * dimReturn * overclockBonus * mergeBonus;
+
+            html += '<div style="font-size:24px;margin-bottom:4px">' + rig.icon + '</div>';
+            html += '<div class="rig-name">' + rig.name + (slot.merged ? '+' : '') + '</div>';
+            html += '<div class="rig-speed">' + actualSpeed.toFixed(2) + '/мин</div>';
+            html += '<div class="rig-energy">' + (rig.energy * (1 - (slot.efficiency || 0) * 0.1)).toFixed(1) + ' ⚡/ч</div>';
+
+            // Heat bar
+            const heatPct = Math.min(100, ((slot.overclock || 0) / 10) * 100);
+            html += '<div class="heat-bar"><div class="heat-fill ' + (heatPct < 40 ? 'heat-low' : heatPct < 70 ? 'heat-med' : 'heat-high') + '" style="width:' + heatPct + '%"></div></div>';
+          }
+          slotDiv.innerHTML = html;
+        }
+        grid.appendChild(slotDiv);
+      }
+    }
+
+    function getPlayerLevel() {
+      let lv = 1;
+      for (let i = 0; i < levelUpRequirements.length; i++) {
+        if (score >= levelUpRequirements[i]) lv = i + 2;
+        else break;
+      }
+      return lv;
+    }
+
+    function openRigShop(slotIndex) {
+      // Show rig shop modal
+      showMessage('🛒 ' + t('shop') + ' — Slot #' + (slotIndex+1));
+    }
+
+    let selectedRigSlot = -1;
+    function showRigDetail(slotIndex) {
+      selectedRigSlot = slotIndex;
+      const slot = farmSlots[slotIndex];
+      if (!slot) return;
+      const rig = RIG_TYPES[slot.type];
+      const panel = document.getElementById('rigDetailPanel');
+
+      document.getElementById('detailRigIcon').textContent = rig.icon;
+      document.getElementById('detailRigName').textContent = rig.name + (slot.merged ? '+' : '');
+
+      const sameTypeCount = farmSlots.filter(s => s && s.type === slot.type).length;
+      const slotIndexInType = farmSlots.filter((s, idx) => s && s.type === slot.type).indexOf(slot);
+      const dimReturn = Math.max(0.5, 1 - slotIndexInType * 0.1);
+      const overclockBonus = 1 + (slot.overclock || 0) * 0.1;
+      const mergeBonus = slot.merged ? 1.4 : 1;
+      const actualSpeed = rig.speed * dimReturn * overclockBonus * mergeBonus;
+      const actualEnergy = rig.energy * (1 - (slot.efficiency || 0) * 0.1);
+
+      document.getElementById('detailRigSub').textContent = actualSpeed.toFixed(2) + '/мин · ' + actualEnergy.toFixed(1) + ' ⚡/ч';
+
+      document.getElementById('detailOverclockLevel').textContent = slot.overclock || 0;
+      document.getElementById('detailOverclockBonus').textContent = ((slot.overclock || 0) * 10);
+      document.getElementById('detailEfficiencyLevel').textContent = slot.efficiency || 0;
+      document.getElementById('detailEfficiencyBonus').textContent = ((slot.efficiency || 0) * 10);
+      document.getElementById('detailLuckLevel').textContent = slot.luck || 0;
+      document.getElementById('detailLuckBonus').textContent = ((slot.luck || 0) * 2);
+      document.getElementById('detailRigType').textContent = slot.type.toUpperCase();
+
+      // Update button costs
+      const overclockCost = getOverclockCost(slot.type, slot.overclock || 0);
+      const efficiencyCost = getEfficiencyCost(slot.type, slot.efficiency || 0);
+      const luckCost = getLuckCost(slot.type, slot.luck || 0);
+
+      document.getElementById('btnUpgradeOverclock').textContent = overclockCost.tokens > 0 ? overclockCost.tokens + ' 🪙' + (overclockCost.crystals > 0 ? ' + ' + overclockCost.crystals + ' 💎' : '') : t('maxLevel');
+      document.getElementById('btnUpgradeOverclock').disabled = (slot.overclock || 0) >= 10;
+
+      document.getElementById('btnUpgradeEfficiency').textContent = efficiencyCost.tokens > 0 ? efficiencyCost.tokens + ' 🪙' + (efficiencyCost.crystals > 0 ? ' + ' + efficiencyCost.crystals + ' 💎' : '') : t('maxLevel');
+      document.getElementById('btnUpgradeEfficiency').disabled = (slot.efficiency || 0) >= 5;
+
+      document.getElementById('btnUpgradeLuck').textContent = luckCost.tokens > 0 ? luckCost.tokens + ' 🪙' + (luckCost.crystals > 0 ? ' + ' + luckCost.crystals + ' 💎' : '') : t('maxLevel');
+      document.getElementById('btnUpgradeLuck').disabled = (slot.luck || 0) >= 5;
+
+      // Merge button
+      const mergeRow = document.getElementById('mergeRow');
+      const canMerge = !slot.merged && farmSlots.filter(s => s && s.type === slot.type && !s.merged && s !== slot).length > 0;
+      mergeRow.style.display = canMerge ? 'flex' : 'none';
+
+      panel.classList.add('open');
+    }
+
+    function getOverclockCost(type, level) {
+      if (level >= 10) return { tokens: 0, crystals: 0 };
+      const base = type === 'cpu' ? 200 : type === 'gpu' ? 500 : type === 'asic' ? 2000 : 10000;
+      return { tokens: Math.floor(base * Math.pow(2.5, level)), crystals: level >= 3 ? Math.floor(base * 0.1 * Math.pow(2, level-3)) : 0 };
+    }
+
+    function getEfficiencyCost(type, level) {
+      if (level >= 5) return { tokens: 0, crystals: 0 };
+      const base = type === 'cpu' ? 150 : type === 'gpu' ? 400 : type === 'asic' ? 1500 : 7500;
+      return { tokens: Math.floor(base * Math.pow(3, level)), crystals: level >= 2 ? Math.floor(base * 0.05 * Math.pow(2, level-2)) : 0 };
+    }
+
+    function getLuckCost(type, level) {
+      if (level >= 5) return { tokens: 0, crystals: 0 };
+      const base = type === 'cpu' ? 300 : type === 'gpu' ? 800 : type === 'asic' ? 3000 : 15000;
+      return { tokens: Math.floor(base * Math.pow(3, level)), crystals: Math.floor(base * 0.1 * Math.pow(2, level)) };
+    }
+
+    function upgradeRigOverclock() {
+      if (selectedRigSlot < 0) return;
+      const slot = farmSlots[selectedRigSlot];
+      if (!slot) return;
+      const cost = getOverclockCost(slot.type, slot.overclock || 0);
+      if (score < cost.tokens || crystals < cost.crystals) { showMessage(t('notEnoughTokens')); return; }
+      score -= cost.tokens;
+      crystals -= cost.crystals;
+      slot.overclock = (slot.overclock || 0) + 1;
+      savePlayerData();
+      updateProfilePanel();
+      updateCounterDisplay();
+      updateFarmUI();
+      showRigDetail(selectedRigSlot);
+      showMessage('⚡ ' + t('overclock') + ' +' + (slot.overclock * 10) + '%!');
+    }
+
+    function upgradeRigEfficiency() {
+      if (selectedRigSlot < 0) return;
+      const slot = farmSlots[selectedRigSlot];
+      if (!slot) return;
+      const cost = getEfficiencyCost(slot.type, slot.efficiency || 0);
+      if (score < cost.tokens || crystals < cost.crystals) { showMessage(t('notEnoughTokens')); return; }
+      score -= cost.tokens;
+      crystals -= cost.crystals;
+      slot.efficiency = (slot.efficiency || 0) + 1;
+      savePlayerData();
+      updateProfilePanel();
+      updateCounterDisplay();
+      updateFarmUI();
+      showRigDetail(selectedRigSlot);
+      showMessage('🔋 ' + t('efficiency') + ' +' + (slot.efficiency * 10) + '%!');
+    }
+
+    function upgradeRigLuck() {
+      if (selectedRigSlot < 0) return;
+      const slot = farmSlots[selectedRigSlot];
+      if (!slot) return;
+      const cost = getLuckCost(slot.type, slot.luck || 0);
+      if (score < cost.tokens || crystals < cost.crystals) { showMessage(t('notEnoughTokens')); return; }
+      score -= cost.tokens;
+      crystals -= cost.crystals;
+      slot.luck = (slot.luck || 0) + 1;
+      savePlayerData();
+      updateProfilePanel();
+      updateCounterDisplay();
+      updateFarmUI();
+      showRigDetail(selectedRigSlot);
+      showMessage('🍀 ' + t('luck') + ' +' + (slot.luck * 2) + '%!');
+    }
+
+    function mergeRig() {
+      if (selectedRigSlot < 0) return;
+      const slot = farmSlots[selectedRigSlot];
+      if (!slot || slot.merged) return;
+      const partnerIndex = farmSlots.findIndex((s, idx) => s && s.type === slot.type && !s.merged && idx !== selectedRigSlot);
+      if (partnerIndex < 0) return;
+
+      slot.merged = true;
+      farmSlots[partnerIndex] = null;
+      slot.calibrateEnd = Date.now() + 7200000; // 2 hours
+
+      savePlayerData();
+      updateFarmUI();
+      showRigDetail(selectedRigSlot);
+      showMessage('🔗 ' + t('merge') + ' started! +' + t('calibrating') + ' 2ч');
     }
 
     // ==================== ОСНОВНОЙ КЛИК ====================
@@ -1071,19 +1657,16 @@
       lastClickTime = Date.now(); isAnimating = true;
       if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
       score += clickPower; totalClicks++;
-      
       savePlayerScore();
-      
       updateTaskProgress("clickMarathon", 1);
       updateTaskProgress("collectTokens", clickPower);
       updateTaskProgress("collectBigTokens", clickPower);
       updateTaskProgress("clickMasterWeekly", 1);
       checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel();
-      
-      if (hasResonance && totalClicks % 100 === 0) { 
+      if (hasResonance && totalClicks % 500 === 0) { 
         crystals++; 
         savePlayerCrystals();
-        showMessage(`🔮 Resonance! +1 💎`); 
+        showMessage('🔮 Resonance! +1 💎'); 
         updateProfilePanel(); 
       }
       updateResonanceUI();
@@ -1123,12 +1706,12 @@
     function updateInstantAutoclickTimer() {
       const d = document.getElementById('instantAutoclickTimerDisplay'), b = document.getElementById('buyInstantAutoclickBtn');
       if (!b) return; b.onclick = null;
-      if (instantAutoclickActive) { const r = Math.max(0, instantAutoclickEndTime - Date.now()); if (r <= 0) { stopInstantAutoclick(); return; } if (d) d.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(r/1000))}`; b.disabled = true; b.textContent = '⚡ Active'; b.style.background = '#555'; }
+      if (instantAutoclickActive) { const r = Math.max(0, instantAutoclickEndTime - Date.now()); if (r <= 0) { stopInstantAutoclick(); return; } if (d) d.textContent = '⏱ Remaining: ' + formatTimeFromSeconds(Math.floor(r/1000)); b.disabled = true; b.textContent = '⚡ Active'; b.style.background = '#555'; }
       else { if (d) d.textContent = ''; if (!dualClickActive && cloneEndTime <= Date.now()) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } else { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } }
     }
 
     function updateInstantAutoclickButtonState() { const b = document.getElementById('buyInstantAutoclickBtn'); if (!b) return; b.onclick = null; if (dualClickActive || cloneEndTime > Date.now()) { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } else if (!instantAutoclickActive) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } }
-    function buyInstantAutoclick() { if (!user) { showMessage(t('signIn')); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; savePlayerCrystals(); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
+    function buyInstantAutoclick() { if (!user) { showMessage(t('signIn')); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage('Need ' + INSTANT_AUTOCLICK_COST + ' 💎!'); return; } crystals -= INSTANT_AUTOCLICK_COST; savePlayerCrystals(); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage('⚡ Instant Autoclick activated for 1 hour!'); updateProfilePanel(); }
 
     // ==================== CLONE ====================
     function startClone(duration) {
@@ -1167,7 +1750,7 @@
     function updateCloneTimer() {
       const d = document.getElementById('cloneTimerDisplay'), b = document.getElementById('buyCloneBtn');
       if (!b) return; b.onclick = null;
-      if (cloneEndTime > 0) { const remaining = Math.max(0, cloneEndTime - Date.now()); if (remaining <= 0) { stopClone(); return; } if (d) d.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(remaining / 1000))}`; b.disabled = true; b.textContent = '👥 Active'; b.style.background = '#555'; }
+      if (cloneEndTime > 0) { const remaining = Math.max(0, cloneEndTime - Date.now()); if (remaining <= 0) { stopClone(); return; } if (d) d.textContent = '⏱ Remaining: ' + formatTimeFromSeconds(Math.floor(remaining / 1000)); b.disabled = true; b.textContent = '👥 Active'; b.style.background = '#555'; }
       else { if (d) d.textContent = ''; b.disabled = instantAutoclickActive; b.textContent = instantAutoclickActive ? '🔒 Blocked' : '👥 Activate Clone'; b.style.background = instantAutoclickActive ? '#555' : ''; if (!instantAutoclickActive) b.onclick = buyClone; }
     }
 
@@ -1179,29 +1762,29 @@
       else { b.disabled = false; b.textContent = '👥 Activate Clone'; b.style.background = ''; b.onclick = buyClone; }
     }
 
-    function buyClone() { if (!user) { showMessage(t('signIn')); return; } if (cloneEndTime > 0) { showMessage('Clone already active!'); return; } if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; } if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; } crystals -= CLONE_COST; savePlayerCrystals(); startClone(CLONE_DURATION); showMessage(`👥 Clone activated for 100 minutes! Autoclicker disabled.`); updateProfilePanel(); }
+    function buyClone() { if (!user) { showMessage(t('signIn')); return; } if (cloneEndTime > 0) { showMessage('Clone already active!'); return; } if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; } if (crystals < CLONE_COST) { showMessage('Need ' + CLONE_COST + ' 💎!'); return; } crystals -= CLONE_COST; savePlayerCrystals(); startClone(CLONE_DURATION); showMessage('👥 Clone activated for 100 minutes! Autoclicker disabled.'); updateProfilePanel(); }
     function activateDualClick() { dualClickActive = true; document.getElementById('secondClickButton').classList.add('visible'); }
     function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
 
     // ==================== ПОКУПКИ ====================
     function buyUpgrade(type) { 
-      if (type === "clickPower" && clickPower < 8) { 
+      if (type === "clickPower" && clickPower < MAX_CLICK_POWER) { 
         const c = getClickPowerUpgradeCost(); 
         if (score < c) { showMessage(t('notEnoughTokens')); return; } 
         score -= c; 
         clickPower++; 
         savePlayerScore();
-        db.ref(`player_data/${user.uid}/clickPower`).set(clickPower);
-        db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower);
+        db.ref('player_data/' + user.uid + '/clickPower').set(clickPower);
+        db.ref('leaderboard/' + user.uid + '/clickPower').set(clickPower);
         updateClickPowerBar(); 
         updateProfilePanel(); 
         updateClickPowerCostText(); 
         updateCounterDisplay(); 
-      } else if (clickPower >= 8) showMessage(t('maxLevel')); 
+      } else if (clickPower >= MAX_CLICK_POWER) showMessage(t('maxLevel')); 
     }
-    
+
     function upgradeAutoclicker() { 
-      if (autoclickerLevel >= 20) { showMessage(t('maxLevel')); return; } 
+      if (autoclickerLevel >= 10) { showMessage(t('maxLevel')); return; } 
       const c = getAutoclickerUpgradeCost(); 
       if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } 
       score -= c.tokens; 
@@ -1209,55 +1792,56 @@
       autoclickerLevel++; 
       savePlayerScore(); 
       savePlayerCrystals(); 
-      db.ref(`player_data/${user.uid}/autoclickerLevel`).set(autoclickerLevel);
-      db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); 
+      db.ref('player_data/' + user.uid + '/autoclickerLevel').set(autoclickerLevel);
+      db.ref('leaderboard/' + user.uid + '/autoclickerLevel').set(autoclickerLevel); 
       updateProfilePanel(); 
       updateAutoclickerShopUI(); 
       updateCounterDisplay(); 
     }
-    
+
     function buyResonance() { 
       if (!user) return; 
       if (hasResonance) { showMessage('Already have Resonance!'); return; } 
-      if (totalClicks < RESONANCE_CLICK_REQUIREMENT) { showMessage(`Need ${RESONANCE_CLICK_REQUIREMENT} clicks!`); return; } 
-      if (crystals < RESONANCE_COST) { showMessage(`Need ${RESONANCE_COST} 💎!`); return; } 
+      if (totalClicks < RESONANCE_CLICK_REQUIREMENT) { showMessage('Need ' + RESONANCE_CLICK_REQUIREMENT + ' clicks!'); return; } 
+      if (crystals < RESONANCE_COST) { showMessage('Need ' + RESONANCE_COST + ' 💎!'); return; } 
       crystals -= RESONANCE_COST; 
       hasResonance = true; 
       savePlayerCrystals(); 
-      db.ref(`player_data/${user.uid}/hasResonance`).set(true);
-      db.ref(`leaderboard/${user.uid}/hasResonance`).set(true); 
+      db.ref('player_data/' + user.uid + '/hasResonance').set(true);
+      db.ref('leaderboard/' + user.uid + '/hasResonance').set(true); 
       updateProfilePanel(); 
       updateResonanceUI(); 
-      showMessage('🔮 Resonance activated! Every 100th click gives +1 💎');
+      showMessage('🔮 Resonance activated! Every 500th click gives +1 💎');
     }
 
     function updateResonanceUI() { const b = document.getElementById('buyResonanceBtn'), r = document.getElementById('resonanceClickCount'); if (r) r.textContent = totalClicks; if (hasResonance) { if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } } else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } } else { if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } } }
-    
+
     function updateProfilePanel() {
-      document.getElementById('profileClickPower').innerText = Math.min(clickPower,8);
+      document.getElementById('profileClickPower').innerText = Math.min(clickPower, MAX_CLICK_POWER);
       if (instantAutoclickActive) document.getElementById('profileAutoclick').innerText = 'Active (Instant)';
-      else if (autoclickActive) document.getElementById('profileAutoclick').innerText = `Active: ${formatTimeFromSeconds(Math.floor(Math.max(0,autoclickEndTime-Date.now())/1000))}`;
+      else if (autoclickActive) document.getElementById('profileAutoclick').innerText = 'Active: ' + formatTimeFromSeconds(Math.floor(Math.max(0,autoclickEndTime-Date.now())/1000));
       else document.getElementById('profileAutoclick').innerText = t('inactive');
-      let lv = 1; for (let i=0;i<levelUpRequirements.length;i++){if(score>=levelUpRequirements[i])lv=i+2;else break;}
+      let lv = getPlayerLevel();
       document.getElementById('playerLevel').innerText = lv;
       document.getElementById('profileTokens').innerText = score;
       document.getElementById('profileName').textContent = user?.displayName || 'Anonymous';
-      document.getElementById('profileCrystals').textContent = `${crystals||0} 💎`;
+      document.getElementById('profileCrystals').textContent = (crystals||0) + ' 💎';
+      document.getElementById('profileEnergy').textContent = Math.floor(energy) + '/' + maxEnergy + ' ⚡';
       if (user) {
         document.getElementById('referralLink').value = generateReferralLink();
-        db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; });
+        db.ref('referrals/' + user.uid).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; });
       }
       const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.textContent = t('maxLevel'); lm.classList.add('show'); } else lm.classList.remove('show');
     }
-    
-    function updateClickPowerBar() { document.getElementById("clickPowerDisplay").innerText = clickPower; document.getElementById("clickPowerBar").style.width = Math.min((clickPower/8)*100,100)+"%"; updateClickPowerCostText(); }
-    function updateClickPowerCostText() { const ct = document.getElementById('clickPowerCostText'); if (ct) ct.textContent = clickPower >= 8 ? "💪 MAX LEVEL" : `💪 Click Power +1 (Cost: ${getClickPowerUpgradeCost()})`; }
+
+    function updateClickPowerBar() { document.getElementById("clickPowerDisplay").innerText = clickPower; document.getElementById("clickPowerBar").style.width = Math.min((clickPower/MAX_CLICK_POWER)*100,100)+"%"; updateClickPowerCostText(); }
+    function updateClickPowerCostText() { const ct = document.getElementById('clickPowerCostText'); if (ct) ct.textContent = clickPower >= MAX_CLICK_POWER ? "💪 MAX LEVEL" : '💪 Click Power +1 (Cost: ' + getClickPowerUpgradeCost() + ')'; }
     function updateAutoclickerShopUI() {
       document.getElementById("autoclickerLevel").innerText = autoclickerLevel;
-      document.getElementById("autoclickerDurationValue").innerHTML = `Duration: <span id="timeLeft">${formatTimeFromSeconds(Math.floor(getAutoclickerDuration()/1000))}</span>`;
+      document.getElementById("autoclickerDurationValue").innerHTML = 'Duration: <span id="timeLeft">' + formatTimeFromSeconds(Math.floor(getAutoclickerDuration()/1000)) + '</span>';
       const ub = document.getElementById("upgradeAutoclickerBtn");
-      if (autoclickerLevel >= 20) { document.getElementById("autoclickerUpgradeCost").innerText = "MAX LEVEL"; ub.disabled = true; }
-      else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade: ${c.tokens} 🪙 + ${c.crystals} 💎`; ub.disabled = false; }
+      if (autoclickerLevel >= 10) { document.getElementById("autoclickerUpgradeCost").innerText = "MAX LEVEL"; ub.disabled = true; }
+      else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = 'Upgrade: ' + c.tokens + ' 🪙 + ' + c.crystals + ' 💎'; ub.disabled = false; }
       const afab = document.getElementById('activateFreeAutoclickerBtn');
       if (afab) { if (dualClickActive || cloneEndTime > Date.now()) { afab.disabled = true; afab.textContent = '🔒 Blocked by Clone'; afab.style.background = '#555'; } else { afab.disabled = false; afab.textContent = 'Activate Free Autoclicker'; afab.style.background = ''; } }
     }
@@ -1281,122 +1865,55 @@
       }
     }
 
-    // ==================== МИНИ-ИГРА ====================
-    function startMiniGame() {
-      if (!user) return showMessage(t('signIn'));
-      if (score < MINI_GAME_ENTRY_FEE) return showMessage(`Need ${MINI_GAME_ENTRY_FEE} tokens to play!`);
-      if (miniGameActive) return showMessage("Mini-game already active!");
-      const today = new Date().toDateString();
-      db.ref(`miniGameLimit/${user.uid}`).once('value').then(s => {
-        const data = s.val() || { gamesPlayed: 0, lastReset: today };
-        if (data.lastReset !== today) { data.gamesPlayed = 0; data.lastReset = today; }
-        if (data.gamesPlayed >= MAX_MINI_GAMES_PER_DAY) { showMessage(`Daily limit reached! (${MAX_MINI_GAMES_PER_DAY} games)`); return; }
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-        document.getElementById('shopBtn').innerHTML = 'Shop ▼';
-        document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
-        document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
-        score -= MINI_GAME_ENTRY_FEE; savePlayerScore();
-        data.gamesPlayed++; db.ref(`miniGameLimit/${user.uid}`).set(data);
-        miniGameActive = true; miniGameClicks = 0;
-        document.getElementById("miniGamePanel").style.display = "block";
-        document.getElementById("miniGameClicks").innerText = "0";
-        let tl = 10; document.getElementById("miniGameTimer").innerText = tl;
-        if (miniGameTimer) clearInterval(miniGameTimer);
-        miniGameTimer = setInterval(() => { tl--; document.getElementById("miniGameTimer").innerText = tl; if (tl <= 0) endMiniGame(false); }, 1000);
-        updateCounterDisplay();
-      });
-    }
-    
-    function miniGameClick() { if (!miniGameActive) return; miniGameClicks++; document.getElementById("miniGameClicks").innerText = miniGameClicks; if (miniGameClicks >= 50) endMiniGame(true); }
-    
-    function endMiniGame(won, leftManually = false) {
-      if (!miniGameActive) return;
-      clearInterval(miniGameTimer); miniGameActive = false; miniGameTimer = null;
-      document.getElementById("miniGamePanel").style.display = "none";
-      if (!user) return;
-      if (won) { score += MINI_GAME_REWARD; savePlayerScore(); showMessage(`${t('victory')} +${MINI_GAME_REWARD} tokens!`); updateTaskProgress("miniGameChallenge", 1); updateProfilePanel(); updateCounterDisplay(); }
-      else if (leftManually) { showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
-      else { 
-        showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`);
-        setTimeout(() => {
-          if (canWatchAd()) {
-            showAdPopup('minigame');
-          }
-        }, 1500);
-      }
-    }
-
     // ==================== ЗАДАНИЯ ====================
     function renderTasks() {
       if (isRenderingTasks) return; isRenderingTasks = true;
       const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; }
       list.innerHTML = "Loading..."; if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; }
-      db.ref(`tasks/${user.uid}`).once("value").then(s => {
+      db.ref('tasks/' + user.uid).once("value").then(s => {
         const td = s.val() || {}, today = new Date().toDateString(), sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), wn = getWeekNumber(), ew = wn % 2 === 0;
         const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
         list.innerHTML = "";
-        
-        // Рекламное задание — кнопка Watch
+
         const adTaskDiv = document.createElement("div");
         adTaskDiv.id = "adTaskContainer";
-        adTaskDiv.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
-            <div style="text-align:left;flex:1;min-width:150px;">
-              <strong>📺 ${t('watchAd')}</strong><br>
-              <small style="color:#aaa;">${t('adCooldown')}: 15 ${currentLanguage === 'ru' ? 'мин' : 'min'} | ${t('maxLevel')}: ${AD_SETTINGS.dailyLimit}/${currentLanguage === 'ru' ? 'день' : 'day'}</small>
-            </div>
-            <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;flex-shrink:0;">
-              ${t('adBtnWatch')}
-            </button>
-          </div>
-        `;
+        adTaskDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;"><div style="text-align:left;flex:1;min-width:150px;"><strong>📺 ' + t('watchAd') + '</strong><br><small style="color:#aaa;">' + t('adCooldown') + ': 15 min | ' + t('maxLevel') + ': ' + AD_SETTINGS.dailyLimit + '/day</small></div><button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;flex-shrink:0;">' + t('adBtnWatch') + '</button></div>';
         list.appendChild(adTaskDiv);
-        
-        // Задание "5 реклам = 1 кристалл"
+
         const crystalTask = dailyTasks.find(t => t.id === AD_CRYSTAL_TASK.id);
         if (crystalTask) {
           let ctd = td[AD_CRYSTAL_TASK.id] || { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
           if (ctd.lastReset !== today) {
             ctd = { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
-            db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set(ctd).catch(() => {});
+            db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).set(ctd).catch(() => {});
           }
           const crystalDiv = document.createElement("div");
           const progress = ctd.progress || 0;
           const goal = ctd.goal || AD_CRYSTAL_TASK.goal;
           const reward = ctd.reward || AD_CRYSTAL_TASK.reward;
           const completed = ctd.completed || ctd.completions >= 1;
-          
+
           if (completed) {
-            crystalDiv.innerHTML = `<span style="color:#00ffa6;">✅ ${t('adTaskProgress')}: ${goal}/${goal} - ${t('adTaskDone')}! (+${reward} 💎)</span>`;
+            crystalDiv.innerHTML = '<span style="color:#00ffa6;">✅ ' + t('adTaskProgress') + ': ' + goal + '/' + goal + ' - ' + t('adTaskDone') + '! (+' + reward + ' 💎)</span>';
           } else {
             const canClaim = progress >= goal;
-            crystalDiv.innerHTML = `
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
-                <div style="text-align:left;flex:1;min-width:150px;">
-                  <strong>📺 ${t('adTaskProgress')}: ${progress}/${goal}</strong><br>
-                  <small style="color:#aaa;">${t('adTaskReward')}: ${reward} 💎</small>
-                </div>
-                <button class="click-button" onclick="claimAdCrystalTask()" ${!canClaim ? 'disabled' : ''} style="white-space:nowrap;flex-shrink:0;padding:8px 15px;font-size:13px;">
-                  ${canClaim ? t('adTaskClaim') : t('adTaskInProgress')}
-                </button>
-              </div>
-            `;
+            crystalDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;"><div style="text-align:left;flex:1;min-width:150px;"><strong>📺 ' + t('adTaskProgress') + ': ' + progress + '/' + goal + '</strong><br><small style="color:#aaa;">' + t('adTaskReward') + ': ' + reward + ' 💎</small></div><button class="click-button" onclick="claimAdCrystalTask()" ' + (!canClaim ? 'disabled' : '') + ' style="white-space:nowrap;flex-shrink:0;padding:8px 15px;font-size:13px;">' + (canClaim ? t('adTaskClaim') : t('adTaskInProgress')) + '</button></div>';
           }
           list.appendChild(crystalDiv);
         }
-        
+
         at.forEach(task => {
           if (task.isAdTask || task.isAdCrystalTask) return;
           let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
           const rk = task.period === "weekly" ? sow : today;
-          if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
+          if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref('tasks/' + user.uid + '/' + task.id).set(tdd).catch(()=>{}); }
           const div = document.createElement("div");
-          if (tdd.completed || tdd.completions >= 1) { div.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(task.description)} - Done!</span>`; }
-          else { const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, cc = p >= g;
-            if (task.id === "subscribeTwitter") { div.innerHTML = `${escapeHTML(task.description)}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; }
-            else if (task.id === "onlineTime") { const progressTime = formatTimeFromSeconds(p); const goalTime = formatTimeFromSeconds(g); div.innerHTML = `${escapeHTML(task.description)}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`; div.setAttribute('data-task-id', 'onlineTime'); }
-            else if (task.id === "miniGameChallenge") { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g}<br><small>Reward: ${rt}</small>`; }
-            else { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; } }
+          if (tdd.completed || tdd.completions >= 1) { div.innerHTML = '<span style="color:#00ffa6;">✅ ' + escapeHTML(task.description) + ' - Done!</span>'; }
+          else { const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, rt = task.rewardType === "crystals" ? rw + ' 💎' : rw + ' tokens', cc = p >= g;
+            if (task.id === "subscribeTwitter") { div.innerHTML = escapeHTML(task.description) + '<br><a href="' + task.link + '" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('' + task.id + '')" style="padding:5px 15px;font-size:12px;">Claim</button>'; }
+            else if (task.id === "onlineTime") { const progressTime = formatTimeFromSeconds(p); const goalTime = formatTimeFromSeconds(g); div.innerHTML = escapeHTML(task.description) + ': ' + progressTime + ' / ' + goalTime + '<br><small>Reward: ' + rt + '</small>'; div.setAttribute('data-task-id', 'onlineTime'); }
+            else if (task.id === "miniGameChallenge") { div.innerHTML = escapeHTML(task.description) + ': ' + p + '/' + g + '<br><small>Reward: ' + rt + '</small>'; }
+            else { div.innerHTML = escapeHTML(task.description) + ': ' + p + '/' + g + ' (' + rt + ')<br><button class="click-button" onclick="claimTask('' + task.id + '')" ' + (!cc?'disabled':'') + ' style="padding:5px 15px;font-size:12px;">' + (cc?'Claim':'In Progress') + '</button>'; } }
           list.appendChild(div);
         });
         updateAdTaskUI();
@@ -1404,11 +1921,10 @@
       }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; });
     }
 
-    // Функция для клейма задания на кристалл
     function claimAdCrystalTask() {
       if (!user) return showMessage(t('signIn'));
       const today = new Date().toDateString();
-      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+      db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).once("value").then(s => {
         const td = s.val();
         if (!td) return;
         if (td.completed || td.completions >= 1) return showMessage(t('adTaskDone'));
@@ -1416,206 +1932,311 @@
           const reward = td.reward || AD_CRYSTAL_TASK.reward;
           crystals += reward;
           savePlayerCrystals();
-          db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).update({
+          db.ref('tasks/' + user.uid + '/' + AD_CRYSTAL_TASK.id).update({
             completed: true,
             completions: 1
           }).then(() => {
-            showMessage(`✅ ${t('adTaskDone')}! +${reward} 💎`);
+            showMessage('✅ ' + t('adTaskDone') + '! +' + reward + ' 💎');
             updateProfilePanel();
             renderTasks();
           }).catch(() => {});
         } else {
-          showMessage(`${t('adTaskInProgress')}: ${td.progress || 0}/${td.goal || AD_CRYSTAL_TASK.goal}`);
+          showMessage(t('adTaskInProgress') + ': ' + (td.progress || 0) + '/' + (td.goal || AD_CRYSTAL_TASK.goal));
         }
       }).catch(() => {});
     }
     window.claimAdCrystalTask = claimAdCrystalTask;
-    
+
     function updateTaskProgress(taskId, inc) {
       if (!user) return;
       const task = dailyTasks.find(t => t.id === taskId); if (!task) return;
       if (task.isAdTask || task.isAdCrystalTask) return;
       if (task.alternate) { const wn = getWeekNumber(), ew = wn % 2 === 0; if (task.id==="autoclickerMaster"&&!ew) return; if (task.id==="collectBigTokens"&&ew) return; }
       const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today;
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+      db.ref('tasks/' + user.uid + '/' + taskId).once("value").then(s => {
         let td = s.val() || { progress: 0, lastReset: rk, completions: 0, completed: false };
         if (td.lastReset !== rk) { td = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; }
         if (td.completed || td.completions >= 1) return;
         const np = Math.min((td.progress||0) + inc, td.goal || task.goal);
-        if (np !== td.progress) { td.progress = np; db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{}); if (taskId === "onlineTime") updateOnlineTimeDisplay(np); }
+        if (np !== td.progress) { td.progress = np; db.ref('tasks/' + user.uid + '/' + taskId).set(td).catch(()=>{}); if (taskId === "onlineTime") updateOnlineTimeDisplay(np); }
       }).catch(()=>{});
     }
-    
+
     function claimTask(taskId) {
       if (!user) return showMessage(t('signIn'));
       if (taskId === AD_CRYSTAL_TASK.id) { claimAdCrystalTask(); return; }
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+      db.ref('tasks/' + user.uid + '/' + taskId).once("value").then(s => {
         const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return;
-        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
+        if (td.completed || (td.completions||0) >= 1) { showMessage('Already claimed!'); return; }
         const g = td.goal || task.goal;
-        if ((td.progress||0) >= g) { const rw = td.reward || task.reward;
-          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); savePlayerCrystals(); }
-          else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); }
-          else { score += rw; savePlayerScore(); showMessage(`✅ +${rw} tokens!`); }
-          db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); updateCounterDisplay(); renderTasks(); });
-        } else showMessage(`${td.progress}/${g}`);
-      });
+        if ((td.progress||0) >= g) {
+          const rw = td.reward || task.reward;
+          if (task.rewardType === "crystals") { crystals += rw; savePlayerCrystals(); showMessage('+' + rw + ' 💎!'); }
+          else { score += rw; savePlayerScore(); showMessage('+' + rw + ' tokens!'); }
+          if (taskId === "autoclickerMaster") { startAutoclicker(300000); showMessage('Free autoclicker 5 min!'); }
+          td.completed = true; td.completions = 1;
+          db.ref('tasks/' + user.uid + '/' + taskId).set(td).catch(()=>{});
+          updateCounterDisplay(); updateProfilePanel(); renderTasks();
+        }
+      }).catch(()=>{});
     }
-    
+    window.claimTask = claimTask;
+
     function completeTwitterTask(taskId) {
-      if (!user) return showMessage(t('signIn'));
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
-        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return;
-        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
-        db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); });
-      });
+      if (!user) return;
+      db.ref('tasks/' + user.uid + '/' + taskId).once("value").then(s => {
+        const td = s.val(); if (!td || td.completed) return;
+        td.progress = 1; td.completed = true; td.completions = 1;
+        db.ref('tasks/' + user.uid + '/' + taskId).set(td).then(() => {
+          const task = dailyTasks.find(t => t.id === taskId); const rw = td.reward || task.reward;
+          score += rw; savePlayerScore(); showMessage('+' + rw + ' tokens!'); updateCounterDisplay(); updateProfilePanel(); renderTasks();
+        }).catch(()=>{});
+      }).catch(()=>{});
+    }
+    window.completeTwitterTask = completeTwitterTask;
+
+    function startOnlineTimer() {
+      if (onlineTimer) clearInterval(onlineTimer);
+      onlineTimer = setInterval(() => {
+        if (!user || !isPageActive) return;
+        onlineTime++;
+        if (onlineTime % 60 === 0) {
+          updateTaskProgress("onlineTime", 60);
+          if (onlineTime % 300 === 0) savePlayerData();
+        }
+        if (Date.now() - lastOnlinePing > 30000) {
+          lastOnlinePing = Date.now();
+          db.ref('online/' + user.uid).set({ timestamp: firebase.database.ServerValue.TIMESTAMP, name: user.displayName || 'Anonymous' });
+        }
+      }, 1000);
     }
 
-    function updateOnlineTimeDisplay(progress) {
-      const tasksList = document.getElementById("tasksList"); if (!tasksList || !tasksList.children.length) return;
-      for (let i = 0; i < tasksList.children.length; i++) { if (tasksList.children[i].hasAttribute('data-task-id') && tasksList.children[i].getAttribute('data-task-id') === 'onlineTime') { const task = dailyTasks.find(t => t.id === "onlineTime"); if (!task) return; tasksList.children[i].innerHTML = `Stay online for 30 minutes: ${formatTimeFromSeconds(progress)} / ${formatTimeFromSeconds(task.goal)}<br><small>Reward: ${task.reward} 💎</small>`; break; } }
+    function updateOnlineTimeDisplay(seconds) { const el = document.querySelector('[data-task-id="onlineTime"]'); if (el) { const task = dailyTasks.find(t => t.id === "onlineTime"); const g = task.goal; el.innerHTML = escapeHTML(task.description) + ': ' + formatTimeFromSeconds(seconds) + ' / ' + formatTimeFromSeconds(g) + '<br><small>Reward: ' + task.reward + ' 💎</small>'; } }
+
+    function checkWeeklyReset() {
+      if (!user) return;
+      const wk = getWeekKey();
+      db.ref('weeklyReset/' + user.uid).once("value").then(s => {
+        if (s.val() !== wk) { db.ref('weeklyReset/' + user.uid).set(wk); }
+      }).catch(()=>{});
     }
 
     // ==================== ДОСТИЖЕНИЯ ====================
     function checkAchievements() {
-      if (!achievements.superClicker && totalClicks >= 10000) { achievements.superClicker = true; showMessage("Achievement: Super Clicker!"); saveAchievements(); }
-      if (!achievements.tokenHoarder && score >= 1000000) { achievements.tokenHoarder = true; showMessage("Achievement: Token Hoarder!"); saveAchievements(); }
-      if (!achievements.level5 && parseInt(document.getElementById("playerLevel").innerText) >= 5) { achievements.level5 = true; showMessage("Achievement: Level 5!"); saveAchievements(); }
+      if (!user) return;
+      const newAchievements = {};
+      if (totalClicks >= 5000 && !achievements.superClicker) newAchievements.superClicker = true;
+      if (score >= 100000 && !achievements.tokenHoarder) newAchievements.tokenHoarder = true;
+      if (getPlayerLevel() >= 5 && !achievements.level5) newAchievements.level5 = true;
+      if (Object.keys(newAchievements).length > 0) {
+        achievements = { ...achievements, ...newAchievements };
+        db.ref('player_data/' + user.uid + '/achievements').set(achievements).catch(()=>{});
+        Object.keys(newAchievements).forEach(key => {
+          const a = allAchievements[key];
+          showMessage('🏆 Achievement: ' + a.name + '! Reward: ' + a.reward);
+          if (key === 'level5') { clickPower++; savePlayerScore(); updateProfilePanel(); }
+        });
+      }
     }
-    
-    function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
-    
+
     function renderAchievements() {
-      const list = document.getElementById('achievementsList'); list.innerHTML = '';
-      for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); }
+      const list = document.getElementById("achievementsList");
+      if (!list) return;
+      list.innerHTML = "";
+      if (!user) { list.innerHTML = "Sign in."; return; }
+      Object.keys(allAchievements).forEach(key => {
+        const a = allAchievements[key], unlocked = achievements[key];
+        const div = document.createElement("div");
+        div.style.cssText = "margin-bottom:10px;padding:10px;border:1px solid " + (unlocked ? "#00ffa6" : "#444") + ";border-radius:8px;background:" + (unlocked ? "#0a2a1a" : "#1a1a1a") + ";";
+        div.innerHTML = (unlocked ? "✅ " : "🔒 ") + "<strong>" + a.name + "</strong><br><small>" + a.description + "</small><br><small style="color:#ffd700;">Reward: " + a.reward + "</small>";
+        list.appendChild(div);
+      });
     }
 
-    // ==================== ОНЛАЙН-ТАЙМЕР ====================
-    function startOnlineTimer() {
-      if (onlineTimer) return; if (!isPageActive) { updatePageActivity(); }
-      lastOnlinePing = Date.now();
-      onlineTimer = setInterval(() => { if (!user) { stopOnlineTimer(); return; } if (!isPageActive) return; if (document.hidden || document.visibilityState !== 'visible') return; if (typeof document.hasFocus === 'function' && !document.hasFocus()) return; const now = Date.now(); const elapsed = now - lastOnlinePing; if (elapsed > 3000 || elapsed < 900) { lastOnlinePing = now; return; } lastOnlinePing = now; onlineTime++; updateTaskProgress("onlineTime", 1); }, 1000);
+    // ==================== РЕФЕРАЛЬНАЯ СИСТЕМА ====================
+    function saveReferrer(refUid) {
+      if (!user || !refUid || isProcessingReferrer) return;
+      isProcessingReferrer = true;
+      if (refUid === user.uid) { isProcessingReferrer = false; return; }
+      db.ref('referrals/' + refUid + '/' + user.uid).once("value").then(s => {
+        if (s.exists()) { isProcessingReferrer = false; return; }
+        db.ref('referrals/' + refUid + '/' + user.uid).set({ timestamp: firebase.database.ServerValue.TIMESTAMP, name: user.displayName || 'Anonymous' }).then(() => {
+          db.ref('player_data/' + refUid + '/score').once("value").then(s2 => {
+            const rs = (s2.val() || 0) + 500;
+            db.ref('player_data/' + refUid).update({ score: rs });
+            db.ref('leaderboard/' + refUid).update({ score: rs });
+          });
+          score += 200; savePlayerScore(); updateCounterDisplay(); updateProfilePanel();
+          showMessage('Referral bonus: +200 tokens!');
+          isProcessingReferrer = false;
+        }).catch(() => { isProcessingReferrer = false; });
+      }).catch(() => { isProcessingReferrer = false; });
     }
-    function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
-    function updatePageActivity() { const wasActive = isPageActive; isPageActive = (document.visibilityState === 'visible' && !document.hidden && (typeof document.hasFocus !== 'function' || document.hasFocus())); if (wasActive !== isPageActive) { if (isPageActive) { lastOnlinePing = Date.now(); if (user && !onlineTimer) startOnlineTimer(); } else { stopOnlineTimer(); lastOnlinePing = Date.now(); } } }
-    document.addEventListener('visibilitychange', updatePageActivity);
-    window.addEventListener('focus', () => { lastOnlinePing = Date.now(); updatePageActivity(); if (user && cloneEndTime > 0 && !dualClickActive) resumeCloneIfActive(); });
-    window.addEventListener('blur', () => { stopOnlineTimer(); isPageActive = false; lastOnlinePing = Date.now(); });
-    setInterval(() => { if (user && isPageActive && !onlineTimer) updatePageActivity(); }, 5000);
 
-    // ==================== БОНУСЫ ====================
+    // ==================== БОНУС ====================
     function startBonusTimer() {
       if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-      bonusTimerInterval = setInterval(async () => { if (!user) return; try { const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); document.getElementById("claimBonusBtn").disabled = rem > 0; document.getElementById("bonusTimer").innerText = rem <= 0 ? t('claimNow') : `${t('nextIn')}: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; } catch (e) {} }, 1000);
-    }
-    
-    async function claimHourlyBonus() {
-      if (!user) return;
-      const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 };
-      if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { 
-        const rw = Math.floor(Math.random()*191)+10; 
-        
-        await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
-        
-        if (canWatchAd()) {
-          const wantsDouble = confirm(t('adHourlyBonus'));
-          if (wantsDouble) {
-            await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
-            showAdPopup('hourly');
-            return;
+      bonusTimerInterval = setInterval(() => {
+        if (!user) return;
+        const now = Date.now();
+        db.ref('hourlyBonus/' + user.uid).once('value').then(s => {
+          const data = s.val() || { lastClaim: 0, streak: 0 };
+          const elapsed = now - data.lastClaim;
+          const btn = document.getElementById('claimBonusBtn');
+          const timer = document.getElementById('bonusTimer');
+          if (elapsed >= 3600000) {
+            if (timer) timer.textContent = t('claimNow');
+            if (btn) { btn.disabled = false; btn.style.background = 'linear-gradient(135deg, #ffd700, #ff8c00)'; }
+          } else {
+            const remaining = 3600000 - elapsed;
+            if (timer) timer.textContent = t('nextIn') + ': ' + formatTimeFromSeconds(Math.floor(remaining/1000));
+            if (btn) { btn.disabled = true; btn.style.background = '#555'; }
           }
-        }
-        
-        score += rw; 
-        savePlayerScore(); 
-        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw }); 
-        showMessage(`✅ +${rw} tokens!`, true); 
-        updateCounterDisplay(); 
-      }
+        }).catch(()=>{});
+      }, 1000);
+    }
+
+    function claimHourlyBonus() {
+      if (!user) return;
+      const now = Date.now();
+      db.ref('hourlyBonus/' + user.uid).once('value').then(s => {
+        const data = s.val() || { lastClaim: 0, streak: 0 };
+        if (now - data.lastClaim < 3600000) { showMessage('Wait ' + formatTimeFromSeconds(Math.floor((3600000 - (now - data.lastClaim))/1000))); return; }
+        const streak = (now - data.lastClaim < 7200000) ? (data.streak || 0) + 1 : 1;
+        const baseAmount = 50 + Math.floor(Math.random() * 50);
+        const amount = baseAmount + (streak > 1 ? Math.floor(baseAmount * 0.1 * Math.min(streak - 1, 5)) : 0);
+        db.ref('hourlyBonus/' + user.uid).set({ lastClaim: now, streak: streak, lastBonusAmount: amount });
+        score += amount; savePlayerScore(); updateCounterDisplay(); updateProfilePanel();
+        showMessage('Hourly bonus: +' + amount + ' tokens! (Streak: ' + streak + ')', true);
+      }).catch(()=>{});
+    }
+
+    function getNextBonusTime() {
+      if (!user) return null;
+      return db.ref('hourlyBonus/' + user.uid).once('value').then(s => {
+        const data = s.val(); return data ? data.lastClaim + 3600000 : Date.now();
+      });
     }
 
     // ==================== ЛИДЕРБОРД ====================
-    function showTab(tab) { currentTab = tab; if (tab === "overall") { document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; } else { document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; } }
-    function updateWeeklyScore() { if (user) db.ref(`weeklyLeaderboard/${getWeekKey()}/${user.uid}`).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, lastUpdate: Date.now() }); }
-    function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
-    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, crystals, clickPower, totalClicks, hasResonance: hasResonance || false, autoclickActive, autoclickEndTime, cloneEndTime: cloneEndTime || 0, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
-
-    // ==================== РЕФЕРАЛЬНАЯ СИСТЕМА ====================
-    function saveReferrer(ruid) {
-      if (!user || !ruid || isProcessingReferrer) return; isProcessingReferrer = true;
-      db.ref(`leaderboard/${user.uid}`).once('value').then(s => { if (s.val()?.referral_bonus_claimed) { isProcessingReferrer = false; return; }
-        db.ref(`leaderboard/${ruid}`).once('value').then(rs => { if (!rs.exists()) { isProcessingReferrer = false; return; }
-          db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+50); showMessage('+50 referral!');
-          db.ref(`leaderboard/${user.uid}`).update({ referrer_uid: ruid, referral_bonus_claimed: true, lastUpdate: Date.now() });
-          db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now(), tokens_earned: 0, reward_claimed: false });
-          submitScore(); isProcessingReferrer = false;
-        });
-      });
+    function showTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      if (tab === 'overall') loadLeaderboard();
+      else loadWeeklyWinners();
     }
 
-    function resetAllBoosters() { stopAllAutoclickers(); stopClone(); cloneEndTime = 0; instantAutoclickActive = false; instantAutoclickEndTime = 0; dualClickActive = false; deactivateDualClick(); updateCloneTimer(); updateCloneButtonState(); updateInstantAutoclickTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); savePlayerData(); showMessage('🔄 Boosters reset!'); }
-    window.resetAllBoosters = resetAllBoosters;
+    function loadLeaderboard() {
+      const th = document.getElementById('tableHeader');
+      const tb = document.getElementById('leaderboardBody');
+      th.innerHTML = '<tr><th>#</th><th>Player</th><th>Tokens</th><th>Level</th><th>Click Power</th></tr>';
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+      db.ref('leaderboard').orderByChild('score').limitToLast(50).once('value').then(s => {
+        const data = s.val(); if (!data) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">No data</td></tr>'; return; }
+        const sorted = Object.values(data).sort((a,b) => (b.score||0) - (a.score||0));
+        tb.innerHTML = "";
+        sorted.forEach((p, i) => {
+          const tr = document.createElement('tr');
+          const isCurrent = p.id === user?.uid;
+          tr.style.cssText = isCurrent ? 'background:rgba(0,195,255,0.1);' : '';
+          tr.innerHTML = '<td>' + (i+1) + '</td><td>' + escapeHTML(p.name || 'Anonymous') + (isCurrent ? ' <span style="color:#00ffa6;">(You)</span>' : '') + '</td><td>' + (p.score||0) + '</td><td>' + (p.level||1) + '</td><td>' + (p.clickPower||1) + '</td>';
+          tb.appendChild(tr);
+        });
+      }).catch(() => { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">Error loading</td></tr>'; });
+    }
 
-    async function signOut() {
-      if (user) {
-        savePlayerData();
-      }
+    function loadWeeklyWinners() {
+      const th = document.getElementById('tableHeader');
+      const tb = document.getElementById('leaderboardBody');
+      th.innerHTML = '<tr><th>#</th><th>Player</th><th>Weekly Score</th><th>Prize</th></tr>';
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
+      const wk = getWeekKey();
+      db.ref('weekly_leaderboard/' + wk).orderByChild('score').limitToLast(10).once('value').then(s => {
+        const data = s.val(); if (!data) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;">No data</td></tr>'; return; }
+        const sorted = Object.values(data).sort((a,b) => (b.score||0) - (a.score||0));
+        tb.innerHTML = "";
+        sorted.forEach((p, i) => {
+          const tr = document.createElement('tr');
+          const prize = i === 0 ? '1000 tokens' : i === 1 ? '500 tokens' : i === 2 ? '200 tokens' : '50 tokens';
+          tr.innerHTML = '<td>' + (i+1) + '</td><td>' + escapeHTML(p.name || 'Anonymous') + '</td><td>' + (p.score||0) + '</td><td style="color:#ffd700;">' + prize + '</td>';
+          tb.appendChild(tr);
+        });
+      }).catch(() => { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;">Error loading</td></tr>'; });
+    }
+
+    // ==================== ВЫХОД ====================
+    function signOut() {
       cleanupAllTimers();
+      if (user) savePlayerData();
       localStorage.removeItem('cryptoClickerSession');
       user = null; score = 0; clickPower = 1; crystals = 0;
-      autoclickActive = false; autoclickEndTime = 0;
-      document.getElementById("authSection").style.display = "block";
-      document.getElementById("gameSection").style.display = "none";
+      autoclickActive = false; autoclickEndTime = 0; totalClicks = 0;
+      autoclickerLevel = 1; hasResonance = false;
+      achievements = {}; currentTab = "overall";
+      instantAutoclickActive = false; instantAutoclickEndTime = 0;
+      dualClickActive = false; cloneEndTime = 0; suspiciousFlags = 0;
+      onlineTime = 0; isPageActive = false;
+      energy = 50; maxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
+      farmSlots = [
+        { type: 'cpu', level: 1, overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 },
+        null, null, null, null, null
+      ];
+      document.getElementById('authSection').style.display = 'block';
+      document.getElementById('gameSection').style.display = 'none';
       document.getElementById('adminPanel').classList.remove('open');
       document.getElementById('adminToggle').classList.remove('visible');
       document.getElementById('adminBadge').style.display = 'none';
-      const signOutBtn = document.getElementById('signOutBtn');
-      if (signOutBtn) signOutBtn.classList.remove('visible');
+      document.getElementById('signOutBtn').classList.remove('visible');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
+      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
+      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+      document.getElementById('counter').innerText = 'Tokens: 0';
+      document.getElementById('message').innerText = '';
+      document.getElementById('levelMessage').classList.remove('show');
       setupAuthUI();
+      showMessage('Signed out successfully!');
     }
-
-    const profilePanel = document.getElementById('profilePanel');
-    function isMobileOrTablet() { return window.innerWidth <= 1023; }
-    if (isMobileOrTablet()) profilePanel.classList.remove('expanded');
-    profilePanel.addEventListener('click', function(e) { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return; if (isMobileOrTablet()) this.classList.toggle('expanded'); });
-
-    db.ref("leaderboard").on("value", s => { if (currentTab !== "overall") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td></tr>`).join(''); });
-    db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${getRewardForRank(i+1)}</td></tr>`).join(''); });
-    function getRewardForRank(r) { return r <= 3 ? 10000 : r <= 5 ? 7000 : 5000; }
-    showTab("overall");
-    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); updateAdTaskUI(); }, 1000);
-    setInterval(checkWeeklyReset, 600000);
-
-    let mi = 0; const me = document.getElementById("motiveText");
-    const phrases = ["Click — earn tokens.","Sign in — save your progress.","Your crypto journey starts here.","No account — no profit!","Top farmers are waiting for you!"];
-    setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1)%phrases.length; me.textContent = phrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
-
-    document.getElementById('buyCloneBtn').onclick = buyClone;
-    document.getElementById('buyInstantAutoclickBtn').onclick = buyInstantAutoclick;
+    window.signOut = signOut;
 
     // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-    (async function init() {
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAdState();
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === currentLanguage);
       });
-      
-      loadAdState();
-      
-      const loggedIn = await autoLogin();
-      if (loggedIn) {
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('gameSection').style.display = 'block';
-        await loadPlayerData(user.uid);
-        setupCrossPlatformSync();
-        startBonusTimer();
-        startOnlineTimer();
-        checkWeeklyReset();
-        updateAdTaskUI();
-        checkAdCrystalTaskCompletion();
-      } else {
-        setupAuthUI();
+
+      autoLogin().then(loggedIn => {
+        if (loggedIn) {
+          document.getElementById('authSection').style.display = 'none';
+          document.getElementById('gameSection').style.display = 'block';
+          startBonusTimer();
+          startOnlineTimer();
+          checkWeeklyReset();
+          updateAdTaskUI();
+          checkAdCrystalTaskCompletion();
+          startFarmSystem();
+        } else {
+          setupAuthUI();
+        }
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        isPageActive = document.visibilityState === 'visible';
+        if (isPageActive && user) savePlayerData();
+      });
+      isPageActive = document.visibilityState === 'visible';
+
+      const profilePanel = document.getElementById('profilePanel');
+      if (profilePanel && window.innerWidth < 1024) {
+        profilePanel.addEventListener('click', function(e) {
+          if (e.target.classList.contains('collapse-arrow') || (!e.target.closest('button') && !e.target.closest('input'))) {
+            this.classList.toggle('expanded');
+          }
+        });
       }
-    })();
+    });
   </script>
 </body>
 </html>
