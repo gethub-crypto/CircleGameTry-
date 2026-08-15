@@ -4,19 +4,139 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <title>Crypto Clicker — Mining Farm</title>
+  <meta name="590b08291eaf7810856a6e6c3e9506ae51ac29da" content="590b08291eaf7810856a6e6c3e9506ae51ac29da" />
+  <title>Crypto Clicker</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src='//libtl.com/sdk.js' data-zone='11486843' data-sdk='show_11486843'></script>
   <style>
-    /* ===== ВСЕ СТИЛИ ИЗ РАБОЧЕГО ФАЙЛА ===== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; min-height: 100vh; overflow-x: hidden; overscroll-behavior: none; }
-    /* ... все остальные стили из рабочего файла ... */
+    input { padding: 8px; font-size: 16px; margin-bottom: 10px; border-radius: 5px; border: none; background: #2a2a2a; color: #fff; width: 100%; }
+    .click-button { background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-weight: bold; padding: 12px 24px; font-size: 16px; border-radius: 12px; cursor: pointer; margin: 5px; border: none; transition: all 0.3s ease; touch-action: manipulation; }
+    .click-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 195, 255, 0.4); }
+    .click-button:active { transform: translateY(0); }
+    .click-button:disabled { background: #555; cursor: not-allowed; transform: none; }
+    .ad-button { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-weight: bold; padding: 12px 24px; font-size: 16px; border-radius: 12px; cursor: pointer; margin: 5px; border: none; transition: all 0.3s ease; touch-action: manipulation; }
+    .ad-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
+    .ad-button:active { transform: translateY(0); }
+    .ad-button:disabled { background: #555; cursor: not-allowed; transform: none; }
+    .game-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px; position: relative; z-index: 10; }
+    #profilePanel { background-color: #1a1a1a; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px #00c3ff; width: 220px; text-align: left; transition: all 0.3s ease; position: relative; overflow: hidden; }
+    #profilePanel div { margin: 8px 0; font-size: 14px; }
+    #profilePanel strong { color: #00ffa6; }
+    #profilePanel .collapse-arrow { display: none; position: absolute; right: 12px; top: 12px; color: #00c3ff; font-size: 12px; transition: transform 0.3s ease; z-index: 2; width: 20px; height: 20px; line-height: 20px; text-align: center; }
+    #profilePanel.expanded .collapse-arrow { transform: rotate(180deg); }
+    #hourlyBonus { transition: all 0.3s ease; }
+    .bonus-card { background: #1a1a1a; padding: 15px; border-radius: 12px; width: 200px; box-shadow: 0 0 15px #00c3ff; text-align: center; position: relative; }
+    .bonus-card h3 { margin: 0 0 10px; font-size: 18px; color: #00ffa6; }
+    .bonus-card p { margin: 0 0 10px; font-size: 14px; color: #fff; }
+    .bonus-message { font-size: 12px; color: #ffd700; margin-top: 8px; min-height: 18px; transition: opacity 0.3s ease; }
+    .main-content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    h1 { margin: 20px 0; font-size: 2.5em; text-shadow: 0 0 10px #00c3ff; }
+    #mainButtonContainer { display: flex; justify-content: center; align-items: center; margin: 40px auto; position: relative; width: 350px; height: 350px; max-width: 100%; overflow: hidden; }
+    .main-click-button { width: 150px; height: 150px; background: linear-gradient(135deg, #00ffa6, #00c3ff); border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px #00c3ff; transition: all 0.2s ease; outline: none; -webkit-tap-highlight-color: transparent; z-index: 1; touch-action: manipulation; position: relative; will-change: transform; transform-origin: center center; }
+    .main-click-button:hover { box-shadow: 0 0 35px #00ffa6; transform: scale(1.05); }
+    .main-click-button:active { transform: scale(0.9); box-shadow: 0 0 15px #00c3ff; }
+    .main-click-button .icon { font-size: 60px; }
+    #secondClickButton { display: none; }
+    #secondClickButton.visible { display: flex; }
+    #counter { font-size: 36px; margin: 20px 0; font-weight: bold; transition: transform 0.2s ease; text-shadow: 0 0 10px rgba(0, 255, 166, 0.5); }
+    #counter.bounce { transform: scale(1.2); }
+    #message { margin: 10px 0; color: #ff5555; font-size: 16px; min-height: 24px; }
+    #buttonGroup { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0; }
+    .progress-container { background-color: #222; border-radius: 10px; height: 12px; width: 140px; margin: 10px auto; overflow: hidden; box-shadow: 0 0 5px #00ffc8; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #00ffc8 0%, #00c3ff 100%); width: 0%; transition: width 0.3s ease-in-out; border-radius: 10px; }
+    .panel { display: none; margin-top: 20px; background-color: #1a1a1a; border-radius: 10px; box-shadow: 0 0 10px #00c3ff; padding: 15px; }
+    .panel.open { display: block; }
+    #tasksList > div { margin-bottom: 10px; padding: 10px; border: 1px solid #00c3ff; border-radius: 8px; background-color: #222; }
+    #autoclickerShop { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .booster-card { background: #1a1a1a; padding: 20px; border-radius: 12px; width: 220px; box-shadow: 0 0 10px #00c3ff; text-align: center; }
+    .booster-card.premium { border: 2px solid #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); background: linear-gradient(135deg, #1a1a1a 0%, #2a2a1a 100%); position: relative; overflow: hidden; }
+    .booster-card.premium::before { content: "BEST VALUE"; position: absolute; top: 10px; right: -30px; background: #ffd700; color: #000; padding: 3px 30px; font-size: 10px; font-weight: bold; transform: rotate(45deg); }
+    .booster-card.premium h3 { color: #ffd700; font-size: 22px; }
+    .booster-card .price { font-size: 24px; font-weight: bold; margin: 10px 0; color: #00c3ff; }
+    .booster-card .feature-list { text-align: left; margin: 15px 0; font-size: 13px; color: #ccc; }
+    .booster-card .feature-list div { margin: 5px 0; }
+    .booster-card .feature-list i { color: #00ffa6; margin-right: 8px; }
+    .booster-card .rewards-preview { display: flex; justify-content: space-around; font-size: 24px; margin: 10px 0; }
+    .requirement-text { font-size: 11px; color: #888; margin: 5px 0; }
+    .booster-timer { font-size: 12px; color: #ffd700; margin-top: 8px; min-height: 20px; }
+    #settings { background: #2a2a2a; padding: 20px; border-radius: 8px; width: 320px; margin: 15px auto !important; box-shadow: 0 0 10px #00c3ff; text-align: center; }
+    #leaderboardContainer { max-width: 800px; margin: 20px auto; background: #1a1a1a; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0, 195, 255, 0.3); }
+    .tabs { display: flex; justify-content: flex-start; margin-bottom: -1px; }
+    .tab-button { padding: 10px 20px; background: #2a2a2a; color: #fff; border: 1px solid #00c3ff; border-bottom: none; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 16px; transition: background 0.3s ease, color 0.3s ease; }
+    .tab-button.active { background: linear-gradient(135deg, #00c3ff, #00ffa6); color: #000; font-weight: bold; }
+    #leaderboardTable { width: 100%; border-collapse: collapse; }
+    #tableHeader { background: #00c3ff; }
+    #tableHeader th { padding: 10px; color: #000; font-weight: bold; text-align: left; }
+    #leaderboardBody td { padding: 10px; color: #fff; border-bottom: 1px solid #333; }
+    .admin-badge { background: #ff4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 5px; }
+    #adminToggle { position: fixed; bottom: 20px; right: 20px; width: 40px; height: 40px; background: #ff4444; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 20px; z-index: 9998; cursor: pointer; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); border: none; color: #fff; }
+    #adminToggle.visible { display: flex; }
+    #adminPanel { display: none; position: fixed; bottom: 70px; right: 10px; background: rgba(26, 0, 0, 0.95); border: 2px solid #ff4444; border-radius: 12px; padding: 12px; z-index: 9999; width: 200px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.3); }
+    #adminPanel.open { display: block; }
+    #adminPanel h4 { color: #ff4444; margin-bottom: 8px; font-size: 14px; text-align: center; }
+    #adminPanel .admin-info { font-size: 10px; color: #888; text-align: center; margin-bottom: 8px; }
+    #adminPanel .admin-btn { display: block; width: 100%; padding: 8px; margin: 4px 0; background: linear-gradient(135deg, #ff4444, #cc0000); color: #fff; border: none; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: bold; }
+    #adminPanel .admin-btn:active { transform: scale(0.95); }
+    #adminUid { font-size: 9px; color: #ff6666; word-break: break-all; text-align: center; margin-top: 8px; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    .pulse { animation: pulse 0.2s ease; }
+    #levelMessage { display: none; opacity: 0; transition: opacity 1s ease-in-out; color: gold; font-weight: bold; margin-top: 5px; }
+    #levelMessage.show { display: block; opacity: 1; }
+    #motiveText { margin-top: 20px; font-size: 18px; color: #00ffc8; text-shadow: 0 0 8px #00ffc8; transition: opacity 0.5s ease-in-out; }
+    #antiCheatWarning { display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #ff0000; color: #fff; padding: 10px 20px; border-radius: 8px; z-index: 9999; font-weight: bold; }
+    .auth-loading { animation: pulse 1.5s infinite; color: #00ffa6; padding: 15px; font-size: 16px; }
+    .auth-error { color: #ff5555; padding: 15px; }
+    .score-popup { position: fixed; font-weight: bold; pointer-events: none; z-index: 9999; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4); animation: floatUpChaotic 0.8s ease-out forwards; user-select: none; }
+    @keyframes floatUpChaotic { 0% { opacity: 0; transform: translate(0, 0) scale(0.2) rotate(0deg); } 15% { opacity: 1; transform: translate(var(--dx20, 0px), -10px) scale(0.8) rotate(var(--rot20, 0deg)); } 40% { opacity: 1; transform: translate(var(--dx50, 0px), -35px) scale(1.3) rotate(var(--rot50, 0deg)); } 70% { opacity: 0.7; transform: translate(var(--dx100, 0px), -65px) scale(1.1) rotate(var(--rot100, 0deg)); } 100% { opacity: 0; transform: translate(calc(var(--dx100, 0px) * 1.5), -100px) scale(0.6) rotate(calc(var(--rot100, 0deg) * 1.5)); } }
 
-    /* ===== ДОБАВЛЕННЫЕ СТИЛИ ДЛЯ МАЙНИНГ-ФЕРМЫ ===== */
-    .farm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px auto; max-width: 500px; }
-    @media (max-width: 400px) { .farm-grid { grid-template-columns: repeat(2, 1fr); } }
+    .signout-button { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; transition: all 0.3s; font-size: 14px; display: none; }
+    .signout-button.visible { display: block; }
+    .signout-button:hover { background: #cc0000; transform: translateY(-2px); }
+    .language-switch { position: fixed; top: 10px; right: 10px; z-index: 10000; display: flex; gap: 5px; }
+    .lang-btn { background: #2a2a2a; color: #fff; border: 1px solid #00c3ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+    .lang-btn.active { background: linear-gradient(135deg, #00c3ff, #00ffa6); color: #000; font-weight: bold; }
     
+    .telegram-login-btn { background: linear-gradient(135deg, #0088cc, #00c3ff) !important; color: #fff !important; font-size: 18px !important; padding: 15px 40px !important; }
+    .telegram-login-btn:hover { box-shadow: 0 5px 20px rgba(0, 136, 204, 0.5) !important; }
+
+    #adRewardPopup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 25px; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 195, 255, 0.5); z-index: 10001; text-align: center; max-width: 350px; width: 90%; }
+    #adRewardPopup h3 { color: #ffd700; margin-bottom: 15px; font-size: 20px; }
+    #adRewardPopup p { color: #fff; margin-bottom: 20px; font-size: 16px; }
+    #adRewardPopup .button-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 10000; }
+
+    @media (max-width: 1023px) {
+      body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
+      .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
+      #profilePanel { width: 100%; max-width: 400px; font-size: 13px; max-height: 44px; overflow: hidden; transition: max-height 0.4s ease; cursor: pointer; padding: 12px 35px 12px 15px; }
+      #profilePanel .collapse-arrow { display: block; }
+      #profilePanel.expanded { max-height: 600px; overflow-y: auto; }
+      #profilePanel:not(.expanded) > div:not(:first-of-type) { display: none; }
+      #hourlyBonus { width: 100%; max-width: 400px; } .bonus-card { width: 100%; }
+      #mainButtonContainer { width: 250px; height: 250px; gap: 15px; }
+      .main-click-button { width: 100px; height: 100px; } .main-click-button .icon { font-size: 40px; }
+      #counter { font-size: 24px; } .click-button { padding: 10px 18px; font-size: 13px; } .ad-button { padding: 10px 18px; font-size: 13px; }
+      #buttonGroup { flex-direction: column; align-items: center; gap: 8px; }
+      #buttonGroup .click-button, #buttonGroup .ad-button { width: 85%; max-width: 300px; }
+      #settings { width: 90% !important; max-width: 320px; } .booster-card { width: 100%; max-width: 280px; }
+      .tabs { flex-direction: column; } .tab-button { border-radius: 0; font-size: 13px; }
+      #leaderboardTable { font-size: 11px; } .score-popup { font-size: 16px; }
+      #adminPanel { bottom: 10px; right: 10px; max-width: 250px; }
+      .farm-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
+    @media (min-width: 1024px) {
+      .game-header { padding: 20px; } #profilePanel { width: 250px; font-size: 16px; max-height: none; overflow: visible; }
+      #profilePanel .collapse-arrow { display: none; } .bonus-card { width: 220px; }
+      #mainButtonContainer { width: 450px; height: 450px; overflow: hidden; }
+      .main-click-button { width: 220px; height: 220px; } .main-click-button .icon { font-size: 80px; }
+      .score-popup { font-size: 24px; }
+    }
+
+    /* ===== MINING FARM STYLES ===== */
+    .farm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px auto; max-width: 500px; }
     .farm-slot {
       background: linear-gradient(135deg, #111118, #1a1a2a);
       border: 2px dashed #2a2a3a;
@@ -33,110 +153,33 @@
       justify-content: center;
       overflow: hidden;
     }
-    .farm-slot:hover {
-      border-color: #00c3ff;
-      box-shadow: 0 0 20px rgba(0, 195, 255, 0.1);
-      transform: translateY(-2px);
-    }
+    .farm-slot:hover { border-color: #00c3ff; box-shadow: 0 0 20px rgba(0, 195, 255, 0.1); transform: translateY(-2px); }
     .farm-slot.occupied { border-style: solid; border-color: #2a2a3a; }
     .farm-slot.occupied:hover { border-color: #00c3ff; }
-    .farm-slot.locked {
-      border-style: solid;
-      border-color: #1a1a2a;
-      background: #0d0d14;
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .farm-slot.overheated {
-      border-color: #ff4444;
-      animation: overheatPulse 1.2s ease-in-out infinite;
-    }
-    @keyframes overheatPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.3); }
-      50% { box-shadow: 0 0 16px 4px rgba(255, 68, 68, 0.1); }
-    }
+    .farm-slot.locked { border-style: solid; border-color: #1a1a2a; background: #0d0d14; opacity: 0.5; cursor: not-allowed; }
+    .farm-slot.overheated { border-color: #ff4444; animation: overheatPulse 1.2s ease-in-out infinite; }
+    @keyframes overheatPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.3); } 50% { box-shadow: 0 0 16px 4px rgba(255, 68, 68, 0.1); } }
     .farm-slot.merged { border-color: #00ffa6; }
-    .farm-slot.calibrating {
-      border-color: #ffd700;
-      animation: calibratePulse 1.5s ease-in-out infinite;
-    }
-    @keyframes calibratePulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.2); }
-      50% { box-shadow: 0 0 12px 2px rgba(255, 215, 0, 0.1); }
-    }
-
+    .farm-slot.calibrating { border-color: #ffd700; animation: calibratePulse 1.5s ease-in-out infinite; }
+    @keyframes calibratePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.2); } 50% { box-shadow: 0 0 12px 2px rgba(255, 215, 0, 0.1); } }
     .slot-number { position: absolute; top: 6px; left: 8px; font-size: 10px; color: #444; font-weight: 600; }
     .slot-lock { position: absolute; top: 6px; right: 8px; font-size: 14px; }
-    .merge-badge {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      background: linear-gradient(135deg, #00ffa6, #00c3ff);
-      color: #000;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 5px;
-      letter-spacing: 0.5px;
-    }
-
+    .merge-badge { position: absolute; top: 6px; right: 6px; background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 5px; letter-spacing: 0.5px; }
     .rig-svg { width: 52px; height: 52px; margin-bottom: 6px; }
     .rig-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; color: #e0e0e0; }
     .rig-speed { font-size: 11px; color: #888; margin-bottom: 2px; }
     .rig-energy { font-size: 10px; color: #ff6b6b; margin-bottom: 4px; }
     .rig-stopped { font-size: 11px; font-weight: 700; color: #ff4444; margin-bottom: 4px; }
     .rig-calibrating { font-size: 11px; font-weight: 600; color: #ffd700; margin-bottom: 4px; }
-
     .heat-bar { width: 70%; height: 4px; background: #1a1a2a; border-radius: 2px; overflow: hidden; margin-top: 2px; }
     .heat-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
     .heat-low { background: linear-gradient(90deg, #00ffa6, #00c3ff); }
     .heat-med { background: linear-gradient(90deg, #ffd700, #ff8c00); }
     .heat-high { background: linear-gradient(90deg, #ff4444, #ff2222); }
-
-    .overheat-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(255, 68, 68, 0.06);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 2;
-    }
-    .overheat-text {
-      color: #ff4444;
-      font-size: 11px;
-      font-weight: 800;
-      background: rgba(10, 10, 15, 0.9);
-      padding: 5px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 68, 68, 0.3);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .energy-panel-farm {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border: 1px solid #333;
-      border-radius: 10px;
-      margin: 15px auto;
-      max-width: 500px;
-      background: #1a1a1a;
-    }
-    .energy-panel-farm .energy-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #222;
-      flex-shrink: 0;
-    }
+    .overheat-overlay { position: absolute; inset: 0; background: rgba(255, 68, 68, 0.06); border-radius: 14px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 2; }
+    .overheat-text { color: #ff4444; font-size: 11px; font-weight: 800; background: rgba(10, 10, 15, 0.9); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.3); text-transform: uppercase; letter-spacing: 1px; }
+    .energy-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; }
+    .energy-panel-farm .energy-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #222; flex-shrink: 0; }
     .energy-panel-farm .energy-info { flex: 1; text-align: left; }
     .energy-panel-farm .energy-label { font-size: 12px; color: #888; }
     .energy-panel-farm .energy-value { font-size: 16px; font-weight: bold; }
@@ -145,225 +188,711 @@
     .energy-panel-farm .energy-fill.high { background: #00c3ff; }
     .energy-panel-farm .energy-fill.med { background: #ffd700; }
     .energy-panel-farm .energy-fill.low { background: #ff4444; }
-
-    .warehouse-panel-farm {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border: 1px solid #333;
-      border-radius: 10px;
-      margin: 15px auto;
-      max-width: 500px;
-      background: #1a1a1a;
-    }
+    .warehouse-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; }
     .warehouse-panel-farm .warehouse-info { flex: 1; text-align: left; }
     .warehouse-panel-farm .warehouse-label { font-size: 12px; color: #888; }
     .warehouse-panel-farm .warehouse-value { font-size: 16px; font-weight: bold; }
-    .warehouse-panel-farm .collect-btn {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      background: linear-gradient(135deg, #00ffa6, #00c3ff);
-      color: #000;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .warehouse-panel-farm .collect-btn:disabled {
-      background: #555;
-      cursor: not-allowed;
-    }
-
-    .stats-grid-farm {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 15px auto;
-      max-width: 500px;
-    }
-    .stats-grid-farm .stat-box {
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px;
-      text-align: center;
-      background: #1a1a1a;
-    }
+    .warehouse-panel-farm .collect-btn { padding: 8px 16px; border-radius: 8px; border: none; background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-size: 13px; font-weight: bold; cursor: pointer; }
+    .warehouse-panel-farm .collect-btn:disabled { background: #555; cursor: not-allowed; }
+    .stats-grid-farm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px auto; max-width: 500px; }
+    .stats-grid-farm .stat-box { border: 1px solid #333; border-radius: 8px; padding: 10px; text-align: center; background: #1a1a1a; }
     .stats-grid-farm .stat-box-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .stats-grid-farm .stat-box-value { font-size: 18px; font-weight: bold; }
-
-    .rig-detail-panel {
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 14px;
-      margin: 15px auto;
-      max-width: 500px;
-      background: #1a1a1a;
-      display: none;
-    }
+    .rig-detail-panel { border: 1px solid #333; border-radius: 10px; padding: 14px; margin: 15px auto; max-width: 500px; background: #1a1a1a; display: none; }
     .rig-detail-panel.open { display: block; animation: slideUp 0.3s ease; }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .rig-detail-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #222;
-    }
-    .rig-detail-icon {
-      width: 48px;
-      height: 48px;
-      font-size: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0f0f1a;
-      border-radius: 12px;
-      border: 1px solid #2a2a3a;
-    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .rig-detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #222; }
+    .rig-detail-icon { width: 48px; height: 48px; font-size: 32px; display: flex; align-items: center; justify-content: center; background: #0f0f1a; border-radius: 12px; border: 1px solid #2a2a3a; }
     .rig-detail-title { font-size: 16px; font-weight: 700; }
     .rig-detail-sub { font-size: 12px; color: #666; margin-top: 2px; }
-    .upgrade-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #1a1a2a;
-      font-size: 13px;
-    }
+    .upgrade-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1a1a2a; font-size: 13px; }
     .upgrade-row:last-child { border-bottom: none; }
     .upgrade-row span { color: #aaa; }
-    .upgrade-btn {
-      padding: 6px 14px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      background: linear-gradient(135deg, #1a1a2a, #111118);
-      color: #e0e0e0;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
+    .upgrade-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid #333; background: linear-gradient(135deg, #1a1a2a, #111118); color: #e0e0e0; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
     .upgrade-btn:hover { border-color: #00c3ff; }
     .upgrade-btn:disabled { background: #1a1a2a; color: #444; cursor: not-allowed; }
     .upgrade-btn.max { background: transparent; border-color: #333; color: #555; }
-
     @keyframes fanSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .fan-spin-slow { animation: fanSpin 2s linear infinite; }
     .fan-spin { animation: fanSpin 1s linear infinite; }
     .fan-spin-fast { animation: fanSpin 0.5s linear infinite; }
   </style>
-<base target="_blank">
 </head>
 <body>
-  <!-- ===== ВСЕ ЭЛЕМЕНТЫ ИЗ РАБОЧЕГО ФАЙЛА (попапы, админ-панель, профиль, бонусы) ===== -->
   <div class="popup-overlay" id="popupOverlay"></div>
-  <div id="adRewardPopup">...</div>
-  <!-- ... все остальные элементы ... -->
-
+  <div id="adRewardPopup">
+    <h3 id="adRewardTitle">📺 Реклама</h3>
+    <p id="adRewardText">Посмотрите рекламу и получите награду!</p>
+    <div class="button-group">
+      <button class="ad-button" id="adWatchBtn" onclick="watchRewardedAd()">▶️ Смотреть</button>
+      <button class="click-button" onclick="closeAdPopup()">✖️ Закрыть</button>
+    </div>
+  </div>
+  <div class="language-switch">
+    <button class="lang-btn active" onclick="switchLanguage('ru')">RU</button>
+    <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
+  </div>
+  <div id="antiCheatWarning">⚠️ Suspicious activity detected!</div>
+  <button id="adminToggle" onclick="toggleAdminPanel()">🛡️</button>
+  <div id="adminPanel">
+    <h4>🛡️ Admin Panel</h4><div class="admin-info">Whitelisted — no bans</div>
+    <button class="admin-btn" onclick="adminAddCrystals(1000)">+1000 💎</button>
+    <button class="admin-btn" onclick="adminAddTokens(100000)">+100k Tokens</button>
+    <button class="admin-btn" onclick="adminResetFlags()">Reset Flags</button>
+    <button class="admin-btn" onclick="adminSetBPLevel(50)">Set BP Lv.50</button>
+    <button class="admin-btn" onclick="adminAddCrystals(10000)" style="background:linear-gradient(135deg,#ffd700,#ffaa00);">+10k 💎</button>
+    <button class="admin-btn" onclick="adminAddTokens(1000000)" style="background:linear-gradient(135deg,#ffd700,#ffaa00);">+1M Tokens</button>
+    <div id="adminUid"></div>
+  </div>
+  <div class="game-header">
+    <div id="profilePanel">
+      <span class="collapse-arrow">▼</span>
+      <div><strong>Player:</strong> <span id="profileName">Anonymous</span><span id="adminBadge" class="admin-badge" style="display:none;">ADMIN</span></div>
+      <div><strong>Level:</strong> <span id="playerLevel">1</span> / 10</div>
+      <div><strong>Click Power:</strong> <span id="profileClickPower">1</span></div>
+      <div><strong>Autoclicker:</strong> <span id="profileAutoclick">Inactive</span></div>
+      <div><strong>Tokens:</strong> <span id="profileTokens">0</span></div>
+      <div><strong>Crystals:</strong> <span id="profileCrystals">0 💎</span></div>
+      <div><strong>Referral Link:</strong> <input id="referralLink" readonly></div>
+      <div><strong>Invited:</strong> <span id="invitedCount">0</span></div>
+      <div style="text-align:center;"><button class="click-button" onclick="copyReferralLink()">Copy Link</button></div>
+      <div style="text-align:center;margin-top:10px;"><button id="signOutBtn" class="signout-button" onclick="signOut()">🚪 Sign Out</button></div>
+    </div>
+    <div id="hourlyBonus">
+      <div class="bonus-card"><h3>Hourly Bonus</h3><p id="bonusTimer">Next in: 01:00:00</p><button class="click-button" id="claimBonusBtn" onclick="claimHourlyBonus()" disabled>Claim Bonus</button><div class="bonus-message" id="bonusMessage"></div></div>
+    </div>
+  </div>
   <div class="main-content">
-    <!-- ===== СЕКЦИЯ МАЙНИНГ-ФЕРМЫ (ДОБАВЛЕНА) ===== -->
-    <div id="farmSection" style="margin: 20px 0;">
-      <h2 style="font-size:1.4em;margin-bottom:10px;">⛏️ Mining Farm</h2>
-      
-      <!-- Energy Panel -->
-      <div class="energy-panel-farm">
-        <div class="energy-icon">⚡</div>
-        <div class="energy-info">
-          <div class="energy-label">Energy</div>
-          <div class="energy-value" id="farmEnergyDisplay">50 / 50 ⚡</div>
-          <div class="energy-bar"><div class="energy-fill high" id="farmEnergyBar" style="width:100%"></div></div>
-        </div>
-        <div style="font-size:12px;color:#888">+1 / 5 min</div>
+    <div id="playerLevelContainer"><div id="levelMessage" style="display:none;color:gold;font-weight:bold;margin-top:5px;"></div></div>
+    <h1>Crypto Clicker 💰</h1>
+    <div id="authSection"><div id="authButtons"></div><div id="motiveText">Click — earn tokens.</div></div>
+    <div id="gameSection" style="display:none;">
+      <div id="mainButtonContainer"><button id="mainClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button><button id="secondClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button></div>
+      <div id="counter">Tokens: 0</div><div id="message"></div>
+      <div id="buttonGroup">
+        <button class="click-button" id="shopBtn" onclick="togglePanel('shop')">Shop ▼</button>
+        <button class="click-button" id="achievementsBtn" onclick="togglePanel('achievements')">🏆 Achievements ▼</button>
+        <button class="click-button" id="tasksBtn" onclick="togglePanel('tasks')">📋 Tasks ▼</button>
+        <button class="click-button" id="miningBtn" onclick="togglePanel('mining')">⛏️ Mining ▼</button>
+        <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
       </div>
-
-      <!-- Warehouse Panel -->
-      <div class="warehouse-panel-farm">
-        <div class="warehouse-info">
-          <div class="warehouse-label">Warehouse</div>
-          <div class="warehouse-value" id="farmWarehouseDisplay">0 / 12 🪙</div>
-        </div>
-        <button class="collect-btn" id="collectWarehouseBtn" onclick="collectWarehouse()">Collect</button>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-grid-farm">
-        <div class="stat-box">
-          <div class="stat-box-label">Income/min</div>
-          <div class="stat-box-value" id="farmIncomeMin">0.00</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-label">⚡/hour</div>
-          <div class="stat-box-value" id="farmEnergyHour">0</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-label">Time to stop</div>
-          <div class="stat-box-value" id="farmTimeToStop">∞</div>
+      <div id="shop" class="panel">
+        <h2>🛒 Upgrades</h2><p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p><p>Current: <span id="clickPowerDisplay">1</span> / 8</p><div class="progress-container"><div class="progress-bar" id="clickPowerBar"></div></div><button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
+        <h2 style="margin-top:20px;">⚡ Autoclickers</h2>
+        <div id="settings"><h3>Autoclicker Level: <span id="autoclickerLevel">1</span> / 20</h3><p id="autoclickerDurationValue">Duration: <span id="timeLeft">1:00</span></p><p id="autoclickerUpgradeCost">Upgrade: 100 🪙 + 10 💎</p><button class="click-button" id="upgradeAutoclickerBtn" onclick="upgradeAutoclicker()" style="width:100%;">Upgrade Autoclicker</button><button class="click-button" id="activateFreeAutoclickerBtn" onclick="activateFreeAutoclicker()" style="width:100%;margin-top:5px;">Activate Free Autoclicker</button></div>
+        <h2 style="margin-top:20px;">🎮 Boosters</h2>
+        <div id="autoclickerShop" style="margin-top:15px;">
+          <div class="booster-card premium">
+            <h3>⭐ Premium</h3>
+            <div class="price">$4.99<span style="font-size:14px;">/month</span></div>
+            <div class="feature-list">
+              <div><i class="fas fa-check"></i> +1 Crystal per hour</div>
+              <div><i class="fas fa-check"></i> Remove all ads</div>
+              <div><i class="fas fa-check"></i> Exclusive badge</div>
+              <div><i class="fas fa-check"></i> Priority support</div>
+            </div>
+            <button class="click-button" onclick="showComingSoon('Premium')" style="background: linear-gradient(135deg, #ffd700, #ffaa00); width:100%;">👑 Subscribe</button>
+          </div>
+          <div class="booster-card" id="resonanceBooster"><h3>🔮 Resonance</h3><p style="color:#ccc;">Every 100th click gives +1 💎</p><div class="price" style="color:#b388ff;">750 💎</div><p class="requirement-text" id="resonanceRequirement">Requires: 10,000 clicks (You have: <span id="resonanceClickCount">0</span>)</p><button class="click-button" id="buyResonanceBtn" onclick="buyResonance()" disabled>🔮 Buy Resonance</button></div>
+          <div class="booster-card" id="cloneBooster"><h3>👥 Clone</h3><p style="color:#ccc;">Second button (100 min)</p><div class="price" style="color:#00bcd4;">300 💎</div><button class="click-button" id="buyCloneBtn">👥 Activate Clone</button><div class="booster-timer" id="cloneTimerDisplay"></div></div>
+          <div class="booster-card" id="instantAutoclickBooster"><h3>⚡ Instant Autoclick</h3><p style="color:#ccc;">1 hour autoclicker</p><div class="price" style="color:#00ffa6;">50 💎</div><button class="click-button" id="buyInstantAutoclickBtn">⚡ Activate (1 hour)</button><div class="booster-timer" id="instantAutoclickTimerDisplay"></div></div>
         </div>
       </div>
-
-      <!-- Farm Grid -->
-      <div class="farm-grid" id="farmGrid"></div>
-
-      <!-- Rig Detail Panel -->
-      <div class="rig-detail-panel" id="rigDetailPanel">
-        <div class="rig-detail-header">
-          <div class="rig-detail-icon" id="detailRigIcon">🖥️</div>
-          <div style="text-align:left;">
-            <div class="rig-detail-title" id="detailRigName">CPU Miner</div>
-            <div class="rig-detail-sub" id="detailRigSub">0.10/min · 1 ⚡/h</div>
+      <div id="achievements" class="panel"><h2>🏆 Achievements</h2><div id="achievementsList"></div></div>
+      <div id="tasks" class="panel"><h2>📋 Daily Tasks</h2><div id="tasksList"></div></div>
+      <div id="mining" class="panel">
+        <h2>⛏️ Mining Farm</h2>
+        <div class="energy-panel-farm">
+          <div class="energy-icon">⚡</div>
+          <div class="energy-info">
+            <div class="energy-label">Energy</div>
+            <div class="energy-value" id="farmEnergyDisplay">50 / 50 ⚡</div>
+            <div class="energy-bar"><div class="energy-fill high" id="farmEnergyBar" style="width:100%"></div></div>
+          </div>
+          <div style="font-size:12px;color:#888">+1 / 5 min</div>
+        </div>
+        <div class="warehouse-panel-farm">
+          <div class="warehouse-info">
+            <div class="warehouse-label">Warehouse</div>
+            <div class="warehouse-value" id="farmWarehouseDisplay">0 / 12 🪙</div>
+          </div>
+          <button class="collect-btn" id="collectWarehouseBtn" onclick="collectWarehouse()">Collect</button>
+        </div>
+        <div class="stats-grid-farm">
+          <div class="stat-box">
+            <div class="stat-box-label">Income/min</div>
+            <div class="stat-box-value" id="farmIncomeMin">0.00</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">⚡/hour</div>
+            <div class="stat-box-value" id="farmEnergyHour">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">Time to stop</div>
+            <div class="stat-box-value" id="farmTimeToStop">∞</div>
           </div>
         </div>
-        <div class="upgrade-row">
-          <span>Overclock: Lv.<span id="detailOverclockLevel">0</span> (+<span id="detailOverclockBonus">0</span>%)</span>
-          <button class="upgrade-btn" id="btnUpgradeOverclock" onclick="upgradeRigOverclock()">Upgrade</button>
-        </div>
-        <div class="upgrade-row">
-          <span>Efficiency: Lv.<span id="detailEfficiencyLevel">0</span> (-<span id="detailEfficiencyBonus">0</span>% ⚡)</span>
-          <button class="upgrade-btn" id="btnUpgradeEfficiency" onclick="upgradeRigEfficiency()">Upgrade</button>
-        </div>
-        <div class="upgrade-row">
-          <span>Luck: Lv.<span id="detailLuckLevel">0</span> (<span id="detailLuckBonus">0</span>% crit)</span>
-          <button class="upgrade-btn" id="btnUpgradeLuck" onclick="upgradeRigLuck()">Upgrade</button>
-        </div>
-        <div class="upgrade-row" id="mergeRow" style="display:none;">
-          <span>Merge with another <span id="detailRigType">CPU</span></span>
-          <button class="upgrade-btn" onclick="mergeRig()">Merge</button>
-        </div>
-        <div class="upgrade-row" id="repairRow" style="display:none;">
-          <span><strong>🔥 Overheated!</strong> Repair now</span>
-          <button class="upgrade-btn" onclick="repairRig()" style="background:linear-gradient(135deg,#ff4444,#cc0000);border-color:#ff4444;color:#fff;">Repair 10 💎</button>
+        <div class="farm-grid" id="farmGrid"></div>
+        <div class="rig-detail-panel" id="rigDetailPanel">
+          <div class="rig-detail-header">
+            <div class="rig-detail-icon" id="detailRigIcon">🖥️</div>
+            <div style="text-align:left;">
+              <div class="rig-detail-title" id="detailRigName">CPU Miner</div>
+              <div class="rig-detail-sub" id="detailRigSub">0.10/min · 1 ⚡/h</div>
+            </div>
+          </div>
+          <div class="upgrade-row">
+            <span>Overclock: Lv.<span id="detailOverclockLevel">0</span> (+<span id="detailOverclockBonus">0</span>%)</span>
+            <button class="upgrade-btn" id="btnUpgradeOverclock" onclick="upgradeRigOverclock()">Upgrade</button>
+          </div>
+          <div class="upgrade-row">
+            <span>Efficiency: Lv.<span id="detailEfficiencyLevel">0</span> (-<span id="detailEfficiencyBonus">0</span>% ⚡)</span>
+            <button class="upgrade-btn" id="btnUpgradeEfficiency" onclick="upgradeRigEfficiency()">Upgrade</button>
+          </div>
+          <div class="upgrade-row">
+            <span>Luck: Lv.<span id="detailLuckLevel">0</span> (<span id="detailLuckBonus">0</span>% crit)</span>
+            <button class="upgrade-btn" id="btnUpgradeLuck" onclick="upgradeRigLuck()">Upgrade</button>
+          </div>
+          <div class="upgrade-row" id="mergeRow" style="display:none;">
+            <span>Merge with another <span id="detailRigType">CPU</span></span>
+            <button class="upgrade-btn" onclick="mergeRig()">Merge</button>
+          </div>
+          <div class="upgrade-row" id="repairRow" style="display:none;">
+            <span><strong>🔥 Overheated!</strong> Repair now</span>
+            <button class="upgrade-btn" onclick="repairRig()" style="background:linear-gradient(135deg,#ff4444,#cc0000);border-color:#ff4444;color:#fff;">Repair 10 💎</button>
+          </div>
         </div>
       </div>
+      <div id="miniGamePanel" style="display:none;margin-top:20px;background:#1a1a1a;padding:20px;border-radius:12px;box-shadow:0 0 10px #00c3ff;"><h2>Mini-Game: Clicker Race!</h2><p>Click 50 times in 10 seconds!</p><p>Time Left: <span id="miniGameTimer">10</span> sec</p><p>Clicks: <span id="miniGameClicks">0</span>/50</p><button class="click-button" onclick="miniGameClick()">Click!</button></div>
+      <div id="leaderboardContainer"><div class="tabs"><button class="tab-button active" onclick="showTab('overall')">Overall</button><button class="tab-button" onclick="showTab('weekly')">Weekly Winners</button></div><table id="leaderboardTable"><thead id="tableHeader"></thead><tbody id="leaderboardBody"></tbody></table></div>
     </div>
-
-    <!-- ===== ВСЕ ОСТАЛЬНЫЕ ЭЛЕМЕНТЫ ИЗ РАБОЧЕГО ФАЙЛА ===== -->
-    <div id="buttonGroup">...</div>
-    <div id="shop" class="panel">...</div>
-    <!-- ... -->
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <script>
-    // ===== ВЕСЬ КОД ИЗ РАБОЧЕГО ФАЙЛА (мультиязычность, авторизация, кликер, бустеры, задания, реклама) =====
-    // ... весь существующий код ...
+    // ==================== МУЛЬТИЯЗЫЧНОСТЬ ====================
+    let currentLanguage = localStorage.getItem('cryptoClickerLang') || 'ru';
+    
+    const translations = {
+      ru: {
+        authTitle: 'Войдите через Telegram',
+        authSubtitle: 'Используйте тот же аккаунт, что и на телефоне',
+        authLoading: 'Авторизация через Telegram...',
+        authError: 'Ошибка авторизации. Попробуйте позже.',
+        welcome: '🎉 Добро пожаловать',
+        welcomeBack: '👋 С возвращением',
+        signOut: '🚪 Выйти',
+        copyLink: 'Копировать ссылку',
+        claimBonus: 'Забрать бонус',
+        nextIn: 'Следующий через',
+        claimNow: 'Забрать сейчас!',
+        shop: 'Магазин',
+        achievements: '🏆 Достижения',
+        tasks: '📋 Задания',
+        mining: '⛏️ Майнинг',
+        miniGame: 'Мини-игра',
+        player: 'Игрок',
+        level: 'Уровень',
+        clickPower: 'Сила клика',
+        autoclicker: 'Автокликер',
+        tokens: 'Токены',
+        crystals: 'Кристаллы',
+        referralLink: 'Реферальная ссылка',
+        invited: 'Приглашено',
+        inactive: 'Неактивен',
+        active: 'Активен',
+        maxLevel: 'Макс. уровень!',
+        notEnoughTokens: 'Недостаточно токенов!',
+        notEnoughCrystals: 'Недостаточно кристаллов!',
+        signIn: 'Войдите в аккаунт!',
+        slowDown: 'Не так быстро!',
+        victory: '🎉 Победа!',
+        timeUp: '⏰ Время вышло!',
+        error: 'Ошибка. Попробуйте позже.',
+        loginBtn: '🚀 Войти через Telegram',
+        instructionTitle: 'Инструкция по входу',
+        instructionStep1: '1. В открывшемся Telegram нажмите кнопку <b>START</b> или <b>/start</b>',
+        instructionStep2: '2. Затем нажмите кнопку <b>🎮 Играть</b> в меню бота',
+        instructionStep3: '3. Игра откроется в Telegram. Ваш прогресс будет синхронизирован!',
+        instructionTip: '💡 Совет: Откройте эту страницу на телефоне для автоматического входа',
+        backBtn: '← Назад',
+        watchAd: '📺 +50 токенов за рекламу',
+        adAvailable: 'Доступна',
+        adCooldown: 'Подождите',
+        adRewardTitle: '📺 Реклама за вознаграждение',
+        adRewardText: 'Посмотрите короткую рекламу и получите награду!',
+        adWatch: '▶️ Смотреть',
+        adClose: '✖️ Закрыть',
+        adRewardReceived: '✅ Получено {amount} токенов за просмотр рекламы!',
+        adMiniGameFail: '😢 Не расстраивайся! Посмотри рекламу и получи 100 токенов!',
+        adMiniGameReward: '✅ Получено 100 токенов за просмотр рекламы!',
+        adHourlyBonus: '🎁 Хочешь x2 бонус? Посмотри короткую рекламу!',
+        adHourlyReward: '✅ Часовой бонус удвоен!',
+        adNotAvailable: 'Реклама пока недоступна. Попробуйте позже.',
+        adLoading: 'Загрузка...',
+        adBtnWatch: '▶️ Watch',
+        adBtnWait: '⏳ Жди',
+        adBtnLimit: '🚫 Лимит',
+        adTaskProgress: 'Прогресс рекламы',
+        adTaskReward: 'Награда',
+        adTaskClaim: 'Забрать',
+        adTaskInProgress: 'В процессе',
+        adTaskDone: 'Выполнено',
+        adTaskCrystal: '1 💎'
+      },
+      en: {
+        authTitle: 'Sign in with Telegram',
+        authSubtitle: 'Use the same account as on your phone',
+        authLoading: 'Authenticating via Telegram...',
+        authError: 'Authentication error. Please try again.',
+        welcome: '🎉 Welcome',
+        welcomeBack: '👋 Welcome back',
+        signOut: '🚪 Sign Out',
+        copyLink: 'Copy Link',
+        claimBonus: 'Claim Bonus',
+        nextIn: 'Next in',
+        claimNow: 'Claim now!',
+        shop: 'Shop',
+        achievements: '🏆 Achievements',
+        tasks: '📋 Tasks',
+        mining: '⛏️ Mining',
+        miniGame: 'Mini-Game',
+        player: 'Player',
+        level: 'Level',
+        clickPower: 'Click Power',
+        autoclicker: 'Autoclicker',
+        tokens: 'Tokens',
+        crystals: 'Crystals',
+        referralLink: 'Referral Link',
+        invited: 'Invited',
+        inactive: 'Inactive',
+        active: 'Active',
+        maxLevel: 'Max level!',
+        notEnoughTokens: 'Not enough tokens!',
+        notEnoughCrystals: 'Not enough crystals!',
+        signIn: 'Sign in!',
+        slowDown: 'Slow down!',
+        victory: '🎉 Victory!',
+        timeUp: '⏰ Time\'s up!',
+        error: 'Error. Please try again.',
+        loginBtn: '🚀 Login with Telegram',
+        instructionTitle: 'Login Instructions',
+        instructionStep1: '1. In the opened Telegram, press <b>START</b> or type <b>/start</b>',
+        instructionStep2: '2. Then press the <b>🎮 Play</b> button in the bot menu',
+        instructionStep3: '3. The game will open in Telegram. Your progress will be synced!',
+        instructionTip: '💡 Tip: Open this page on your phone for automatic login',
+        backBtn: '← Back',
+        watchAd: '📺 +50 tokens for ad',
+        adAvailable: 'Available',
+        adCooldown: 'Wait',
+        adRewardTitle: '📺 Rewarded Ad',
+        adRewardText: 'Watch a short ad and get a reward!',
+        adWatch: '▶️ Watch',
+        adClose: '✖️ Close',
+        adRewardReceived: '✅ Received {amount} tokens for watching ad!',
+        adMiniGameFail: '😢 Don\'t worry! Watch an ad and get 100 tokens!',
+        adMiniGameReward: '✅ Received 100 tokens for watching ad!',
+        adHourlyBonus: '🎁 Want x2 bonus? Watch a short ad!',
+        adHourlyReward: '✅ Hourly bonus doubled!',
+        adNotAvailable: 'Ad not available. Try again later.',
+        adLoading: 'Loading...',
+        adBtnWatch: '▶️ Watch',
+        adBtnWait: '⏳ Wait',
+        adBtnLimit: '🚫 Limit',
+        adTaskProgress: 'Ad Progress',
+        adTaskReward: 'Reward',
+        adTaskClaim: 'Claim',
+        adTaskInProgress: 'In Progress',
+        adTaskDone: 'Done',
+        adTaskCrystal: '1 💎'
+      }
+    };
+    
+    function t(key) { return translations[currentLanguage]?.[key] || translations.en[key] || key; }
+    
+    function switchLanguage(lang) {
+      currentLanguage = lang;
+      localStorage.setItem('cryptoClickerLang', lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
+      });
+      if (!user) setupAuthUI();
+      updateProfilePanel();
+      updateAdTaskUI();
+      renderTasks();
+      updateFarmUI();
+    }
+    window.switchLanguage = switchLanguage;
 
-    // ===== ДОБАВЛЕННЫЙ КОД МАЙНИНГ-СИСТЕМЫ =====
+    // ==================== КОНФИГУРАЦИЯ ====================
+    const WHITELISTED_UIDS = ['tg_464829483','464829483'];
+    try { const s = localStorage.getItem('whitelisted_uids'); if (s) JSON.parse(s).forEach(u => { if (!WHITELISTED_UIDS.includes(u)) WHITELISTED_UIDS.push(u); }); } catch (e) {}
+    function isWhitelisted(uid) { return uid && (WHITELISTED_UIDS.includes(uid) || WHITELISTED_UIDS.includes('tg_' + uid) || (uid.startsWith('tg_') && WHITELISTED_UIDS.includes(uid.replace('tg_', '')))); }
+    function addToWhitelist(uid) { if (!uid) return; if (!WHITELISTED_UIDS.includes(uid)) { WHITELISTED_UIDS.push(uid); localStorage.setItem('whitelisted_uids', JSON.stringify(WHITELISTED_UIDS)); } if (user && isWhitelisted(user.tgUid || user.uid)) showAdminPanel(); }
+    function showAdminPanel() { document.getElementById('adminPanel').classList.add('open'); document.getElementById('adminToggle').classList.add('visible'); document.getElementById('adminBadge').style.display = 'inline'; document.getElementById('adminUid').textContent = 'UID: ' + (user?.tgUid || user?.uid || '?').slice(0, 20); }
+    function toggleAdminPanel() { document.getElementById('adminPanel').classList.toggle('open'); }
+    window.addToWhitelist = addToWhitelist; window.isWhitelisted = isWhitelisted;
+
+    const firebaseConfig = { apiKey: "AIzaSyDVgvBf_C6dIMtZ4MISwR5YRCBi8_JXinQ", authDomain: "cryptoclickertry.firebaseapp.com", databaseURL: "https://cryptoclickertry-default-rtdb.firebaseio.com", projectId: "cryptoclickertry", storageBucket: "cryptoclickertry.firebasestorage.app", messagingSenderId: "1017002572592", appId: "1:1017002572592:web:e06e5f4ba00017dc1466f5" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    function escapeHTML(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function sanitizeInput(s) { return typeof s === 'string' ? s.replace(/[<>"'&]/g, m => ({'<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','&':'&amp;'})[m]) : s; }
+    const rateLimiter = { clicks: [], maxClicksPerSecond: 20, maxClicksPerMinute: 200, canClick() { const n = Date.now(); this.clicks = this.clicks.filter(t => n - t < 60000); if (this.clicks.filter(t => n - t < 1000).length >= this.maxClicksPerSecond || this.clicks.length >= this.maxClicksPerMinute) return false; this.clicks.push(n); return true; } };
+
+    // ==================== РЕКЛАМНЫЕ НАСТРОЙКИ ====================
+    const AD_SETTINGS = {
+      cooldown: 15 * 60 * 1000,
+      dailyLimit: 10,
+      rewards: {
+        taskAd: 50,
+        miniGameFail: 100,
+        hourlyBonusMultiplier: 2
+      }
+    };
+
+    const AD_CRYSTAL_TASK = {
+      id: "watchAdsForCrystal",
+      goal: 5,
+      reward: 1,
+      rewardType: "crystals",
+      period: "daily"
+    };
+    
+    let adState = {
+      lastWatchTime: 0,
+      watchCountToday: 0,
+      watchDate: new Date().toDateString(),
+      pendingRewardType: null,
+      isAdLoading: false
+    };
+
+    function loadAdState() {
+      const saved = localStorage.getItem('cryptoClickerAdState');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.watchDate === new Date().toDateString()) {
+            adState = { ...adState, ...parsed };
+          }
+        } catch (e) {}
+      }
+    }
+    
+    function saveAdState() {
+      adState.watchDate = new Date().toDateString();
+      localStorage.setItem('cryptoClickerAdState', JSON.stringify({
+        lastWatchTime: adState.lastWatchTime,
+        watchCountToday: adState.watchCountToday,
+        watchDate: adState.watchDate
+      }));
+    }
+    
+    function canWatchAd() {
+      const now = Date.now();
+      if (adState.watchDate !== new Date().toDateString()) {
+        adState.watchCountToday = 0;
+        adState.lastWatchTime = 0;
+        adState.watchDate = new Date().toDateString();
+        saveAdState();
+        resetAdCrystalTask();
+      }
+      if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) return false;
+      if (now - adState.lastWatchTime < AD_SETTINGS.cooldown) return false;
+      if (adState.isAdLoading) return false;
+      return true;
+    }
+    
+    function getAdCooldownRemaining() {
+      const now = Date.now();
+      const remaining = AD_SETTINGS.cooldown - (now - adState.lastWatchTime);
+      return Math.max(0, Math.floor(remaining / 1000));
+    }
+
+    function resetAdCrystalTask() {
+      if (!user) return;
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set({
+        progress: 0,
+        lastReset: today,
+        completions: 0,
+        completed: false,
+        goal: AD_CRYSTAL_TASK.goal,
+        reward: AD_CRYSTAL_TASK.reward
+      }).catch(() => {});
+    }
+
+    function updateAdCrystalTaskProgress() {
+      if (!user) return;
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+        let td = s.val() || { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+        if (td.lastReset !== today) {
+          td = { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+        }
+        if (td.completed || td.completions >= 1) return;
+        td.progress = Math.min((td.progress || 0) + 1, td.goal);
+        db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set(td).then(() => {
+          renderTasks();
+        }).catch(() => {});
+      }).catch(() => {});
+    }
+
+    function checkAdCrystalTaskCompletion() {
+      if (!user) return;
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+        const td = s.val();
+        if (!td) return;
+        if (td.completed || td.completions >= 1) return;
+        if ((td.progress || 0) >= (td.goal || AD_CRYSTAL_TASK.goal)) {
+          crystals += (td.reward || AD_CRYSTAL_TASK.reward);
+          savePlayerCrystals();
+          db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).update({
+            completed: true,
+            completions: 1
+          }).then(() => {
+            showMessage(`✅ ${t('adTaskDone')}! +${td.reward || AD_CRYSTAL_TASK.reward} 💎`);
+            updateProfilePanel();
+            renderTasks();
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    }
+    
+    function showAdPopup(rewardType) {
+      if (!canWatchAd()) {
+        if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) {
+          showMessage(t('adNotAvailable'));
+        } else {
+          const sec = getAdCooldownRemaining();
+          const m = Math.floor(sec / 60);
+          const s = sec % 60;
+          showMessage(`${t('adCooldown')}: ${m}:${String(s).padStart(2, '0')}`);
+        }
+        return;
+      }
+      
+      adState.pendingRewardType = rewardType;
+      
+      let rewardText = '';
+      let rewardTitle = t('adRewardTitle');
+      
+      switch (rewardType) {
+        case 'task':
+          rewardText = `+${AD_SETTINGS.rewards.taskAd} ${t('tokens')}`;
+          break;
+        case 'minigame':
+          rewardText = `+${AD_SETTINGS.rewards.miniGameFail} ${t('tokens')}`;
+          rewardTitle = t('adMiniGameFail');
+          break;
+        case 'hourly':
+          rewardText = `x${AD_SETTINGS.rewards.hourlyBonusMultiplier} ${t('claimBonus')}`;
+          rewardTitle = t('adHourlyBonus');
+          break;
+      }
+      
+      document.getElementById('adRewardTitle').textContent = rewardTitle;
+      document.getElementById('adRewardText').textContent = `${t('adRewardText')}\n${rewardText}`;
+      document.getElementById('popupOverlay').style.display = 'block';
+      document.getElementById('adRewardPopup').style.display = 'block';
+    }
+    
+    function closeAdPopup() {
+      document.getElementById('popupOverlay').style.display = 'none';
+      document.getElementById('adRewardPopup').style.display = 'none';
+      adState.pendingRewardType = null;
+    }
+    
+    async function watchRewardedAd() {
+      if (adState.isAdLoading) return;
+      
+      const rewardType = adState.pendingRewardType;
+      if (!rewardType) return;
+      
+      adState.isAdLoading = true;
+      document.getElementById('adWatchBtn').disabled = true;
+      document.getElementById('adWatchBtn').textContent = t('adLoading');
+      
+      try {
+        if (typeof show_11486843 !== 'function') {
+          console.log('Ad SDK not loaded, simulating ad completion for testing');
+          await simulateAdCompletion(rewardType);
+          return;
+        }
+        
+        await show_11486843();
+        await handleAdCompletion(rewardType);
+        
+      } catch (error) {
+        console.error('Ad error:', error);
+        if (error.message && error.message.includes('not loaded')) {
+          showMessage(t('adNotAvailable'));
+        } else {
+          await handleAdCompletion(rewardType);
+        }
+      } finally {
+        adState.isAdLoading = false;
+        document.getElementById('adWatchBtn').disabled = false;
+        document.getElementById('adWatchBtn').textContent = t('adWatch');
+        closeAdPopup();
+      }
+    }
+    
+    async function simulateAdCompletion(rewardType) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          handleAdCompletion(rewardType).then(resolve);
+        }, 1500);
+      });
+    }
+    
+    async function handleAdCompletion(rewardType) {
+      if (!user) return;
+      
+      adState.lastWatchTime = Date.now();
+      adState.watchCountToday++;
+      saveAdState();
+      
+      updateAdCrystalTaskProgress();
+      
+      let rewardAmount = 0;
+      
+      switch (rewardType) {
+        case 'task':
+          rewardAmount = AD_SETTINGS.rewards.taskAd;
+          score += rewardAmount;
+          showMessage(t('adRewardReceived').replace('{amount}', rewardAmount));
+          break;
+          
+        case 'minigame':
+          rewardAmount = AD_SETTINGS.rewards.miniGameFail;
+          score += rewardAmount;
+          showMessage(t('adMiniGameReward'));
+          break;
+          
+        case 'hourly':
+          const bonusSnap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+          const bonusData = bonusSnap.val() || {};
+          const lastBonus = bonusData.lastBonusAmount || 50;
+          rewardAmount = lastBonus * (AD_SETTINGS.rewards.hourlyBonusMultiplier - 1);
+          score += rewardAmount;
+          showMessage(t('adHourlyReward'));
+          break;
+      }
+      
+      savePlayerScore();
+      updateCounterDisplay();
+      updateProfilePanel();
+      updateAdTaskUI();
+      
+      setTimeout(() => checkAdCrystalTaskCompletion(), 500);
+    }
+    
+    function updateAdTaskUI() {
+      const adButton = document.getElementById('watchAdButton');
+      if (!adButton) return;
+      
+      if (canWatchAd()) {
+        adButton.disabled = false;
+        adButton.textContent = t('adBtnWatch');
+        adButton.className = 'ad-button';
+      } else {
+        adButton.disabled = true;
+        if (adState.watchCountToday >= AD_SETTINGS.dailyLimit) {
+          adButton.textContent = t('adBtnLimit');
+        } else {
+          const sec = getAdCooldownRemaining();
+          const m = Math.floor(sec / 60);
+          const s = sec % 60;
+          adButton.textContent = `${t('adBtnWait')} ${m}:${String(s).padStart(2, '0')}`;
+        }
+        adButton.className = 'click-button';
+      }
+    }
+
+    // ==================== АВТОРИЗАЦИЯ ====================
+    const unifiedAuth = {
+      async findUserByIdentifier(type, id) {
+        let snap = await db.ref(`auth_lookup/${type}_${id}`).once('value');
+        if (snap.exists()) return snap.val();
+        snap = await db.ref('users').orderByChild(`auth_methods/${type}`).equalTo(id).once('value');
+        if (snap.exists()) return Object.keys(snap.val())[0];
+        return null;
+      }
+    };
+
+    function saveSession(uid, tgId) {
+      localStorage.setItem('cryptoClickerSession', JSON.stringify({ uid, tgId, timestamp: Date.now() }));
+    }
+
+    function restoreSession() {
+      try {
+        const s = localStorage.getItem('cryptoClickerSession');
+        if (!s) return null;
+        const session = JSON.parse(s);
+        if (Date.now() - session.timestamp > 86400000) { localStorage.removeItem('cryptoClickerSession'); return null; }
+        return session;
+      } catch (e) { return null; }
+    }
+
+    // ==================== ПЕРЕМЕННЫЕ ИГРЫ ====================
+    let user = null, score = 0, clickPower = 1, crystals = 0;
+    let autoclickActive = false, autoclickInterval = null, autoclickEndTime = 0;
+    let instantAutoclickActive = false, instantAutoclickEndTime = 0, instantAutoclickInterval = null, instantAutoclickTimerInterval = null;
+    let autoclickerLevel = 1, totalClicks = 0;
+    let achievements = {}, currentTab = "overall";
+    let bonusTimerInterval = null, isAnimating = false;
+    let miniGameActive = false, miniGameClicks = 0, miniGameTimer = null;
+    let dualClickActive = false, lastClickTime = 0;
+    let cloneTimeout = null, cloneTimerInterval = null;
+    let hasResonance = false, cloneEndTime = 0;
+    let suspiciousFlags = 0;
+    let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
+    let isRenderingTasks = false, isProcessingReferrer = false;
+    
+    const MAX_CLICK_POWER = 100, MAX_SUSPICIOUS_FLAGS = 5;
+    const INSTANT_AUTOCLICK_COST = 50, INSTANT_AUTOCLICK_DURATION = 3600000;
+    const RESONANCE_COST = 750, RESONANCE_CLICK_REQUIREMENT = 10000;
+    const CLONE_COST = 300, CLONE_DURATION = 6000000;
+    const MAX_MINI_GAMES_PER_DAY = 10;
+    const MINI_GAME_ENTRY_FEE = 100;
+    const MINI_GAME_REWARD = 500;
+    const levelUpRequirements = [50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000];
+    const isTelegramMiniApp = !!(window.Telegram?.WebApp?.initData);
+    const isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
+
+    const allAchievements = {
+      superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
+      tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2min)" },
+      level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
+    };
+
+    const dailyTasks = [
+      { id: "clickMarathon", description: "Make 100 clicks", goal: 100, reward: 50, period: "daily" },
+      { id: "collectTokens", description: "Collect tokens", goalOptions: [1000, 3000, 5000], rewards: [100, 350, 600], period: "daily" },
+      { id: "subscribeTwitter", description: "Follow @CircleGameTry on X", goal: 1, reward: 20, period: "daily", link: "https://x.com/CircleGameTry" },
+      { id: "watchRewardedAd", description: "Watch rewarded ad", goal: 1, reward: AD_SETTINGS.rewards.taskAd, period: "daily", isAdTask: true },
+      { id: AD_CRYSTAL_TASK.id, description: "Watch 5 ads", goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward, rewardType: "crystals", period: "daily", isAdCrystalTask: true },
+      { id: "clickMasterWeekly", description: "Make 500 clicks in a week", goal: 500, reward: 500, period: "weekly" },
+      { id: "autoclickerMaster", description: "Activate autoclicker 5 times in a week", goal: 5, reward: "Free 5-minute autoclicker", period: "weekly", alternate: true },
+      { id: "collectBigTokens", description: "Collect tokens in a week", goalOptions: [10000, 12000, 15000], rewards: [1000, 1200, 1500], period: "weekly", alternate: true },
+      { id: "miniGameChallenge", description: "Play 5 mini-games", goal: 5, reward: 1, rewardType: "crystals", period: "daily" },
+      { id: "onlineTime", description: "Stay online for 30 minutes", goal: 1800, reward: 2, rewardType: "crystals", period: "daily" }
+    ];
+
+    // ==================== MINING FARM VARIABLES ====================
     const RIG_TYPES = {
       cpu: { name: 'CPU Miner', speed: 0.1, energy: 1, costTokens: 100, costCrystals: 0, icon: '🖥️', color: '#6b7280' },
       gpu: { name: 'GPU Rig', speed: 0.4, energy: 3, costTokens: 2000, costCrystals: 5, icon: '🎮', color: '#2563eb' },
       asic: { name: 'ASIC Miner', speed: 1.5, energy: 8, costTokens: 20000, costCrystals: 50, icon: '🔥', color: '#dc2626' },
       quantum: { name: 'Quantum Rig', speed: 5.0, energy: 20, costTokens: 100000, costCrystals: 200, icon: '💎', color: '#9333ea' }
     };
-
-    let energy = 50, maxEnergy = 50;
+    let farmEnergy = 50, farmMaxEnergy = 50;
     let warehouseTokens = 0, warehouseLimit = 12;
     let farmSlots = [
-      { type: 'cpu', level: 1, overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 },
+      { type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 },
       null, null, null, null, null
     ];
     const slotUnlockLevels = [1, 2, 3, 5, 7, 10];
@@ -371,16 +900,897 @@
     let farmTickInterval = null;
     let energyRegenInterval = null;
 
+    // ==================== НАСТРОЙКА АВТОРИЗАЦИИ ====================
+    function setupAuthUI() {
+      const ab = document.getElementById('authButtons');
+      const signOutBtn = document.getElementById('signOutBtn');
+      
+      if (signOutBtn) signOutBtn.classList.remove('visible');
+      
+      if (isTelegramMiniApp) { 
+        ab.innerHTML = `<div class="auth-loading">${t('authLoading')}</div>`; 
+        setTimeout(() => signInWithTelegramMiniApp(), 500); 
+        try { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } catch (e) {} 
+      } else { 
+        ab.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+            <h3 style="color: #00c3ff; margin-bottom: 10px;">${t('authTitle')}</h3>
+            <p style="color: #aaa; font-size: 14px;">${t('authSubtitle')}</p>
+            <button class="click-button telegram-login-btn" onclick="loginWithTelegramPC()">
+              ${t('loginBtn')}
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    function loginWithTelegramPC() {
+      const botUrl = 'https://t.me/circlegametry_bot';
+      window.open(botUrl, '_blank');
+      
+      const ab = document.getElementById('authButtons');
+      ab.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+          <h3 style="color: #00c3ff; margin-bottom: 10px;">${t('instructionTitle')}</h3>
+          <div style="background: #1a1a2e; padding: 20px; border-radius: 12px; text-align: left; max-width: 400px; box-shadow: 0 0 15px rgba(0,195,255,0.3);">
+            <p style="color: #fff; margin-bottom: 15px; line-height: 1.6;">${t('instructionStep1')}</p>
+            <p style="color: #fff; margin-bottom: 15px; line-height: 1.6;">${t('instructionStep2')}</p>
+            <p style="color: #fff; margin-bottom: 15px; line-height: 1.6;">${t('instructionStep3')}</p>
+            <p style="color: #ffd700; font-size: 14px; line-height: 1.6;">${t('instructionTip')}</p>
+          </div>
+          <button class="click-button" onclick="setupAuthUI()" style="background: #555; color: #fff;">
+            ${t('backBtn')}
+          </button>
+        </div>
+      `;
+    }
+
+    async function signInWithTelegramMiniApp() {
+      try {
+        const tg = window.Telegram.WebApp;
+        const u = tg.initDataUnsafe?.user;
+        if (!u?.id) { 
+          document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
+          return; 
+        }
+        await handleTelegramUser(u);
+      } catch (e) { 
+        document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
+      }
+    }
+
+    async function handleTelegramUser(telegramUser) {
+      try {
+        const tgId = telegramUser.id;
+        const displayName = sanitizeInput(telegramUser.first_name || telegramUser.username || t('player'));
+        let uid = await unifiedAuth.findUserByIdentifier('tg_user_id', tgId);
+        
+        if (!uid) {
+          const userRef = db.ref('users').push();
+          uid = userRef.key;
+          await userRef.set({ 
+            auth_methods: { tg_user_id: tgId }, 
+            display_name: displayName,
+            created_at: firebase.database.ServerValue.TIMESTAMP
+          });
+          await db.ref(`player_data/${uid}`).set({
+            score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
+            autoclickerLevel: 1, hasResonance: false,
+            autoclickActive: false, autoclickEndTime: 0,
+            farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
+            farmSlots: farmSlots,
+            lastActive: firebase.database.ServerValue.TIMESTAMP
+          });
+          await db.ref(`leaderboard/${uid}`).set({ 
+            id: uid, name: displayName, score: 0, crystals: 0, 
+            clickPower: 1, totalClicks: 0, hasResonance: false, lastUpdate: Date.now() 
+          });
+          await db.ref(`auth_lookup/tg_user_id_${tgId}`).set(uid);
+          showMessage(`${t('welcome')}, ${displayName}!`);
+        } else {
+          await db.ref(`users/${uid}`).update({ 
+            display_name: displayName,
+            last_login_at: firebase.database.ServerValue.TIMESTAMP
+          });
+          showMessage(`${t('welcomeBack')}, ${displayName}!`);
+        }
+        
+        user = { uid, tgUid: 'tg_' + tgId, displayName };
+        if (isWhitelisted(user.tgUid) || isWhitelisted(uid)) showAdminPanel();
+        saveSession(uid, tgId);
+        
+        const signOutBtn = document.getElementById('signOutBtn');
+        if (signOutBtn) signOutBtn.classList.add('visible');
+        
+        startGameAfterAuth();
+      } catch (error) {
+        showMessage(t('error'));
+      }
+    }
+
+    async function autoLogin() {
+      const session = restoreSession();
+      if (!session) return false;
+      try {
+        const userSnap = await db.ref(`users/${session.uid}`).once('value');
+        if (!userSnap.exists()) { localStorage.removeItem('cryptoClickerSession'); return false; }
+        user = { uid: session.uid, tgUid: 'tg_' + session.tgId, displayName: userSnap.val().display_name || t('player') };
+        if (isWhitelisted(user.tgUid) || isWhitelisted(user.uid)) showAdminPanel();
+        const signOutBtn = document.getElementById('signOutBtn');
+        if (signOutBtn) signOutBtn.classList.add('visible');
+        return true;
+      } catch (e) { return false; }
+    }
+
+    async function startGameAfterAuth() {
+      document.getElementById('authSection').style.display = 'none';
+      document.getElementById('gameSection').style.display = 'block';
+      await loadPlayerData(user.uid);
+      setupCrossPlatformSync();
+      startBonusTimer();
+      startOnlineTimer();
+      checkWeeklyReset();
+      loadAdState();
+      updateAdTaskUI();
+      checkAdCrystalTaskCompletion();
+      startFarmSystem();
+      const ref = new URLSearchParams(window.location.search).get('ref');
+      if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
+    }
+
+    // ==================== СИНХРОНИЗАЦИЯ ====================
+    function setupCrossPlatformSync() {
+      if (!user) return;
+      db.ref(`player_data/${user.uid}/score`).on('value', (snapshot) => {
+        const newScore = snapshot.val();
+        if (newScore !== null && newScore !== score) { score = newScore; updateCounterDisplay(); updateProfilePanel(); }
+      });
+      db.ref(`player_data/${user.uid}/crystals`).on('value', (snapshot) => {
+        const newCrystals = snapshot.val();
+        if (newCrystals !== null && newCrystals !== crystals) { crystals = newCrystals; updateProfilePanel(); }
+      });
+      db.ref(`player_data/${user.uid}/clickPower`).on('value', (snapshot) => {
+        const newClickPower = snapshot.val();
+        if (newClickPower !== null && newClickPower !== clickPower) { 
+          clickPower = newClickPower; 
+          updateClickPowerBar(); 
+          updateProfilePanel(); 
+        }
+      });
+      db.ref(`player_data/${user.uid}/hasResonance`).on('value', (snapshot) => {
+        const newResonance = snapshot.val();
+        if (newResonance !== null && newResonance !== hasResonance) { 
+          hasResonance = newResonance; 
+          updateResonanceUI(); 
+          updateProfilePanel(); 
+        }
+      });
+      db.ref(`player_data/${user.uid}/farmEnergy`).on('value', (snapshot) => {
+        const newEnergy = snapshot.val();
+        if (newEnergy !== null && newEnergy !== farmEnergy) { farmEnergy = newEnergy; updateFarmUI(); }
+      });
+      db.ref(`player_data/${user.uid}/farmSlots`).on('value', (snapshot) => {
+        const newSlots = snapshot.val();
+        if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); }
+      });
+    }
+
+    // ==================== ЗАГРУЗКА ДАННЫХ ====================
+    async function loadPlayerData(uid) {
+      return new Promise((resolve) => {
+        db.ref(`player_data/${uid}`).once('value').then(snapshot => {
+          const data = snapshot.val();
+          if (!data) {
+            const defaultData = {
+              score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
+              autoclickerLevel: 1, hasResonance: false,
+              autoclickActive: false, autoclickEndTime: 0,
+              farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
+              farmSlots: farmSlots,
+              lastActive: firebase.database.ServerValue.TIMESTAMP
+            };
+            db.ref(`player_data/${uid}`).set(defaultData);
+            score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
+            autoclickerLevel = 1; hasResonance = false;
+            farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
+          } else {
+            score = data.score || 0;
+            crystals = data.crystals || 0;
+            clickPower = data.clickPower || 1;
+            totalClicks = data.totalClicks || 0;
+            autoclickerLevel = data.autoclickerLevel || 1;
+            hasResonance = data.hasResonance || false;
+            farmEnergy = data.farmEnergy || 50;
+            farmMaxEnergy = data.farmMaxEnergy || 50;
+            warehouseTokens = data.warehouseTokens || 0;
+            warehouseLimit = data.warehouseLimit || 12;
+            if (data.farmSlots) farmSlots = data.farmSlots;
+            
+            if (data.autoclickActive && data.autoclickEndTime && data.autoclickEndTime > Date.now()) {
+              const remaining = data.autoclickEndTime - Date.now();
+              startAutoclicker(remaining, false);
+            }
+            
+            if (data.instantAutoclickActive && data.instantAutoclickEndTime && data.instantAutoclickEndTime > Date.now()) {
+              startInstantAutoclick(data.instantAutoclickEndTime - Date.now());
+            }
+            
+            if (data.cloneEndTime && data.cloneEndTime > Date.now()) {
+              cloneEndTime = data.cloneEndTime;
+              resumeCloneIfActive();
+            }
+          }
+          updateCounterDisplay();
+          updateClickPowerBar();
+          updateProfilePanel();
+          updateResonanceUI();
+          updateAutoclickerShopUI();
+          updateInstantAutoclickTimer();
+          updateCloneTimer();
+          updateFarmUI();
+          resolve();
+        }).catch(() => { score = 0; crystals = 0; clickPower = 1; resolve(); });
+      });
+    }
+
+    function savePlayerData() {
+      if (!user) return;
+      const data = {
+        score: score,
+        crystals: crystals,
+        clickPower: clickPower,
+        totalClicks: totalClicks,
+        autoclickerLevel: autoclickerLevel,
+        hasResonance: hasResonance,
+        autoclickActive: autoclickActive,
+        autoclickEndTime: autoclickEndTime,
+        instantAutoclickActive: instantAutoclickActive,
+        instantAutoclickEndTime: instantAutoclickEndTime,
+        cloneEndTime: cloneEndTime || 0,
+        farmEnergy: farmEnergy,
+        farmMaxEnergy: farmMaxEnergy,
+        warehouseTokens: warehouseTokens,
+        warehouseLimit: warehouseLimit,
+        farmSlots: farmSlots,
+        lastActive: firebase.database.ServerValue.TIMESTAMP
+      };
+      db.ref(`player_data/${user.uid}`).update(data).catch(() => {});
+      db.ref(`leaderboard/${user.uid}`).update({
+        score: score,
+        crystals: crystals,
+        clickPower: clickPower,
+        totalClicks: totalClicks,
+        hasResonance: hasResonance,
+        cloneEndTime: cloneEndTime || 0,
+        lastUpdate: Date.now()
+      }).catch(() => {});
+    }
+
+    function savePlayerScore() { 
+      if (user) { 
+        db.ref(`player_data/${user.uid}`).update({
+          score: score,
+          clickPower: clickPower,
+          hasResonance: hasResonance,
+          totalClicks: totalClicks
+        }); 
+        db.ref(`leaderboard/${user.uid}`).update({
+          score: score,
+          clickPower: clickPower,
+          totalClicks: totalClicks,
+          hasResonance: hasResonance
+        }); 
+      } 
+    }
+    
+    function savePlayerCrystals() { 
+      if (user) { 
+        db.ref(`player_data/${user.uid}`).update({
+          crystals: crystals,
+          hasResonance: hasResonance
+        }); 
+        db.ref(`leaderboard/${user.uid}`).update({
+          crystals: crystals,
+          hasResonance: hasResonance
+        }); 
+      } 
+    }
+
+    // ==================== АДМИН ====================
+    function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; savePlayerCrystals(); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
+    function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; savePlayerScore(); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
+    function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
+    function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; showMessage('🛡️ Battle Pass removed from UI'); }
+    window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags; window.adminSetBPLevel = adminSetBPLevel;
+
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+    function showComingSoon(f) { showMessage(`🚧 ${f} is coming soon!`); }
+    function formatTimeFromSeconds(s) { const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60; return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`; }
+    function updateCounterDisplay() { document.getElementById("counter").innerText = `Tokens: ${score}`; document.getElementById("profileTokens").innerText = score; }
+    function animateCounter() { const c = document.getElementById('counter'); c.classList.add('bounce'); setTimeout(() => c.classList.remove('bounce'), 200); }
+    function showMessage(msg, isBonus) { if (isBonus) { const bm = document.getElementById("bonusMessage"); bm.innerText = msg; bm.style.opacity = 1; setTimeout(() => { bm.style.opacity = 0; }, 3000); } else { const el = document.getElementById("message"); el.innerText = msg; setTimeout(() => el.innerText = '', 3000); } }
+    function getClickPowerUpgradeCost() { return Math.floor(500 * Math.pow(6, clickPower - 1)); }
+    function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel-1)*(14400000-60000)/19); }
+    function getAutoclickerUpgradeCost() { if (autoclickerLevel >= 10) return { tokens: 1500000, crystals: 1000 }; if (autoclickerLevel >= 6) return { tokens: 1000000+125000*(autoclickerLevel-6), crystals: 500+125*(autoclickerLevel-6) }; return { tokens: Math.round(1000*Math.pow(Math.pow(1000,1/5),autoclickerLevel-1)), crystals: 10+98*(autoclickerLevel-1) }; }
+    function getWeekNumber() { const n = new Date(); const s = new Date(n.getFullYear(), 0, 1); return Math.ceil(((n - s) / 86400000 + s.getDay() + 1) / 7); }
+    function getWeekKey() { return `${new Date().getFullYear()}_${getWeekNumber()}`; }
+    function generateReferralLink() { return user ? `${window.location.origin}/?ref=${user.uid}` : ''; }
+    function copyReferralLink() { const r = document.getElementById('referralLink'); r.select(); document.execCommand('copy'); showMessage('Referral link copied!'); }
+    function getPlayerLevel() { let lv = 1; for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) lv = i + 2; else break; } return lv; }
+
+    function cleanupAllTimers() {
+      if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
+      if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; }
+      if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; }
+      if (cloneTimeout) { clearTimeout(cloneTimeout); cloneTimeout = null; }
+      if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
+      if (miniGameTimer) { clearInterval(miniGameTimer); miniGameTimer = null; }
+      if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; }
+      if (farmTickInterval) { clearInterval(farmTickInterval); farmTickInterval = null; }
+      if (energyRegenInterval) { clearInterval(energyRegenInterval); energyRegenInterval = null; }
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (user) {
+        savePlayerData();
+      }
+      cleanupAllTimers();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && user) {
+        savePlayerData();
+      }
+    });
+
+    function spawnScorePopup(x, y, amount) {
+      const popup = document.createElement('div'); popup.className = 'score-popup'; popup.textContent = `+${amount}`;
+      popup.style.left = `${x + (Math.random()-0.5)*60}px`; popup.style.top = `${y}px`;
+      popup.style.setProperty('--dx20', `${(Math.random()-0.5)*40}px`); popup.style.setProperty('--dx50', `${(Math.random()-0.5)*80}px`); popup.style.setProperty('--dx100', `${(Math.random()-0.5)*120}px`);
+      popup.style.setProperty('--rot20', `${(Math.random()-0.5)*40}deg`); popup.style.setProperty('--rot50', `${(Math.random()-0.5)*80}deg`); popup.style.setProperty('--rot100', `${(Math.random()-0.5)*150}deg`);
+      popup.style.color = ['#ffd700','#ffcc00','#ffe44d','#ffaa00','#ffc107','#ffeb3b','#ffdf00','#fff176'][Math.floor(Math.random()*8)];
+      popup.style.fontSize = `${16+Math.random()*12}px`; document.body.appendChild(popup); setTimeout(() => popup.remove(), 800);
+    }
+
+    // ==================== ОСНОВНОЙ КЛИК ====================
+    function clickToken(event) {
+      if (!user || isAnimating) return;
+      if (!rateLimiter.canClick()) { showMessage(t('slowDown')); return; }
+      if (Date.now() - lastClickTime < 50) return;
+      lastClickTime = Date.now(); isAnimating = true;
+      if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
+      score += clickPower; totalClicks++;
+      
+      savePlayerScore();
+      
+      updateTaskProgress("clickMarathon", 1);
+      updateTaskProgress("collectTokens", clickPower);
+      updateTaskProgress("collectBigTokens", clickPower);
+      updateTaskProgress("clickMasterWeekly", 1);
+      checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel();
+      
+      if (hasResonance && totalClicks % 100 === 0) { 
+        crystals++; 
+        savePlayerCrystals();
+        showMessage(`🔮 Resonance! +1 💎`); 
+        updateProfilePanel(); 
+      }
+      updateResonanceUI();
+      const btn = document.getElementById("mainClickButton"); if (btn) { btn.classList.add("pulse"); setTimeout(() => { if (btn) btn.classList.remove("pulse"); isAnimating = false; }, 200); } else isAnimating = false;
+    }
+
+    function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } clickToken(); }
+
+    // ==================== АВТОКЛИКЕР ====================
+    function startAutoclicker(duration, extendTime = false) {
+      if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only! Deactivate Clone first.'); return; }
+      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
+      if (autoclickActive && extendTime) { autoclickEndTime = Math.max(autoclickEndTime, Date.now()) + duration; }
+      else { autoclickActive = true; autoclickEndTime = Date.now() + duration; }
+      autoclickInterval = setInterval(autoclickTick, 1000);
+      savePlayerData();
+      updateProfilePanel(); updateAutoclickerShopUI();
+    }
+
+    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); savePlayerData(); }
+    function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); } }
+    function activateFreeAutoclicker() { if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — manual clicking only!'); return; } if (autoclickActive) showMessage("Already active!"); else startAutoclicker(getAutoclickerDuration()); }
+
+    // ==================== INSTANT AUTOCLICK ====================
+    function startInstantAutoclick(duration) {
+      if (dualClickActive || cloneEndTime > Date.now()) { showMessage('👥 Clone is active — cannot start Instant Autoclick!'); return; }
+      if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; }
+      if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; }
+      instantAutoclickActive = true; instantAutoclickEndTime = Date.now() + duration;
+      instantAutoclickInterval = setInterval(autoclickTick, 1000);
+      instantAutoclickTimerInterval = setInterval(updateInstantAutoclickTimer, 1000);
+      updateInstantAutoclickTimer(); updateCloneButtonState();
+      savePlayerData();
+    }
+    function stopInstantAutoclick() { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; updateInstantAutoclickTimer(); updateCloneButtonState(); savePlayerData(); }
+
+    function updateInstantAutoclickTimer() {
+      const d = document.getElementById('instantAutoclickTimerDisplay'), b = document.getElementById('buyInstantAutoclickBtn');
+      if (!b) return; b.onclick = null;
+      if (instantAutoclickActive) { const r = Math.max(0, instantAutoclickEndTime - Date.now()); if (r <= 0) { stopInstantAutoclick(); return; } if (d) d.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(r/1000))}`; b.disabled = true; b.textContent = '⚡ Active'; b.style.background = '#555'; }
+      else { if (d) d.textContent = ''; if (!dualClickActive && cloneEndTime <= Date.now()) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } else { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } }
+    }
+
+    function updateInstantAutoclickButtonState() { const b = document.getElementById('buyInstantAutoclickBtn'); if (!b) return; b.onclick = null; if (dualClickActive || cloneEndTime > Date.now()) { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } else if (!instantAutoclickActive) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } }
+    function buyInstantAutoclick() { if (!user) { showMessage(t('signIn')); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; savePlayerCrystals(); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
+
+    // ==================== CLONE ====================
+    function startClone(duration) {
+      if (instantAutoclickActive) { showMessage('Cannot start Clone — Instant Autoclick is active!'); return; }
+      if (autoclickActive) { stopAutoclicker(); showMessage('Autoclicker deactivated — Clone is active!'); }
+      if (cloneTimeout) { clearTimeout(cloneTimeout); cloneTimeout = null; }
+      if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
+      activateDualClick();
+      cloneEndTime = Date.now() + duration;
+      cloneTimerInterval = setInterval(updateCloneTimer, 1000);
+      cloneTimeout = setTimeout(() => stopClone(), duration);
+      updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI();
+      savePlayerData();
+    }
+
+    function stopClone() {
+      if (cloneTimeout) { clearTimeout(cloneTimeout); cloneTimeout = null; }
+      if (cloneTimerInterval) { clearInterval(cloneTimerInterval); cloneTimerInterval = null; }
+      deactivateDualClick(); cloneEndTime = 0;
+      updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI();
+      savePlayerData();
+    }
+
+    function resumeCloneIfActive() {
+      if (!user || dualClickActive) return;
+      if (!cloneEndTime || cloneEndTime <= Date.now()) { cloneEndTime = 0; deactivateDualClick(); updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); return; }
+      const remaining = cloneEndTime - Date.now();
+      activateDualClick();
+      if (cloneTimeout) clearTimeout(cloneTimeout);
+      if (cloneTimerInterval) clearInterval(cloneTimerInterval);
+      cloneTimerInterval = setInterval(updateCloneTimer, 1000);
+      cloneTimeout = setTimeout(() => stopClone(), remaining);
+      updateCloneTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI();
+    }
+
+    function updateCloneTimer() {
+      const d = document.getElementById('cloneTimerDisplay'), b = document.getElementById('buyCloneBtn');
+      if (!b) return; b.onclick = null;
+      if (cloneEndTime > 0) { const remaining = Math.max(0, cloneEndTime - Date.now()); if (remaining <= 0) { stopClone(); return; } if (d) d.textContent = `⏱️ Remaining: ${formatTimeFromSeconds(Math.floor(remaining / 1000))}`; b.disabled = true; b.textContent = '👥 Active'; b.style.background = '#555'; }
+      else { if (d) d.textContent = ''; b.disabled = instantAutoclickActive; b.textContent = instantAutoclickActive ? '🔒 Blocked' : '👥 Activate Clone'; b.style.background = instantAutoclickActive ? '#555' : ''; if (!instantAutoclickActive) b.onclick = buyClone; }
+    }
+
+    function updateCloneButtonState() {
+      const b = document.getElementById('buyCloneBtn');
+      if (!b) return; b.onclick = null;
+      if (cloneEndTime > 0) { b.disabled = true; b.textContent = '👥 Active'; b.style.background = '#555'; }
+      else if (instantAutoclickActive) { b.disabled = true; b.textContent = '🔒 Blocked'; b.style.background = '#555'; }
+      else { b.disabled = false; b.textContent = '👥 Activate Clone'; b.style.background = ''; b.onclick = buyClone; }
+    }
+
+    function buyClone() { if (!user) { showMessage(t('signIn')); return; } if (cloneEndTime > 0) { showMessage('Clone already active!'); return; } if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; } if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; } crystals -= CLONE_COST; savePlayerCrystals(); startClone(CLONE_DURATION); showMessage(`👥 Clone activated for 100 minutes! Autoclicker disabled.`); updateProfilePanel(); }
+    function activateDualClick() { dualClickActive = true; document.getElementById('secondClickButton').classList.add('visible'); }
+    function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
+
+    // ==================== ПОКУПКИ ====================
+    function buyUpgrade(type) { 
+      if (type === "clickPower" && clickPower < 8) { 
+        const c = getClickPowerUpgradeCost(); 
+        if (score < c) { showMessage(t('notEnoughTokens')); return; } 
+        score -= c; 
+        clickPower++; 
+        savePlayerScore();
+        db.ref(`player_data/${user.uid}/clickPower`).set(clickPower);
+        db.ref(`leaderboard/${user.uid}/clickPower`).set(clickPower);
+        updateClickPowerBar(); 
+        updateProfilePanel(); 
+        updateClickPowerCostText(); 
+        updateCounterDisplay(); 
+      } else if (clickPower >= 8) showMessage(t('maxLevel')); 
+    }
+    
+    function upgradeAutoclicker() { 
+      if (autoclickerLevel >= 20) { showMessage(t('maxLevel')); return; } 
+      const c = getAutoclickerUpgradeCost(); 
+      if (score < c.tokens || crystals < c.crystals) { showMessage("Not enough resources!"); return; } 
+      score -= c.tokens; 
+      crystals -= c.crystals; 
+      autoclickerLevel++; 
+      savePlayerScore(); 
+      savePlayerCrystals(); 
+      db.ref(`player_data/${user.uid}/autoclickerLevel`).set(autoclickerLevel);
+      db.ref(`leaderboard/${user.uid}/autoclickerLevel`).set(autoclickerLevel); 
+      updateProfilePanel(); 
+      updateAutoclickerShopUI(); 
+      updateCounterDisplay(); 
+    }
+    
+    function buyResonance() { 
+      if (!user) return; 
+      if (hasResonance) { showMessage('Already have Resonance!'); return; } 
+      if (totalClicks < RESONANCE_CLICK_REQUIREMENT) { showMessage(`Need ${RESONANCE_CLICK_REQUIREMENT} clicks!`); return; } 
+      if (crystals < RESONANCE_COST) { showMessage(`Need ${RESONANCE_COST} 💎!`); return; } 
+      crystals -= RESONANCE_COST; 
+      hasResonance = true; 
+      savePlayerCrystals(); 
+      db.ref(`player_data/${user.uid}/hasResonance`).set(true);
+      db.ref(`leaderboard/${user.uid}/hasResonance`).set(true); 
+      updateProfilePanel(); 
+      updateResonanceUI(); 
+      showMessage('🔮 Resonance activated! Every 100th click gives +1 💎');
+    }
+
+    function updateResonanceUI() { const b = document.getElementById('buyResonanceBtn'), r = document.getElementById('resonanceClickCount'); if (r) r.textContent = totalClicks; if (hasResonance) { if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } } else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } } else { if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } } }
+    
+    function updateProfilePanel() {
+      document.getElementById('profileClickPower').innerText = Math.min(clickPower,8);
+      if (instantAutoclickActive) document.getElementById('profileAutoclick').innerText = 'Active (Instant)';
+      else if (autoclickActive) document.getElementById('profileAutoclick').innerText = `Active: ${formatTimeFromSeconds(Math.floor(Math.max(0,autoclickEndTime-Date.now())/1000))}`;
+      else document.getElementById('profileAutoclick').innerText = t('inactive');
+      let lv = getPlayerLevel();
+      document.getElementById('playerLevel').innerText = lv;
+      document.getElementById('profileTokens').innerText = score;
+      document.getElementById('profileName').textContent = user?.displayName || 'Anonymous';
+      document.getElementById('profileCrystals').textContent = `${crystals||0} 💎`;
+      if (user) {
+        document.getElementById('referralLink').value = generateReferralLink();
+        db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; });
+      }
+      const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.textContent = t('maxLevel'); lm.classList.add('show'); } else lm.classList.remove('show');
+    }
+    
+    function updateClickPowerBar() { document.getElementById("clickPowerDisplay").innerText = clickPower; document.getElementById("clickPowerBar").style.width = Math.min((clickPower/8)*100,100)+"%"; updateClickPowerCostText(); }
+    function updateClickPowerCostText() { const ct = document.getElementById('clickPowerCostText'); if (ct) ct.textContent = clickPower >= 8 ? "💪 MAX LEVEL" : `💪 Click Power +1 (Cost: ${getClickPowerUpgradeCost()})`; }
+    function updateAutoclickerShopUI() {
+      document.getElementById("autoclickerLevel").innerText = autoclickerLevel;
+      document.getElementById("autoclickerDurationValue").innerHTML = `Duration: <span id="timeLeft">${formatTimeFromSeconds(Math.floor(getAutoclickerDuration()/1000))}</span>`;
+      const ub = document.getElementById("upgradeAutoclickerBtn");
+      if (autoclickerLevel >= 20) { document.getElementById("autoclickerUpgradeCost").innerText = "MAX LEVEL"; ub.disabled = true; }
+      else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade: ${c.tokens} 🪙 + ${c.crystals} 💎`; ub.disabled = false; }
+      const afab = document.getElementById('activateFreeAutoclickerBtn');
+      if (afab) { if (dualClickActive || cloneEndTime > Date.now()) { afab.disabled = true; afab.textContent = '🔒 Blocked by Clone'; afab.style.background = '#555'; } else { afab.disabled = false; afab.textContent = 'Activate Free Autoclicker'; afab.style.background = ''; } }
+    }
+
+    // ==================== МЕНЮ ====================
+    function togglePanel(pn) {
+      if (miniGameActive) endMiniGame(false, true);
+      document.getElementById("miniGamePanel").style.display = "none";
+      const panel = document.getElementById(pn);
+      if (!panel) return;
+      const isOpen = panel.classList.contains('open');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+      document.getElementById('shopBtn').innerHTML = 'Shop ▼';
+      document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
+      document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+      document.getElementById('miningBtn').innerHTML = '⛏️ Mining ▼';
+      if (!isOpen) {
+        panel.classList.add('open');
+        if (pn === 'shop') { document.getElementById('shopBtn').innerHTML = 'Shop ▲'; updateResonanceUI(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); }
+        else if (pn === 'achievements') { document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▲'; renderAchievements(); }
+        else if (pn === 'tasks') { document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▲'; renderTasks(); }
+        else if (pn === 'mining') { document.getElementById('miningBtn').innerHTML = '⛏️ Mining ▲'; updateFarmUI(); }
+      }
+    }
+
+    // ==================== МИНИ-ИГРА ====================
+    function startMiniGame() {
+      if (!user) return showMessage(t('signIn'));
+      if (score < MINI_GAME_ENTRY_FEE) return showMessage(`Need ${MINI_GAME_ENTRY_FEE} tokens to play!`);
+      if (miniGameActive) return showMessage("Mini-game already active!");
+      const today = new Date().toDateString();
+      db.ref(`miniGameLimit/${user.uid}`).once('value').then(s => {
+        const data = s.val() || { gamesPlayed: 0, lastReset: today };
+        if (data.lastReset !== today) { data.gamesPlayed = 0; data.lastReset = today; }
+        if (data.gamesPlayed >= MAX_MINI_GAMES_PER_DAY) { showMessage(`Daily limit reached! (${MAX_MINI_GAMES_PER_DAY} games)`); return; }
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+        document.getElementById('shopBtn').innerHTML = 'Shop ▼';
+        document.getElementById('achievementsBtn').innerHTML = '🏆 Achievements ▼';
+        document.getElementById('tasksBtn').innerHTML = '📋 Tasks ▼';
+        document.getElementById('miningBtn').innerHTML = '⛏️ Mining ▼';
+        score -= MINI_GAME_ENTRY_FEE; savePlayerScore();
+        data.gamesPlayed++; db.ref(`miniGameLimit/${user.uid}`).set(data);
+        miniGameActive = true; miniGameClicks = 0;
+        document.getElementById("miniGamePanel").style.display = "block";
+        document.getElementById("miniGameClicks").innerText = "0";
+        let tl = 10; document.getElementById("miniGameTimer").innerText = tl;
+        if (miniGameTimer) clearInterval(miniGameTimer);
+        miniGameTimer = setInterval(() => { tl--; document.getElementById("miniGameTimer").innerText = tl; if (tl <= 0) endMiniGame(false); }, 1000);
+        updateCounterDisplay();
+      });
+    }
+    
+    function miniGameClick() { if (!miniGameActive) return; miniGameClicks++; document.getElementById("miniGameClicks").innerText = miniGameClicks; if (miniGameClicks >= 50) endMiniGame(true); }
+    
+    function endMiniGame(won, leftManually = false) {
+      if (!miniGameActive) return;
+      clearInterval(miniGameTimer); miniGameActive = false; miniGameTimer = null;
+      document.getElementById("miniGamePanel").style.display = "none";
+      if (!user) return;
+      if (won) { score += MINI_GAME_REWARD; savePlayerScore(); showMessage(`${t('victory')} +${MINI_GAME_REWARD} tokens!`); updateTaskProgress("miniGameChallenge", 1); updateProfilePanel(); updateCounterDisplay(); }
+      else if (leftManually) { showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
+      else { 
+        showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`);
+        setTimeout(() => {
+          if (canWatchAd()) {
+            showAdPopup('minigame');
+          }
+        }, 1500);
+      }
+    }
+
+    // ==================== ЗАДАНИЯ ====================
+    function renderTasks() {
+      if (isRenderingTasks) return; isRenderingTasks = true;
+      const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; }
+      list.innerHTML = "Loading..."; if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; }
+      db.ref(`tasks/${user.uid}`).once("value").then(s => {
+        const td = s.val() || {}, today = new Date().toDateString(), sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), wn = getWeekNumber(), ew = wn % 2 === 0;
+        const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
+        list.innerHTML = "";
+        
+        const adTaskDiv = document.createElement("div");
+        adTaskDiv.id = "adTaskContainer";
+        adTaskDiv.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
+            <div style="text-align:left;flex:1;min-width:150px;">
+              <strong>📺 ${t('watchAd')}</strong><br>
+              <small style="color:#aaa;">${t('adCooldown')}: 15 ${currentLanguage === 'ru' ? 'мин' : 'min'} | ${t('maxLevel')}: ${AD_SETTINGS.dailyLimit}/${currentLanguage === 'ru' ? 'день' : 'day'}</small>
+            </div>
+            <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;flex-shrink:0;">
+              ${t('adBtnWatch')}
+            </button>
+          </div>
+        `;
+        list.appendChild(adTaskDiv);
+        
+        const crystalTask = dailyTasks.find(t => t.id === AD_CRYSTAL_TASK.id);
+        if (crystalTask) {
+          let ctd = td[AD_CRYSTAL_TASK.id] || { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+          if (ctd.lastReset !== today) {
+            ctd = { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
+            db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).set(ctd).catch(() => {});
+          }
+          const crystalDiv = document.createElement("div");
+          const progress = ctd.progress || 0;
+          const goal = ctd.goal || AD_CRYSTAL_TASK.goal;
+          const reward = ctd.reward || AD_CRYSTAL_TASK.reward;
+          const completed = ctd.completed || ctd.completions >= 1;
+          
+          if (completed) {
+            crystalDiv.innerHTML = `<span style="color:#00ffa6;">✅ ${t('adTaskProgress')}: ${goal}/${goal} - ${t('adTaskDone')}! (+${reward} 💎)</span>`;
+          } else {
+            const canClaim = progress >= goal;
+            crystalDiv.innerHTML = `
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
+                <div style="text-align:left;flex:1;min-width:150px;">
+                  <strong>📺 ${t('adTaskProgress')}: ${progress}/${goal}</strong><br>
+                  <small style="color:#aaa;">${t('adTaskReward')}: ${reward} 💎</small>
+                </div>
+                <button class="click-button" onclick="claimAdCrystalTask()" ${!canClaim ? 'disabled' : ''} style="white-space:nowrap;flex-shrink:0;padding:8px 15px;font-size:13px;">
+                  ${canClaim ? t('adTaskClaim') : t('adTaskInProgress')}
+                </button>
+              </div>
+            `;
+          }
+          list.appendChild(crystalDiv);
+        }
+        
+        at.forEach(task => {
+          if (task.isAdTask || task.isAdCrystalTask) return;
+          let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
+          const rk = task.period === "weekly" ? sow : today;
+          if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
+          const div = document.createElement("div");
+          if (tdd.completed || tdd.completions >= 1) { div.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(task.description)} - Done!</span>`; }
+          else { const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, cc = p >= g;
+            if (task.id === "subscribeTwitter") { div.innerHTML = `${escapeHTML(task.description)}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; }
+            else if (task.id === "onlineTime") { const progressTime = formatTimeFromSeconds(p); const goalTime = formatTimeFromSeconds(g); div.innerHTML = `${escapeHTML(task.description)}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`; div.setAttribute('data-task-id', 'onlineTime'); }
+            else if (task.id === "miniGameChallenge") { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g}<br><small>Reward: ${rt}</small>`; }
+            else { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; } }
+          list.appendChild(div);
+        });
+        updateAdTaskUI();
+        isRenderingTasks = false;
+      }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; });
+    }
+
+    function claimAdCrystalTask() {
+      if (!user) return showMessage(t('signIn'));
+      const today = new Date().toDateString();
+      db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).once("value").then(s => {
+        const td = s.val();
+        if (!td) return;
+        if (td.completed || td.completions >= 1) return showMessage(t('adTaskDone'));
+        if ((td.progress || 0) >= (td.goal || AD_CRYSTAL_TASK.goal)) {
+          const reward = td.reward || AD_CRYSTAL_TASK.reward;
+          crystals += reward;
+          savePlayerCrystals();
+          db.ref(`tasks/${user.uid}/${AD_CRYSTAL_TASK.id}`).update({
+            completed: true,
+            completions: 1
+          }).then(() => {
+            showMessage(`✅ ${t('adTaskDone')}! +${reward} 💎`);
+            updateProfilePanel();
+            renderTasks();
+          }).catch(() => {});
+        } else {
+          showMessage(`${t('adTaskInProgress')}: ${td.progress || 0}/${td.goal || AD_CRYSTAL_TASK.goal}`);
+        }
+      }).catch(() => {});
+    }
+    window.claimAdCrystalTask = claimAdCrystalTask;
+    
+    function updateTaskProgress(taskId, inc) {
+      if (!user) return;
+      const task = dailyTasks.find(t => t.id === taskId); if (!task) return;
+      if (task.isAdTask || task.isAdCrystalTask) return;
+      if (task.alternate) { const wn = getWeekNumber(), ew = wn % 2 === 0; if (task.id==="autoclickerMaster"&&!ew) return; if (task.id==="collectBigTokens"&&ew) return; }
+      const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today;
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+        let td = s.val() || { progress: 0, lastReset: rk, completions: 0, completed: false };
+        if (td.lastReset !== rk) { td = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; }
+        if (td.completed || td.completions >= 1) return;
+        const np = Math.min((td.progress||0) + inc, td.goal || task.goal);
+        if (np !== td.progress) { td.progress = np; db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{}); if (taskId === "onlineTime") updateOnlineTimeDisplay(np); }
+      }).catch(()=>{});
+    }
+    
+    function claimTask(taskId) {
+      if (!user) return showMessage(t('signIn'));
+      if (taskId === AD_CRYSTAL_TASK.id) { claimAdCrystalTask(); return; }
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+        const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return;
+        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
+        const g = td.goal || task.goal;
+        if ((td.progress||0) >= g) { const rw = td.reward || task.reward;
+          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); savePlayerCrystals(); }
+          else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); }
+          else { score += rw; savePlayerScore(); showMessage(`✅ +${rw} tokens!`); }
+          db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); updateCounterDisplay(); renderTasks(); });
+        } else showMessage(`${td.progress}/${g}`);
+      });
+    }
+    
+    function completeTwitterTask(taskId) {
+      if (!user) return showMessage(t('signIn'));
+      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
+        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return;
+        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
+        db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); });
+      });
+    }
+
+    function updateOnlineTimeDisplay(progress) {
+      const tasksList = document.getElementById("tasksList"); if (!tasksList || !tasksList.children.length) return;
+      for (let i = 0; i < tasksList.children.length; i++) { if (tasksList.children[i].hasAttribute('data-task-id') && tasksList.children[i].getAttribute('data-task-id') === 'onlineTime') { const task = dailyTasks.find(t => t.id === "onlineTime"); if (!task) return; tasksList.children[i].innerHTML = `Stay online for 30 minutes: ${formatTimeFromSeconds(progress)} / ${formatTimeFromSeconds(task.goal)}<br><small>Reward: ${task.reward} 💎</small>`; break; } }
+    }
+
+    // ==================== ДОСТИЖЕНИЯ ====================
+    function checkAchievements() {
+      if (!achievements.superClicker && totalClicks >= 10000) { achievements.superClicker = true; showMessage("Achievement: Super Clicker!"); saveAchievements(); }
+      if (!achievements.tokenHoarder && score >= 1000000) { achievements.tokenHoarder = true; showMessage("Achievement: Token Hoarder!"); saveAchievements(); }
+      if (!achievements.level5 && getPlayerLevel() >= 5) { achievements.level5 = true; showMessage("Achievement: Level 5!"); saveAchievements(); }
+    }
+    
+    function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
+    
+    function renderAchievements() {
+      const list = document.getElementById('achievementsList'); list.innerHTML = '';
+      for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); }
+    }
+
+    // ==================== ОНЛАЙН-ТАЙМЕР ====================
+    function startOnlineTimer() {
+      if (onlineTimer) return; if (!isPageActive) { updatePageActivity(); }
+      lastOnlinePing = Date.now();
+      onlineTimer = setInterval(() => { if (!user) { stopOnlineTimer(); return; } if (!isPageActive) return; if (document.hidden || document.visibilityState !== 'visible') return; if (typeof document.hasFocus === 'function' && !document.hasFocus()) return; const now = Date.now(); const elapsed = now - lastOnlinePing; if (elapsed > 3000 || elapsed < 900) { lastOnlinePing = now; return; } lastOnlinePing = now; onlineTime++; updateTaskProgress("onlineTime", 1); }, 1000);
+    }
+    function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
+    function updatePageActivity() { const wasActive = isPageActive; isPageActive = (document.visibilityState === 'visible' && !document.hidden && (typeof document.hasFocus !== 'function' || document.hasFocus())); if (wasActive !== isPageActive) { if (isPageActive) { lastOnlinePing = Date.now(); if (user && !onlineTimer) startOnlineTimer(); } else { stopOnlineTimer(); lastOnlinePing = Date.now(); } } }
+    document.addEventListener('visibilitychange', updatePageActivity);
+    window.addEventListener('focus', () => { lastOnlinePing = Date.now(); updatePageActivity(); if (user && cloneEndTime > 0 && !dualClickActive) resumeCloneIfActive(); });
+    window.addEventListener('blur', () => { stopOnlineTimer(); isPageActive = false; lastOnlinePing = Date.now(); });
+    setInterval(() => { if (user && isPageActive && !onlineTimer) updatePageActivity(); }, 5000);
+
+    // ==================== БОНУСЫ ====================
+    function startBonusTimer() {
+      if (bonusTimerInterval) clearInterval(bonusTimerInterval);
+      bonusTimerInterval = setInterval(async () => { if (!user) return; try { const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); document.getElementById("claimBonusBtn").disabled = rem > 0; document.getElementById("bonusTimer").innerText = rem <= 0 ? t('claimNow') : `${t('nextIn')}: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; } catch (e) {} }, 1000);
+    }
+    
+    async function claimHourlyBonus() {
+      if (!user) return;
+      const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 };
+      if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { 
+        const rw = Math.floor(Math.random()*191)+10; 
+        await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
+        if (canWatchAd()) {
+          const wantsDouble = confirm(t('adHourlyBonus'));
+          if (wantsDouble) {
+            await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
+            showAdPopup('hourly');
+            return;
+          }
+        }
+        score += rw; 
+        savePlayerScore(); 
+        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw }); 
+        showMessage(`✅ +${rw} tokens!`, true); 
+        updateCounterDisplay(); 
+      }
+    }
+
+    // ==================== ЛИДЕРБОРД ====================
+    function showTab(tab) { currentTab = tab; if (tab === "overall") { document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; } else { document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; } }
+    function updateWeeklyScore() { if (user) db.ref(`weeklyLeaderboard/${getWeekKey()}/${user.uid}`).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, lastUpdate: Date.now() }); }
+    function checkWeeklyReset() { db.ref("weeklyLeaderboard/lastReset").once("value").then(s => { if (Date.now() - (s.val()||0) >= 604800000) { db.ref(`weeklyLeaderboard/${getWeekKey()}`).remove(); db.ref("weeklyLeaderboard/lastReset").set(Date.now()); } }); }
+    function submitScore() { if (!user) return; db.ref("leaderboard/" + user.uid).update({ id: user.uid, name: user.displayName || `P_${user.uid.slice(0,8)}`, score, crystals, clickPower, totalClicks, hasResonance: hasResonance || false, autoclickActive, autoclickEndTime, cloneEndTime: cloneEndTime || 0, lastUpdate: Date.now() }); if (score >= 50000) updateWeeklyScore(); }
+
+    // ==================== РЕФЕРАЛЬНАЯ СИСТЕМА ====================
+    function saveReferrer(ruid) {
+      if (!user || !ruid || isProcessingReferrer) return; isProcessingReferrer = true;
+      db.ref(`leaderboard/${user.uid}`).once('value').then(s => { if (s.val()?.referral_bonus_claimed) { isProcessingReferrer = false; return; }
+        db.ref(`leaderboard/${ruid}`).once('value').then(rs => { if (!rs.exists()) { isProcessingReferrer = false; return; }
+          db.ref(`leaderboard/${user.uid}/score`).transaction(cs => (cs||0)+50); showMessage('+50 referral!');
+          db.ref(`leaderboard/${user.uid}`).update({ referrer_uid: ruid, referral_bonus_claimed: true, lastUpdate: Date.now() });
+          db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now(), tokens_earned: 0, reward_claimed: false });
+          submitScore(); isProcessingReferrer = false;
+        });
+      });
+    }
+
+    function resetAllBoosters() { stopAllAutoclickers(); stopClone(); cloneEndTime = 0; instantAutoclickActive = false; instantAutoclickEndTime = 0; dualClickActive = false; deactivateDualClick(); updateCloneTimer(); updateCloneButtonState(); updateInstantAutoclickTimer(); updateInstantAutoclickButtonState(); updateAutoclickerShopUI(); savePlayerData(); showMessage('🔄 Boosters reset!'); }
+    window.resetAllBoosters = resetAllBoosters;
+
+    async function signOut() {
+      if (user) { savePlayerData(); }
+      cleanupAllTimers();
+      localStorage.removeItem('cryptoClickerSession');
+      user = null; score = 0; clickPower = 1; crystals = 0;
+      autoclickActive = false; autoclickEndTime = 0;
+      farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
+      farmSlots = [{ type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 }, null, null, null, null, null];
+      document.getElementById("authSection").style.display = "block";
+      document.getElementById("gameSection").style.display = "none";
+      document.getElementById('adminPanel').classList.remove('open');
+      document.getElementById('adminToggle').classList.remove('visible');
+      document.getElementById('adminBadge').style.display = 'none';
+      const signOutBtn = document.getElementById('signOutBtn');
+      if (signOutBtn) signOutBtn.classList.remove('visible');
+      setupAuthUI();
+    }
+
+    const profilePanel = document.getElementById('profilePanel');
+    function isMobileOrTablet() { return window.innerWidth <= 1023; }
+    if (isMobileOrTablet()) profilePanel.classList.remove('expanded');
+    profilePanel.addEventListener('click', function(e) { if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return; if (isMobileOrTablet()) this.classList.toggle('expanded'); });
+
+    db.ref("leaderboard").on("value", s => { if (currentTab !== "overall") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td></tr>`).join(''); });
+    db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${getRewardForRank(i+1)}</td></tr>`).join(''); });
+    function getRewardForRank(r) { return r <= 3 ? 10000 : r <= 5 ? 7000 : 5000; }
+    showTab("overall");
+    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); updateAdTaskUI(); updateFarmUI(); }, 1000);
+    setInterval(checkWeeklyReset, 600000);
+
+    let mi = 0; const me = document.getElementById("motiveText");
+    const phrases = ["Click — earn tokens.","Sign in — save your progress.","Your crypto journey starts here.","No account — no profit!","Top farmers are waiting for you!"];
+    setInterval(() => { me.style.opacity = 0; setTimeout(() => { mi = (mi+1)%phrases.length; me.textContent = phrases[mi]; me.style.opacity = 1; }, 500); }, 3000);
+
+    document.getElementById('buyCloneBtn').onclick = buyClone;
+    document.getElementById('buyInstantAutoclickBtn').onclick = buyInstantAutoclick;
+
+    // ==================== MINING FARM SYSTEM ====================
     function startFarmSystem() {
       if (farmTickInterval) clearInterval(farmTickInterval);
       if (energyRegenInterval) clearInterval(energyRegenInterval);
-      farmTickInterval = setInterval(farmTick, 60000); // каждую минуту
+      farmTickInterval = setInterval(farmTick, 60000);
       energyRegenInterval = setInterval(() => {
         if (!user) return;
-        energy = Math.min(maxEnergy, energy + 1);
+        farmEnergy = Math.min(farmMaxEnergy, farmEnergy + 1);
         savePlayerData();
         updateFarmUI();
-      }, 300000); // каждые 5 минут
+      }, 300000);
     }
 
     function farmTick() {
@@ -393,37 +1803,33 @@
         if (!slot) continue;
         if (slot.overheated && slot.overheatEnd > now) continue;
         if (slot.calibrateEnd && slot.calibrateEnd > now) continue;
-
         const rig = RIG_TYPES[slot.type];
         if (!rig) continue;
-
         const sameTypeCount = farmSlots.filter(s => s && s.type === slot.type).length;
         const slotIndex = farmSlots.filter((s, idx) => s && s.type === slot.type).indexOf(slot);
         const dimReturn = Math.max(0.5, 1 - slotIndex * 0.1);
         const overclockBonus = 1 + (slot.overclock || 0) * 0.1;
         const mergeBonus = slot.merged ? 1.4 : 1;
         const efficiencyReduction = 1 - (slot.efficiency || 0) * 0.1;
-
         totalIncome += rig.speed * dimReturn * overclockBonus * mergeBonus;
         totalEnergyCost += rig.energy * efficiencyReduction;
-
-        // Проверка перегрева
         if ((slot.overclock || 0) >= 4 && Math.random() < 0.05) {
           slot.overheated = true;
           slot.overheatEnd = now + 600000;
         }
+        if (slot.overheated && slot.overheatEnd <= now) { slot.overheated = false; slot.overheatEnd = 0; }
+        if (slot.calibrateEnd && slot.calibrateEnd <= now) { slot.calibrateEnd = 0; }
       }
 
-      if (energy >= totalEnergyCost) {
-        energy -= totalEnergyCost;
+      if (farmEnergy >= totalEnergyCost) {
+        farmEnergy -= totalEnergyCost;
         warehouseTokens += totalIncome;
       } else {
-        const ratio = energy / Math.max(totalEnergyCost, 0.01);
-        energy = 0;
+        const ratio = farmEnergy / Math.max(totalEnergyCost, 0.01);
+        farmEnergy = 0;
         warehouseTokens += totalIncome * ratio;
       }
       if (warehouseTokens > warehouseLimit) warehouseTokens = warehouseLimit;
-
       savePlayerData();
       updateFarmUI();
     }
@@ -447,6 +1853,7 @@
         if (!slot || slot.overheated) continue;
         if (slot.calibrateEnd && slot.calibrateEnd > Date.now()) continue;
         const rig = RIG_TYPES[slot.type];
+        if (!rig) continue;
         const sameType = farmSlots.filter(s => s && s.type === slot.type);
         const idx = sameType.indexOf(slot);
         const dimReturn = Math.max(0.5, 1 - idx * 0.1);
@@ -462,6 +1869,7 @@
       for (let slot of farmSlots) {
         if (!slot) continue;
         const rig = RIG_TYPES[slot.type];
+        if (!rig) continue;
         total += rig.energy * (1 - (slot.efficiency || 0) * 0.1);
       }
       return total;
@@ -470,25 +1878,31 @@
     function updateFarmUI() {
       const income = getFarmIncomePerMin();
       const energyCost = getFarmEnergyPerHour();
-      const timeToStop = energyCost > 0 ? (energy / energyCost) : 999;
-
-      document.getElementById('farmEnergyDisplay').textContent = Math.floor(energy) + ' / ' + maxEnergy + ' ⚡';
-      const energyPct = (energy / maxEnergy) * 100;
-      const bar = document.getElementById('farmEnergyBar');
-      bar.style.width = energyPct + '%';
-      bar.className = 'energy-fill ' + (energyPct > 50 ? 'high' : energyPct > 20 ? 'med' : 'low');
-
-      document.getElementById('farmWarehouseDisplay').textContent = Math.floor(warehouseTokens) + ' / ' + warehouseLimit + ' 🪙';
-      document.getElementById('collectWarehouseBtn').disabled = warehouseTokens <= 0;
-      document.getElementById('farmIncomeMin').textContent = income.toFixed(2);
-      document.getElementById('farmEnergyHour').textContent = energyCost.toFixed(1);
-      document.getElementById('farmTimeToStop').textContent = timeToStop >= 999 ? '∞' : timeToStop.toFixed(1) + 'h';
-
+      const timeToStop = energyCost > 0 ? (farmEnergy / energyCost) : 999;
+      const energyDisplay = document.getElementById('farmEnergyDisplay');
+      if (energyDisplay) energyDisplay.textContent = Math.floor(farmEnergy) + ' / ' + farmMaxEnergy + ' ⚡';
+      const energyBar = document.getElementById('farmEnergyBar');
+      if (energyBar) {
+        const energyPct = (farmEnergy / farmMaxEnergy) * 100;
+        energyBar.style.width = energyPct + '%';
+        energyBar.className = 'energy-fill ' + (energyPct > 50 ? 'high' : energyPct > 20 ? 'med' : 'low');
+      }
+      const whDisplay = document.getElementById('farmWarehouseDisplay');
+      if (whDisplay) whDisplay.textContent = Math.floor(warehouseTokens) + ' / ' + warehouseLimit + ' 🪙';
+      const collectBtn = document.getElementById('collectWarehouseBtn');
+      if (collectBtn) collectBtn.disabled = warehouseTokens <= 0;
+      const incomeDisplay = document.getElementById('farmIncomeMin');
+      if (incomeDisplay) incomeDisplay.textContent = income.toFixed(2);
+      const energyHourDisplay = document.getElementById('farmEnergyHour');
+      if (energyHourDisplay) energyHourDisplay.textContent = energyCost.toFixed(1);
+      const timeDisplay = document.getElementById('farmTimeToStop');
+      if (timeDisplay) timeDisplay.textContent = timeToStop >= 999 ? '∞' : timeToStop.toFixed(1) + 'h';
       renderFarmGrid();
     }
 
     function renderFarmGrid() {
       const grid = document.getElementById('farmGrid');
+      if (!grid) return;
       grid.innerHTML = '';
       const playerLevel = getPlayerLevel();
 
@@ -502,7 +1916,7 @@
         } else if (!slot) {
           div.className = 'farm-slot';
           div.onclick = () => buyRig(i);
-          div.innerHTML = '<span class="slot-number">#' + (i+1) + '</span><div style="font-size:12px;color:#555;">Empty Slot</div><div style="font-size:10px;color:#444;">Click to buy</div>';
+          div.innerHTML = '<span class="slot-number">#' + (i+1) + '</span><div style="font-size:12px;color:#555;">Empty Slot</div><div style="font-size:10px;color:#444;">Click to buy CPU</div>';
         } else {
           const rig = RIG_TYPES[slot.type];
           const isOverheated = slot.overheated && slot.overheatEnd > Date.now();
@@ -551,11 +1965,11 @@
     }
 
     function buyRig(index) {
-      if (!user) return;
-      const rigType = 'cpu'; // Пока можно купить только CPU
+      if (!user) { showMessage(t('signIn')); return; }
+      const rigType = 'cpu';
       const rig = RIG_TYPES[rigType];
       if (score < rig.costTokens || crystals < rig.costCrystals) {
-        showMessage('Need ' + rig.costTokens + ' tokens' + (rig.costCrystals > 0 ? ' + ' + rig.costCrystals + ' 💎' : '') + '!');
+        showMessage('Need ' + rig.costTokens + ' tokens!');
         return;
       }
       score -= rig.costTokens;
@@ -613,23 +2027,9 @@
       document.getElementById('rigDetailPanel').classList.add('open');
     }
 
-    function getOverclockCost(type, level) {
-      if (level >= 10) return 0;
-      const base = type === 'cpu' ? 200 : type === 'gpu' ? 500 : type === 'asic' ? 2000 : 10000;
-      return Math.floor(base * Math.pow(2.5, level));
-    }
-
-    function getEfficiencyCost(type, level) {
-      if (level >= 5) return 0;
-      const base = type === 'cpu' ? 150 : type === 'gpu' ? 400 : type === 'asic' ? 1500 : 7500;
-      return Math.floor(base * Math.pow(3, level));
-    }
-
-    function getLuckCost(type, level) {
-      if (level >= 5) return 0;
-      const base = type === 'cpu' ? 300 : type === 'gpu' ? 800 : type === 'asic' ? 3000 : 15000;
-      return Math.floor(base * Math.pow(3, level));
-    }
+    function getOverclockCost(type, level) { if (level >= 10) return 0; const base = type === 'cpu' ? 200 : type === 'gpu' ? 500 : type === 'asic' ? 2000 : 10000; return Math.floor(base * Math.pow(2.5, level)); }
+    function getEfficiencyCost(type, level) { if (level >= 5) return 0; const base = type === 'cpu' ? 150 : type === 'gpu' ? 400 : type === 'asic' ? 1500 : 7500; return Math.floor(base * Math.pow(3, level)); }
+    function getLuckCost(type, level) { if (level >= 5) return 0; const base = type === 'cpu' ? 300 : type === 'gpu' ? 800 : type === 'asic' ? 3000 : 15000; return Math.floor(base * Math.pow(3, level)); }
 
     function upgradeRigOverclock() {
       if (selectedRigSlot < 0) return;
@@ -705,23 +2105,30 @@
       showMessage('🔧 Rig repaired!');
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
-    // Обновлённая функция startGameAfterAuth
-    async function startGameAfterAuth() {
-      document.getElementById('authSection').style.display = 'none';
-      document.getElementById('gameSection').style.display = 'block';
-      await loadPlayerData(user.uid);
-      setupCrossPlatformSync();
-      startBonusTimer();
-      startOnlineTimer();
-      checkWeeklyReset();
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+    (async function init() {
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === currentLanguage);
+      });
+      
       loadAdState();
-      updateAdTaskUI();
-      checkAdCrystalTaskCompletion();
-      startFarmSystem();
-      const ref = new URLSearchParams(window.location.search).get('ref');
-      if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
-    }
+      
+      const loggedIn = await autoLogin();
+      if (loggedIn) {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('gameSection').style.display = 'block';
+        await loadPlayerData(user.uid);
+        setupCrossPlatformSync();
+        startBonusTimer();
+        startOnlineTimer();
+        checkWeeklyReset();
+        updateAdTaskUI();
+        checkAdCrystalTaskCompletion();
+        startFarmSystem();
+      } else {
+        setupAuthUI();
+      }
+    })();
   </script>
 </body>
 </html>
