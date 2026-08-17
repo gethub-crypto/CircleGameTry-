@@ -216,6 +216,15 @@
     .fan-spin-slow { animation: fanSpin 2s linear infinite; }
     .fan-spin { animation: fanSpin 1s linear infinite; }
     .fan-spin-fast { animation: fanSpin 0.5s linear infinite; }
+
+    /* ===== BONUS MODAL ===== */
+    #bonusModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border: 2px solid #ffd700; border-radius: 20px; padding: 30px; z-index: 10002; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 0 40px rgba(255, 215, 0, 0.3); animation: modalIn 0.3s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+    #bonusModal .bonus-icon { font-size: 50px; margin-bottom: 15px; animation: pulse 1.5s infinite; }
+    #bonusModal h3 { color: #ffd700; font-size: 22px; margin-bottom: 10px; }
+    #bonusModal p { color: #e0e0e0; font-size: 16px; margin-bottom: 20px; }
+    #bonusModal .modal-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    #bonusOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10001; }
   </style>
 </head>
 <body>
@@ -228,6 +237,19 @@
       <button class="click-button" onclick="closeAdPopup()">✖️ Закрыть</button>
     </div>
   </div>
+  
+  <!-- Стильное модальное окно для часового бонуса -->
+  <div id="bonusOverlay" onclick="closeBonusModal()"></div>
+  <div id="bonusModal">
+    <div class="bonus-icon">🎁</div>
+    <h3>Часовой бонус!</h3>
+    <p id="bonusModalText">Вы получили бонус!</p>
+    <div class="modal-buttons">
+      <button class="ad-button" onclick="watchBonusAd()" style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:14px;">📺 x2 за рекламу</button>
+      <button class="click-button" onclick="closeBonusModal()" style="background:linear-gradient(135deg,#00ffa6,#00c3ff);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:14px;">✅ Забрать</button>
+    </div>
+  </div>
+
   <div class="language-switch">
     <button class="lang-btn active" onclick="switchLanguage('ru')">RU</button>
     <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
@@ -446,7 +468,14 @@
         offlineEnergySpent: 'Энергии потрачено',
         offlineEnergyRegen: 'Энергии восстановлено',
         offlineWarehouseFull: 'Хранилище заполнено! Добыча остановлена.',
-        offlineEnergyEmpty: 'Энергия закончилась! Добыча остановлена.'
+        offlineEnergyEmpty: 'Энергия закончилась! Добыча остановлена.',
+        bonusModalTitle: 'Часовой бонус!',
+        bonusModalText: 'Вы получили +{amount} токенов!',
+        bonusWatchAd: '📺 x2 за рекламу',
+        bonusClaim: '✅ Забрать',
+        mergeNeedSame: '❌ Для слияния нужны одинаковые характеристики:',
+        mergeNoPartner: '❌ Нет второго рига такого же типа!',
+        mergeSuccess: '🔗 Слияние началось! +40% к скорости (калибровка 2 часа)'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -519,7 +548,14 @@
         offlineEnergySpent: 'Energy spent',
         offlineEnergyRegen: 'Energy regenerated',
         offlineWarehouseFull: 'Warehouse full! Mining stopped.',
-        offlineEnergyEmpty: 'Energy depleted! Mining stopped.'
+        offlineEnergyEmpty: 'Energy depleted! Mining stopped.',
+        bonusModalTitle: 'Hourly Bonus!',
+        bonusModalText: 'You got +{amount} tokens!',
+        bonusWatchAd: '📺 x2 for ad',
+        bonusClaim: '✅ Claim',
+        mergeNeedSame: '❌ Same characteristics needed:',
+        mergeNoPartner: '❌ No second rig of same type!',
+        mergeSuccess: '🔗 Merge started! +40% speed (2h calibration)'
       }
     };
     
@@ -865,6 +901,7 @@
     let suspiciousFlags = 0;
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let isRenderingTasks = false, isProcessingReferrer = false;
+    let pendingBonusAmount = 0;
     
     const MAX_CLICK_POWER = 100, MAX_SUSPICIOUS_FLAGS = 5;
     const INSTANT_AUTOCLICK_COST = 50, INSTANT_AUTOCLICK_DURATION = 3600000;
@@ -914,6 +951,41 @@
     let farmTickInterval = null;
     let energyRegenInterval = null;
     let lastFarmTickTime = 0;
+
+    // ==================== BONUS MODAL ====================
+    function showBonusModal(amount) {
+      pendingBonusAmount = amount;
+      document.getElementById('bonusModalText').textContent = t('bonusModalText').replace('{amount}', amount);
+      document.getElementById('bonusModal').style.display = 'block';
+      document.getElementById('bonusOverlay').style.display = 'block';
+    }
+
+    function closeBonusModal() {
+      if (pendingBonusAmount > 0) {
+        score += pendingBonusAmount;
+        savePlayerScore();
+        updateCounterDisplay();
+        updateProfilePanel();
+        showMessage('✅ +' + pendingBonusAmount + ' tokens!', true);
+        pendingBonusAmount = 0;
+      }
+      document.getElementById('bonusModal').style.display = 'none';
+      document.getElementById('bonusOverlay').style.display = 'none';
+    }
+
+    function watchBonusAd() {
+      const amount = pendingBonusAmount;
+      pendingBonusAmount = 0;
+      document.getElementById('bonusModal').style.display = 'none';
+      document.getElementById('bonusOverlay').style.display = 'none';
+      score += amount;
+      savePlayerScore();
+      updateCounterDisplay();
+      updateProfilePanel();
+      showAdPopup('hourly');
+    }
+    window.closeBonusModal = closeBonusModal;
+    window.watchBonusAd = watchBonusAd;
 
     // ==================== НАСТРОЙКА АВТОРИЗАЦИИ ====================
     function setupAuthUI() {
@@ -1726,23 +1798,17 @@
     
     async function claimHourlyBonus() {
       if (!user) return;
-      const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 };
+      const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); 
+      const d = s.val() || { lastClaim: 0 };
       if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { 
         const rw = Math.floor(Math.random()*191)+10; 
+        
         await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
-        if (canWatchAd()) {
-          const wantsDouble = confirm(t('adHourlyBonus'));
-          if (wantsDouble) {
-            await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
-            showAdPopup('hourly');
-            return;
-          }
-        }
-        score += rw; 
-        savePlayerScore(); 
-        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw }); 
-        showMessage(`✅ +${rw} tokens!`, true); 
-        updateCounterDisplay(); 
+        
+        // Показываем стильное модальное окно
+        showBonusModal(rw);
+        
+        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
       }
     }
 
@@ -1777,11 +1843,14 @@
       farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
       farmSlots = [{ type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 }, null, null, null, null, null];
       lastFarmTickTime = 0;
+      pendingBonusAmount = 0;
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
       document.getElementById('adminPanel').classList.remove('open');
       document.getElementById('adminToggle').classList.remove('visible');
       document.getElementById('adminBadge').style.display = 'none';
+      document.getElementById('bonusModal').style.display = 'none';
+      document.getElementById('bonusOverlay').style.display = 'none';
       const signOutBtn = document.getElementById('signOutBtn');
       if (signOutBtn) signOutBtn.classList.remove('visible');
       setupAuthUI();
@@ -1811,28 +1880,26 @@
       if (farmTickInterval) clearInterval(farmTickInterval);
       if (energyRegenInterval) clearInterval(energyRegenInterval);
       lastFarmTickTime = Date.now();
-      farmTickInterval = setInterval(farmTick, 60000); // каждую минуту
+      farmTickInterval = setInterval(farmTick, 60000);
       energyRegenInterval = setInterval(() => {
         if (!user) return;
         farmEnergy = Math.min(farmMaxEnergy, farmEnergy + 1);
         savePlayerData();
         updateFarmUI();
-      }, 300000); // каждые 5 минут
+      }, 300000);
     }
 
     function processOfflineMining() {
       if (!user || !lastFarmTickTime) return;
       const now = Date.now();
       const elapsedMs = now - lastFarmTickTime;
-      if (elapsedMs < 60000) return; // меньше минуты — не считаем
+      if (elapsedMs < 60000) return;
 
       const elapsedMinutes = elapsedMs / 60000;
-      const energyRegenAmount = Math.floor(elapsedMs / 300000); // +1 энергия каждые 5 минут
+      const energyRegenAmount = Math.floor(elapsedMs / 300000);
 
-      // Восстанавливаем энергию за время отсутствия
       farmEnergy = Math.min(farmMaxEnergy, farmEnergy + energyRegenAmount);
 
-      // Рассчитываем доход и расход энергии
       let totalIncomePerMin = 0;
       let totalEnergyPerHour = 0;
 
@@ -1855,26 +1922,17 @@
         totalEnergyPerHour += rig.energy * efficiencyReduction;
       }
 
-      // Переводим энергию из "в час" в "в минуту"
       const totalEnergyPerMin = totalEnergyPerHour / 60;
-
-      // Максимальное время майнинга с учётом энергии
       const maxMiningMinutesByEnergy = totalEnergyPerMin > 0 ? farmEnergy / totalEnergyPerMin : elapsedMinutes;
-      
-      // Максимальное время майнинга с учётом хранилища
       const warehouseSpace = warehouseLimit - warehouseTokens;
       const maxMiningMinutesByWarehouse = totalIncomePerMin > 0 ? warehouseSpace / totalIncomePerMin : elapsedMinutes;
-
-      // Фактическое время майнинга
       const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy, maxMiningMinutesByWarehouse);
 
       if (actualMiningMinutes > 0) {
         const earnedTokens = totalIncomePerMin * actualMiningMinutes;
         const spentEnergy = totalEnergyPerMin * actualMiningMinutes;
-
         warehouseTokens += earnedTokens;
         farmEnergy -= spentEnergy;
-
         if (warehouseTokens > warehouseLimit) warehouseTokens = warehouseLimit;
         if (farmEnergy < 0) farmEnergy = 0;
       }
@@ -1883,7 +1941,6 @@
       savePlayerData();
       updateFarmUI();
 
-      // Показываем сообщение об оффлайн-доходе
       if (actualMiningMinutes > 0) {
         const hours = Math.floor(elapsedMs / 3600000);
         const mins = Math.floor((elapsedMs % 3600000) / 60000);
@@ -2088,7 +2145,20 @@
       if ((slot.luck || 0) >= 5) { lkBtn.textContent = 'MAX'; lkBtn.disabled = true; }
       else { lkBtn.textContent = getLuckCost(slot.type, slot.luck || 0) + ' 🪙'; lkBtn.disabled = false; }
 
-      const canMerge = !slot.merged && farmSlots.some((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
+      // Проверка возможности слияния: нужен партнёр с ОДИНАКОВЫМИ характеристиками
+      let canMerge = false;
+      if (!slot.merged) {
+        const partner = farmSlots.find((s, i) => 
+          s && 
+          s.type === slot.type && 
+          !s.merged && 
+          i !== selectedRigSlot &&
+          (s.overclock || 0) === (slot.overclock || 0) &&
+          (s.efficiency || 0) === (slot.efficiency || 0) &&
+          (s.luck || 0) === (slot.luck || 0)
+        );
+        canMerge = !!partner;
+      }
       document.getElementById('mergeRow').style.display = canMerge ? 'flex' : 'none';
       document.getElementById('repairRow').style.display = isOverheated ? 'flex' : 'none';
       document.getElementById('rigDetailPanel').classList.add('open');
@@ -2147,15 +2217,44 @@
       if (selectedRigSlot < 0) return;
       const slot = farmSlots[selectedRigSlot];
       if (!slot || slot.merged) return;
-      const partnerIdx = farmSlots.findIndex((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
-      if (partnerIdx < 0) return;
+      
+      // Находим партнёра с ОДИНАКОВЫМИ характеристиками
+      const partnerIdx = farmSlots.findIndex((s, i) => 
+        s && 
+        s.type === slot.type && 
+        !s.merged && 
+        i !== selectedRigSlot &&
+        (s.overclock || 0) === (slot.overclock || 0) &&
+        (s.efficiency || 0) === (slot.efficiency || 0) &&
+        (s.luck || 0) === (slot.luck || 0)
+      );
+      
+      if (partnerIdx < 0) {
+        // Проверяем, есть ли вообще риг того же типа
+        const anySameType = farmSlots.some((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
+        if (!anySameType) {
+          showMessage(t('mergeNoPartner'));
+        } else {
+          let msg = t('mergeNeedSame') + ' ';
+          const diffs = [];
+          const partner = farmSlots.find((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
+          if (partner) {
+            if ((partner.overclock || 0) !== (slot.overclock || 0)) diffs.push('Overclock');
+            if ((partner.efficiency || 0) !== (slot.efficiency || 0)) diffs.push('Efficiency');
+            if ((partner.luck || 0) !== (slot.luck || 0)) diffs.push('Luck');
+          }
+          showMessage(msg + diffs.join(', '));
+        }
+        return;
+      }
+      
       slot.merged = true;
       farmSlots[partnerIdx] = null;
       slot.calibrateEnd = Date.now() + 7200000;
       savePlayerData();
       updateFarmUI();
       document.getElementById('rigDetailPanel').classList.remove('open');
-      showMessage('🔗 Merge started! +40% speed');
+      showMessage(t('mergeSuccess'));
     }
 
     function repairRig() {
