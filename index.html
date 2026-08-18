@@ -242,7 +242,7 @@
   <div id="bonusOverlay" onclick="closeBonusModal()"></div>
   <div id="bonusModal">
     <div class="bonus-icon">🎁</div>
-    <h3>Часовой бонус!</h3>
+    <h3 id="bonusModalTitle">Часовой бонус!</h3>
     <p id="bonusModalText">Вы получили бонус!</p>
     <div class="modal-buttons">
       <button class="ad-button" onclick="watchBonusAd()" style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:14px;">📺 x2 за рекламу</button>
@@ -956,6 +956,7 @@
     function showBonusModal(amount) {
       pendingBonusAmount = amount;
       document.getElementById('bonusModalText').textContent = t('bonusModalText').replace('{amount}', amount);
+      document.getElementById('bonusModalTitle').textContent = t('bonusModalTitle');
       document.getElementById('bonusModal').style.display = 'block';
       document.getElementById('bonusOverlay').style.display = 'block';
     }
@@ -974,15 +975,45 @@
     }
 
     function watchBonusAd() {
+      if (!user || pendingBonusAmount <= 0) return;
+      
       const amount = pendingBonusAmount;
       pendingBonusAmount = 0;
+      
       document.getElementById('bonusModal').style.display = 'none';
       document.getElementById('bonusOverlay').style.display = 'none';
+      
+      // Начисляем базовую сумму сразу
       score += amount;
       savePlayerScore();
       updateCounterDisplay();
       updateProfilePanel();
-      showAdPopup('hourly');
+      showMessage('✅ +' + amount + ' tokens!', true);
+      
+      // Запускаем рекламу напрямую (без второго окна)
+      adState.pendingRewardType = 'hourly';
+      adState.isAdLoading = true;
+      
+      try {
+        if (typeof show_11486843 !== 'function') {
+          setTimeout(async () => {
+            await handleAdCompletion('hourly');
+            adState.isAdLoading = false;
+          }, 1500);
+          return;
+        }
+        
+        show_11486843().then(async () => {
+          await handleAdCompletion('hourly');
+          adState.isAdLoading = false;
+        }).catch(async (error) => {
+          console.error('Ad error:', error);
+          await handleAdCompletion('hourly');
+          adState.isAdLoading = false;
+        });
+      } catch (e) {
+        adState.isAdLoading = false;
+      }
     }
     window.closeBonusModal = closeBonusModal;
     window.watchBonusAd = watchBonusAd;
@@ -2230,7 +2261,6 @@
       );
       
       if (partnerIdx < 0) {
-        // Проверяем, есть ли вообще риг того же типа
         const anySameType = farmSlots.some((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
         if (!anySameType) {
           showMessage(t('mergeNoPartner'));
