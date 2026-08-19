@@ -591,6 +591,129 @@
     function sanitizeInput(s) { return typeof s === 'string' ? s.replace(/[<>"'&]/g, m => ({'<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;','&':'&amp;'})[m]) : s; }
     const rateLimiter = { clicks: [], maxClicksPerSecond: 20, maxClicksPerMinute: 200, canClick() { const n = Date.now(); this.clicks = this.clicks.filter(t => n - t < 60000); if (this.clicks.filter(t => n - t < 1000).length >= this.maxClicksPerSecond || this.clicks.length >= this.maxClicksPerMinute) return false; this.clicks.push(n); return true; } };
 
+    // ==================== АНАЛИТИКА ТРАФИКА ====================
+    const analytics = {
+      pageViews: 0,
+      authAttempts: 0,
+      authSuccess: 0,
+      authFail: 0,
+      telegramWebApp: false,
+      referrer: '',
+      country: '',
+      city: '',
+      language: '',
+      startTime: Date.now(),
+      sessionId: Math.random().toString(36).substring(2, 15)
+    };
+
+    analytics.referrer = document.referrer || 'direct';
+    analytics.language = navigator.language || 'unknown';
+    analytics.telegramWebApp = isTelegramMiniApp;
+    analytics.pageViews++;
+
+    function trackVisit() {
+      if (!user) {
+        db.ref('analytics/visits').push({
+          sessionId: analytics.sessionId,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          referrer: analytics.referrer,
+          language: analytics.language,
+          telegramWebApp: analytics.telegramWebApp,
+          userAgent: navigator.userAgent.substring(0, 200),
+          screenSize: window.innerWidth + 'x' + window.innerHeight,
+          country: analytics.country,
+          city: analytics.city
+        }).catch(() => {});
+      }
+    }
+
+    function trackAuthAttempt() {
+      analytics.authAttempts++;
+      db.ref('analytics/auth_attempts').push({
+        sessionId: analytics.sessionId,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        referrer: analytics.referrer,
+        telegramWebApp: analytics.telegramWebApp,
+        country: analytics.country
+      }).catch(() => {});
+    }
+
+    function trackAuthSuccess() {
+      analytics.authSuccess++;
+      db.ref('analytics/auth_success').push({
+        sessionId: analytics.sessionId,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        uid: user?.uid || 'unknown',
+        referrer: analytics.referrer,
+        telegramWebApp: analytics.telegramWebApp,
+        country: analytics.country
+      }).catch(() => {});
+    }
+
+    function trackAuthFail(reason) {
+      analytics.authFail++;
+      db.ref('analytics/auth_fails').push({
+        sessionId: analytics.sessionId,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        reason: reason,
+        referrer: analytics.referrer,
+        telegramWebApp: analytics.telegramWebApp,
+        country: analytics.country
+      }).catch(() => {});
+    }
+
+    function trackTimeSpent() {
+      const timeSpent = Date.now() - analytics.startTime;
+      db.ref('analytics/time_spent').push({
+        sessionId: analytics.sessionId,
+        timeMs: timeSpent,
+        timeSec: Math.floor(timeSpent / 1000),
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).catch(() => {});
+    }
+
+    function trackError(message, source, line) {
+      db.ref('analytics/errors').push({
+        sessionId: analytics.sessionId,
+        message: message,
+        source: source || '',
+        line: line || 0,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).catch(() => {});
+    }
+
+    async function getCountry() {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        analytics.country = data.country_name || 'unknown';
+        analytics.city = data.city || 'unknown';
+        
+        db.ref('analytics/countries').push({
+          sessionId: analytics.sessionId,
+          country: analytics.country,
+          city: analytics.city,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).catch(() => {});
+      } catch (e) {
+        // Не удалось определить страну
+      }
+    }
+
+    // Глобальный обработчик ошибок
+    window.addEventListener('error', (event) => {
+      trackError(event.message, event.filename, event.lineno);
+    });
+
+    // Отслеживание ухода со страницы
+    window.addEventListener('beforeunload', () => {
+      trackTimeSpent();
+    });
+
+    // Запуск отслеживания
+    trackVisit();
+    getCountry();
+
     // ==================== РЕКЛАМНЫЕ НАСТРОЙКИ ====================
     const AD_SETTINGS = {
       cooldown: 15 * 60 * 1000,
@@ -1043,6 +1166,7 @@
     }
 
     function loginWithTelegramPC() {
+      trackAuthAttempt(); // Отслеживаем попытку авторизации
       const botUrl = 'https://t.me/circlegametry_bot';
       window.open(botUrl, '_blank');
       
@@ -1064,15 +1188,18 @@
     }
 
     async function signInWithTelegramMiniApp() {
+      trackAuthAttempt(); // Отслеживаем попытку авторизации
       try {
         const tg = window.Telegram.WebApp;
         const u = tg.initDataUnsafe?.user;
         if (!u?.id) { 
+          trackAuthFail('no_telegram_user');
           document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
           return; 
         }
         await handleTelegramUser(u);
       } catch (e) { 
+        trackAuthFail('telegram_error');
         document.getElementById('authButtons').innerHTML = `<div class="auth-error">${t('authError')}</div>`; 
       }
     }
@@ -1115,6 +1242,7 @@
         }
         
         user = { uid, tgUid: 'tg_' + tgId, displayName };
+        trackAuthSuccess(); // Отслеживаем успешную авторизацию
         if (isWhitelisted(user.tgUid) || isWhitelisted(uid)) showAdminPanel();
         saveSession(uid, tgId);
         
@@ -1123,6 +1251,7 @@
         
         startGameAfterAuth();
       } catch (error) {
+        trackAuthFail('firebase_error');
         showMessage(t('error'));
       }
     }
@@ -1134,6 +1263,7 @@
         const userSnap = await db.ref(`users/${session.uid}`).once('value');
         if (!userSnap.exists()) { localStorage.removeItem('cryptoClickerSession'); return false; }
         user = { uid: session.uid, tgUid: 'tg_' + session.tgId, displayName: userSnap.val().display_name || t('player') };
+        trackAuthSuccess(); // Отслеживаем авто-логин
         if (isWhitelisted(user.tgUid) || isWhitelisted(user.uid)) showAdminPanel();
         const signOutBtn = document.getElementById('signOutBtn');
         if (signOutBtn) signOutBtn.classList.add('visible');
@@ -1360,6 +1490,7 @@
       if (user) {
         savePlayerData();
       }
+      trackTimeSpent();
       cleanupAllTimers();
     });
 
