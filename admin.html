@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Clicker - Admin Panel</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f0f1a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      background: #1a1a2e;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 195, 255, 0.3);
+      text-align: center;
+    }
+    
+    .login-container h2 {
+      color: #00c3ff;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    
+    .login-container input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #2a2a3a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+    }
+    
+    .login-container button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #00c3ff, #00ffa6);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    
+    .dashboard {
+      display: none;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #1a1a2e;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 195, 255, 0.2);
+    }
+    
+    .header h1 {
+      color: #00c3ff;
+      font-size: 28px;
+    }
+    
+    .logout-btn {
+      background: #ff4444;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
+      text-align: center;
+    }
+    
+    .stat-card h3 {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .stat-card .value {
+      color: #00ffa6;
+      font-size: 32px;
+      font-weight: bold;
+    }
+    
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .chart-card {
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
+    }
+    
+    .chart-card h3 {
+      color: #00c3ff;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .chart-container {
+      height: 300px;
+      position: relative;
+    }
+    
+    .section {
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
+      margin-bottom: 30px;
+    }
+    
+    .section h2 {
+      color: #00c3ff;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+    
+    .search-bar {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      background: #2a2a3a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+    
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th {
+      background: #2a2a3a;
+      color: #00c3ff;
+      padding: 12px;
+      text-align: left;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #2a2a3a;
+      font-size: 14px;
+    }
+    
+    tr:hover {
+      background: #222;
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      margin: 2px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    .btn-add {
+      background: #00ffa6;
+      color: #000;
+    }
+    
+    .btn-ban {
+      background: #ffd700;
+      color: #000;
+    }
+    
+    .btn-delete {
+      background: #ff4444;
+      color: #fff;
+    }
+    
+    .btn-notify {
+      background: #00c3ff;
+      color: #000;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .funnel-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      margin: 10px 0;
+      background: #2a2a3a;
+      border-radius: 10px;
+    }
+    
+    .funnel-label {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    
+    .funnel-value {
+      color: #00ffa6;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    
+    .funnel-percent {
+      color: #00c3ff;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: #1a1a2e;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 195, 255, 0.5);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+    
+    .modal-content h3 {
+      color: #00c3ff;
+      margin-bottom: 20px;
+    }
+    
+    .modal-content input,
+    .modal-content textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #2a2a3a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+    
+    .modal-content textarea {
+      height: 100px;
+      resize: vertical;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .header h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Экран входа -->
+  <div class="login-container" id="loginScreen">
+    <h2>🔐 Admin Panel</h2>
+    <p style="color: #888; margin-bottom: 20px;">Введите пароль для доступа</p>
+    <input type="password" id="passwordInput" placeholder="Пароль" onkeypress="if(event.key==='Enter') checkPassword()">
+    <button onclick="checkPassword()">Войти</button>
+    <p id="loginError" style="color: #ff4444; margin-top: 10px; display: none;">Неверный пароль!</p>
+  </div>
+
+  <!-- Дашборд -->
+  <div class="dashboard" id="dashboard">
+    <div class="header">
+      <h1>📊 Crypto Clicker Admin</h1>
+      <div>
+        <button class="action-btn btn-notify" onclick="openNotifyModal()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">📢 Уведомить всех</button>
+        <button class="action-btn btn-delete" onclick="backupData()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">💾 Бэкап</button>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+      </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Всего визитов</h3>
+        <div class="value" id="totalVisits">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Всего пользователей</h3>
+        <div class="value" id="totalUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Новых сегодня</h3>
+        <div class="value" id="newToday">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Активных за 24ч</h3>
+        <div class="value" id="active24h">0</div>
+      </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>📈 Рост пользователей</h3>
+        <div class="chart-container">
+          <canvas id="userGrowthChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🕐 Активность по часам</h3>
+        <div class="chart-container">
+          <canvas id="activityChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🌍 Популярные страны</h3>
+        <div class="chart-container">
+          <canvas id="countriesChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🔄 Воронка конверсии</h3>
+        <div id="funnelContainer"></div>
+      </div>
+    </div>
+
+    <!-- Экономика -->
+    <div class="section">
+      <h2>🎮 Экономика</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Всего токенов</h3>
+          <div class="value" id="totalTokens">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Всего кристаллов</h3>
+          <div class="value" id="totalCrystals">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Средний баланс</h3>
+          <div class="value" id="avgBalance">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Топ-10 игроков</h3>
+          <div id="topPlayers" style="font-size: 12px; text-align: left; margin-top: 10px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Пользователи -->
+    <div class="section">
+      <h2>👥 Пользователи</h2>
+      <input type="text" class="search-bar" id="userSearch" placeholder="Поиск по UID или имени..." onkeyup="filterUsers()">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>UID</th>
+              <th>Имя</th>
+              <th>Токены</th>
+              <th>Кристаллы</th>
+              <th>Последняя активность</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Источники трафика -->
+    <div class="section">
+      <h2>📍 Источники трафика</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Из Telegram</h3>
+          <div class="value" id="telegramUsers">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Из браузера</h3>
+          <div class="value" id="browserUsers">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>По рефералам</h3>
+          <div class="value" id="referralUsers">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно уведомлений -->
+  <div class="modal" id="notifyModal">
+    <div class="modal-content">
+      <h3>📢 Отправить уведомление</h3>
+      <input type="text" id="notifyTitle" placeholder="Заголовок">
+      <textarea id="notifyMessage" placeholder="Текст уведомления"></textarea>
+      <div class="modal-buttons">
+        <button class="action-btn btn-add" onclick="sendNotification()">Отправить</button>
+        <button class="action-btn btn-delete" onclick="closeNotifyModal()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== КОНФИГУРАЦИЯ ====================
+    const ADMIN_PASSWORD = '123456'; // ИЗМЕНИТЕ НА СВОЙ ПАРОЛЬ!
+    
+    const firebaseConfig = { 
+      apiKey: "AIzaSyDVgvBf_C6dIMtZ4MISwR5YRCBi8_JXinQ", 
+      authDomain: "cryptoclickertry.firebaseapp.com", 
+      databaseURL: "https://cryptoclickertry-default-rtdb.firebaseio.com", 
+      projectId: "cryptoclickertry", 
+      storageBucket: "cryptoclickertry.firebasestorage.app", 
+      messagingSenderId: "1017002572592", 
+      appId: "1:1017002572592:web:e06e5f4ba00017dc1466f5" 
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    let allUsers = [];
+    let charts = {};
+    
+    // ==================== АВТОРИЗАЦИЯ ====================
+    function checkPassword() {
+      const password = document.getElementById('passwordInput').value;
+      if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem('adminAuth', 'true');
+        showDashboard();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+    
+    function logout() {
+      sessionStorage.removeItem('adminAuth');
+      location.reload();
+    }
+    
+    // ==================== ПОКАЗ ДАШБОРДА ====================
+    function showDashboard() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadAllData();
+    }
+    
+    // ==================== ЗАГРУЗКА ДАННЫХ ====================
+    async function loadAllData() {
+      await Promise.all([
+        loadVisits(),
+        loadUsers(),
+        loadAuthStats(),
+        loadCountries(),
+        loadErrors()
+      ]);
+      
+      loadUserGrowth();
+      loadActivityByHours();
+      loadFunnel();
+      loadEconomy();
+      renderUsersTable();
+    }
+    
+    async function loadVisits() {
+      const snapshot = await db.ref('analytics/visits').once('value');
+      const visits = snapshot.val() || {};
+      const visitList = Object.values(visits);
+      
+      document.getElementById('totalVisits').textContent = visitList.length;
+      
+      // Активные за 24 часа
+      const last24h = Date.now() - 86400000;
+      const activeVisits = visitList.filter(v => v.timestamp > last24h);
+      document.getElementById('active24h').textContent = activeVisits.length;
+      
+      // Источники трафика
+      const telegramCount = visitList.filter(v => v.isTelegram).length;
+      const browserCount = visitList.filter(v => !v.isTelegram).length;
+      const referralCount = visitList.filter(v => v.referrer && v.referrer !== 'direct').length;
+      
+      document.getElementById('telegramUsers').textContent = telegramCount;
+      document.getElementById('browserUsers').textContent = browserCount;
+      document.getElementById('referralUsers').textContent = referralCount;
+    }
+    
+    async function loadUsers() {
+      const snapshot = await db.ref('users').once('value');
+      const users = snapshot.val() || {};
+      allUsers = Object.entries(users).map(([uid, data]) => ({
+        uid,
+        ...data
+      }));
+      
+      document.getElementById('totalUsers').textContent = allUsers.length;
+      
+      // Новые сегодня
+      const today = new Date().toDateString();
+      const newUsers = allUsers.filter(u => {
+        const created = u.created_at ? new Date(u.created_at).toDateString() : '';
+        return created === today;
+      });
+      document.getElementById('newToday').textContent = newUsers.length;
+    }
+    
+    async function loadAuthStats() {
+      const attemptsSnapshot = await db.ref('analytics/auth_attempts').once('value');
+      const successSnapshot = await db.ref('analytics/auth_success').once('value');
+      const failsSnapshot = await db.ref('analytics/auth_fails').once('value');
+      
+      const attempts = Object.keys(attemptsSnapshot.val() || {}).length;
+      const successes = Object.keys(successSnapshot.val() || {}).length;
+      const fails = Object.keys(failsSnapshot.val() || {}).length;
+      
+      window.authStats = { attempts, successes, fails };
+    }
+    
+    async function loadCountries() {
+      const snapshot = await db.ref('analytics/countries').once('value');
+      const countries = snapshot.val() || {};
+      const countryCount = {};
+      
+      Object.values(countries).forEach(c => {
+        const country = c.country || 'Unknown';
+        countryCount[country] = (countryCount[country] || 0) + 1;
+      });
+      
+      const sorted = Object.entries(countryCount).sort((a, b) => b[1] - a[1]);
+      const top10 = sorted.slice(0, 10);
+      
+      const ctx = document.getElementById('countriesChart').getContext('2d');
+      
+      if (charts.countries) charts.countries.destroy();
+      
+      charts.countries = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: top10.map(c => c[0]),
+          datasets: [{
+            data: top10.map(c => c[1]),
+            backgroundColor: [
+              '#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444',
+              '#b388ff', '#00bcd4', '#ff6b6b', '#4caf50', '#ff9800'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: '#e0e0e0',
+                font: { size: 12 }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    async function loadErrors() {
+      const snapshot = await db.ref('analytics/errors').once('value');
+      const errors = snapshot.val() || {};
+      console.log('Total errors:', Object.keys(errors).length);
+    }
+    
+    // ==================== ГРАФИКИ ====================
+    async function loadUserGrowth() {
+      const snapshot = await db.ref('users').once('value');
+      const users = snapshot.val() || {};
+      
+      const last7Days = [];
+      const counts = [];
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toDateString();
+        
+        const count = Object.values(users).filter(u => {
+          const created = u.created_at ? new Date(u.created_at).toDateString() : '';
+          return created === dateStr;
+        }).length;
+        
+        last7Days.push(date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
+        counts.push(count);
+      }
+      
+      const ctx = document.getElementById('userGrowthChart').getContext('2d');
+      
+      if (charts.userGrowth) charts.userGrowth.destroy();
+      
+      charts.userGrowth = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: last7Days,
+          datasets: [{
+            label: 'Новые пользователи',
+            data: counts,
+            borderColor: '#00ffa6',
+            backgroundColor: 'rgba(0, 255, 166, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#e0e0e0' },
+              grid: { color: '#2a2a3a' }
+            },
+            x: {
+              ticks: { color: '#e0e0e0' },
+              grid: { color: '#2a2a3a' }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#e0e0e0' }
+            }
+          }
+        }
+      });
+    }
+    
+    async function loadActivityByHours() {
+      const snapshot = await db.ref('analytics/visits').once('value');
+      const visits = snapshot.val() || {};
+      
+      const hourCounts = new Array(24).fill(0);
+      
+      Object.values(visits).forEach(v => {
+        const hour = new Date(v.timestamp).getHours();
+        hourCounts[hour]++;
+      });
+      
+      const ctx = document.getElementById('activityChart').getContext('2d');
+      
+      if (charts.activity) charts.activity.destroy();
+      
+      charts.activity = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Array.from({length: 24}, (_, i) => i + ':00'),
+          datasets: [{
+            label: 'Визиты',
+            data: hourCounts,
+            backgroundColor: 'rgba(0, 195, 255, 0.6)',
+            borderColor: '#00c3ff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#e0e0e0' },
+              grid: { color: '#2a2a3a' }
+            },
+            x: {
+              ticks: { color: '#e0e0e0' },
+              grid: { color: '#2a2a3a' }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#e0e0e0' }
+            }
+          }
+        }
+      });
+    }
+    
+    function loadFunnel() {
+      const { attempts, successes, fails } = window.authStats || { attempts: 0, successes: 0, fails: 0 };
+      const visits = parseInt(document.getElementById('totalVisits').textContent) || 0;
+      
+      const funnelData = [
+        { label: 'Визиты', value: visits, percent: 100 },
+        { label: 'Попытки авторизации', value: attempts, percent: visits > 0 ? Math.round(attempts / visits * 100) : 0 },
+        { label: 'Успешные авторизации', value: successes, percent: attempts > 0 ? Math.round(successes / attempts * 100) : 0 },
+        { label: 'Ошибки авторизации', value: fails, percent: attempts > 0 ? Math.round(fails / attempts * 100) : 0 }
+      ];
+      
+      const container = document.getElementById('funnelContainer');
+      container.innerHTML = funnelData.map(item => `
+        <div class="funnel-item">
+          <span class="funnel-label">${item.label}</span>
+          <span>
+            <span class="funnel-value">${item.value}</span>
+            <span class="funnel-percent">${item.percent}%</span>
+          </span>
+        </div>
+      `).join('');
+    }
+    
+    async function loadEconomy() {
+      const snapshot = await db.ref('player_data').once('value');
+      const players = snapshot.val() || {};
+      
+      let totalTokens = 0;
+      let totalCrystals = 0;
+      const playerList = [];
+      
+      Object.entries(players).forEach(([uid, data]) => {
+        const tokens = data.score || 0;
+        const crystals = data.crystals || 0;
+        totalTokens += tokens;
+        totalCrystals += crystals;
+        playerList.push({ uid, tokens, crystals });
+      });
+      
+      document.getElementById('totalTokens').textContent = totalTokens.toLocaleString();
+      document.getElementById('totalCrystals').textContent = totalCrystals.toLocaleString();
+      
+      const avgBalance = playerList.length > 0 ? Math.round(totalTokens / playerList.length) : 0;
+      document.getElementById('avgBalance').textContent = avgBalance.toLocaleString();
+      
+      // Топ-10 игроков
+      const top10 = playerList.sort((a, b) => b.tokens - a.tokens).slice(0, 10);
+      const topPlayersContainer = document.getElementById('topPlayers');
+      topPlayersContainer.innerHTML = top10.map((p, i) => {
+        const user = allUsers.find(u => u.uid === p.uid);
+        const name = user?.display_name || 'Unknown';
+        return `<div style="padding: 5px 0;">${i+1}. ${escapeHtml(name)}: ${p.tokens.toLocaleString()} tokens</div>`;
+      }).join('');
+    }
+    
+    // ==================== ПОЛЬЗОВАТЕЛИ ====================
+    async function renderUsersTable() {
+      const tableBody = document.getElementById('usersTableBody');
+      tableBody.innerHTML = '';
+      
+      for (const user of allUsers) {
+        const playerData = await db.ref(`player_data/${user.uid}`).once('value');
+        const data = playerData.val() || {};
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-size: 11px;">${user.uid.slice(0, 12)}...</td>
+          <td>${escapeHtml(user.display_name || 'Unknown')}</td>
+          <td>${(data.score || 0).toLocaleString()}</td>
+          <td>${(data.crystals || 0).toLocaleString()}</td>
+          <td>${data.lastActive ? new Date(data.lastActive).toLocaleString('ru-RU') : 'Нет данных'}</td>
+          <td>
+            <button class="action-btn btn-add" onclick="addTokens('${user.uid}')">+1000</button>
+            <button class="action-btn btn-ban" onclick="banUser('${user.uid}')">Бан</button>
+            <button class="action-btn btn-delete" onclick="deleteUser('${user.uid}')">Удалить</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+    
+    function filterUsers() {
+      const search = document.getElementById('userSearch').value.toLowerCase();
+      const rows = document.querySelectorAll('#usersTableBody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(search) ? '' : 'none';
+      });
+    }
+    
+    // ==================== ДЕЙСТВИЯ ====================
+    async function addTokens(uid) {
+      const amount = parseInt(prompt('Сколько токенов добавить?', '1000'));
+      if (!amount || isNaN(amount)) return;
+      
+      await db.ref(`player_data/${uid}/score`).transaction(score => (score || 0) + amount);
+      await db.ref(`leaderboard/${uid}/score`).transaction(score => (score || 0) + amount);
+      
+      alert('Токены добавлены!');
+      loadEconomy();
+      renderUsersTable();
+    }
+    
+    async function banUser(uid) {
+      if (!confirm('Забанить пользователя?')) return;
+      
+      await db.ref(`banned/${uid}`).set({
+        banned_at: Date.now(),
+        reason: 'Banned by admin'
+      });
+      
+      alert('Пользователь забанен!');
+    }
+    
+    async function deleteUser(uid) {
+      if (!confirm('Удалить пользователя? Это действие необратимо!')) return;
+      
+      await db.ref(`users/${uid}`).remove();
+      await db.ref(`player_data/${uid}`).remove();
+      await db.ref(`leaderboard/${uid}`).remove();
+      await db.ref(`auth_lookup/tg_user_id_${uid.replace('tg_', '')}`).remove();
+      
+      alert('Пользователь удален!');
+      loadAllData();
+    }
+    
+    // ==================== УВЕДОМЛЕНИЯ ====================
+    function openNotifyModal() {
+      document.getElementById('notifyModal').style.display = 'flex';
+    }
+    
+    function closeNotifyModal() {
+      document.getElementById('notifyModal').style.display = 'none';
+    }
+    
+    async function sendNotification() {
+      const title = document.getElementById('notifyTitle').value;
+      const message = document.getElementById('notifyMessage').value;
+      
+      if (!title || !message) {
+        alert('Заполните все поля!');
+        return;
+      }
+      
+      await db.ref('notifications').push({
+        title,
+        message,
+        timestamp: Date.now(),
+        read: false
+      });
+      
+      closeNotifyModal();
+      document.getElementById('notifyTitle').value = '';
+      document.getElementById('notifyMessage').value = '';
+      alert('Уведомление отправлено!');
+    }
+    
+    // ==================== БЭКАП ====================
+    async function backupData() {
+      const snapshot = await db.ref('/').once('value');
+      const data = snapshot.val();
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ ====================
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+    
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+    if (sessionStorage.getItem('adminAuth') === 'true') {
+      showDashboard();
+    }
+  </script>
+</body>
+</html>
