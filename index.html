@@ -217,6 +217,43 @@
     .fan-spin { animation: fanSpin 1s linear infinite; }
     .fan-spin-fast { animation: fanSpin 0.5s linear infinite; }
 
+    /* ===== RIG SHOP MODAL ===== */
+    #rigShopModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+      border: 2px solid #00c3ff;
+      border-radius: 15px;
+      padding: 20px;
+      z-index: 10003;
+      max-width: 90%;
+      width: 350px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 30px rgba(0, 195, 255, 0.3);
+      animation: modalIn 0.3s ease;
+    }
+    #rigShopOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 10002;
+    }
+    .rig-option {
+      transition: all 0.2s ease;
+    }
+    .rig-option:hover {
+      border-color: #00ffa6 !important;
+      box-shadow: 0 0 15px rgba(0, 255, 166, 0.2);
+    }
+
     /* ===== BONUS MODAL ===== */
     #bonusModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border: 2px solid #ffd700; border-radius: 20px; padding: 30px; z-index: 10002; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 0 40px rgba(255, 215, 0, 0.3); animation: modalIn 0.3s ease; }
     @keyframes modalIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
@@ -442,14 +479,12 @@
             ip: data.ip || 'Unknown'
           };
           
-          // Сохраняем геолокацию
           await db.ref('analytics/countries').push({
             ...this.geoData,
             sessionId: this.sessionId,
             timestamp: Date.now()
           });
           
-          // Обновляем визит с геоданными
           await db.ref('analytics/visits').orderByChild('sessionId').equalTo(this.sessionId).once('value').then(snapshot => {
             snapshot.forEach(child => {
               db.ref('analytics/visits/' + child.key).update({
@@ -503,7 +538,6 @@
           });
         });
         
-        // Также сохраняем время каждые 30 секунд
         setInterval(() => {
           if (document.visibilityState === 'visible') {
             const timeSpent = Date.now() - this.visitStartTime;
@@ -624,7 +658,15 @@
         bonusClaim: '✅ Забрать',
         mergeNeedSame: '❌ Для слияния нужны одинаковые характеристики:',
         mergeNoPartner: '❌ Нет второго рига такого же типа!',
-        mergeSuccess: '🔗 Слияние началось! +40% к скорости (калибровка 2 часа)'
+        mergeSuccess: '🔗 Слияние началось! +40% к скорости (калибровка 2 часа)',
+        chooseRig: 'Выберите тип рига',
+        buyRig: 'Купить риг',
+        slot: 'Слот',
+        yourBalance: 'Ваш баланс',
+        buy: 'Купить',
+        needTokens: 'Нужно токенов',
+        needCrystals: 'Нужно кристаллов',
+        rigInstalled: 'установлен!'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -704,7 +746,15 @@
         bonusClaim: '✅ Claim',
         mergeNeedSame: '❌ Same characteristics needed:',
         mergeNoPartner: '❌ No second rig of same type!',
-        mergeSuccess: '🔗 Merge started! +40% speed (2h calibration)'
+        mergeSuccess: '🔗 Merge started! +40% speed (2h calibration)',
+        chooseRig: 'Choose Rig Type',
+        buyRig: 'Buy Rig',
+        slot: 'Slot',
+        yourBalance: 'Your balance',
+        buy: 'Buy',
+        needTokens: 'Need tokens',
+        needCrystals: 'Need crystals',
+        rigInstalled: 'installed!'
       }
     };
     
@@ -1132,14 +1182,12 @@
       document.getElementById('bonusModal').style.display = 'none';
       document.getElementById('bonusOverlay').style.display = 'none';
       
-      // Начисляем базовую сумму сразу
       score += amount;
       savePlayerScore();
       updateCounterDisplay();
       updateProfilePanel();
       showMessage('✅ +' + amount + ' tokens!', true);
       
-      // Запускаем рекламу напрямую (без второго окна)
       adState.pendingRewardType = 'hourly';
       adState.isAdLoading = true;
       
@@ -1994,7 +2042,6 @@
         
         await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
         
-        // Показываем стильное модальное окно
         showBonusModal(rw);
         
         await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
@@ -2229,7 +2276,12 @@
         } else if (!slot) {
           div.className = 'farm-slot';
           div.onclick = () => buyRig(i);
-          div.innerHTML = '<span class="slot-number">#' + (i+1) + '</span><div style="font-size:12px;color:#555;">Empty Slot</div><div style="font-size:10px;color:#444;">Click to buy CPU</div>';
+          div.innerHTML = `
+            <span class="slot-number">#${i+1}</span>
+            <div style="font-size:24px;margin-bottom:8px;">➕</div>
+            <div style="font-size:12px;color:#00c3ff;font-weight:bold;">${t('buyRig')}</div>
+            <div style="font-size:10px;color:#555;">${t('slot')} #${i+1}</div>
+          `;
         } else {
           const rig = RIG_TYPES[slot.type];
           const isOverheated = slot.overheated && slot.overheatEnd > Date.now();
@@ -2279,20 +2331,147 @@
 
     function buyRig(index) {
       if (!user) { showMessage(t('signIn')); return; }
-      const rigType = 'cpu';
+      if (farmSlots[index]) return;
+      showRigShopModal(index);
+    }
+
+    function showRigShopModal(slotIndex) {
+      let modal = document.getElementById('rigShopModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'rigShopModal';
+        document.body.appendChild(modal);
+      }
+      
+      let overlay = document.getElementById('rigShopOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'rigShopOverlay';
+        overlay.onclick = closeRigShopModal;
+        document.body.appendChild(overlay);
+      }
+      
+      let html = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+          <h3 style="color:#00c3ff;margin:0;">${t('chooseRig')}</h3>
+          <button onclick="closeRigShopModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✖️</button>
+        </div>
+        <div style="margin-bottom:15px;color:#888;font-size:12px;">
+          ${t('slot')} #${slotIndex + 1} | ${t('yourBalance')}: ${Math.floor(score)} 🪙 | ${crystals} 💎
+        </div>
+      `;
+      
+      html += createRigOption(slotIndex, 'cpu');
+      
+      if (slotIndex >= 1) {
+        html += createRigOption(slotIndex, 'gpu');
+      }
+      
+      if (slotIndex >= 2) {
+        html += createRigOption(slotIndex, 'asic');
+      }
+      
+      if (slotIndex >= 3) {
+        html += createRigOption(slotIndex, 'quantum');
+      }
+      
+      modal.innerHTML = html;
+      overlay.style.display = 'block';
+      modal.style.display = 'block';
+    }
+
+    function createRigOption(slotIndex, rigType) {
       const rig = RIG_TYPES[rigType];
-      if (score < rig.costTokens || crystals < rig.costCrystals) {
-        showMessage('Need ' + rig.costTokens + ' tokens!');
+      const canAfford = score >= rig.costTokens && crystals >= rig.costCrystals;
+      
+      return `
+        <div class="rig-option" style="
+            background: ${canAfford ? '#1a1a2a' : '#0f0f1a'};
+            border: 1px solid ${canAfford ? '#00c3ff' : '#333'};
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            opacity: ${canAfford ? '1' : '0.6'};
+        ">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:24px;">${rig.icon}</span>
+                    <div style="text-align:left;">
+                        <div style="font-weight:bold;color:#fff;">${rig.name}</div>
+                        <div style="font-size:11px;color:#888;">
+                            ${rig.speed}/min · ${rig.energy} ⚡/h
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:12px;color:#aaa;">
+                    ${rig.costTokens} 🪙 ${rig.costCrystals > 0 ? `+ ${rig.costCrystals} 💎` : ''}
+                </div>
+                <button 
+                    onclick="buySpecificRig(${slotIndex}, '${rigType}')"
+                    ${!canAfford ? 'disabled' : ''}
+                    style="
+                        padding: 6px 15px;
+                        border-radius: 8px;
+                        border: none;
+                        background: ${canAfford ? 'linear-gradient(135deg, #00ffa6, #00c3ff)' : '#333'};
+                        color: ${canAfford ? '#000' : '#555'};
+                        font-weight: bold;
+                        cursor: ${canAfford ? 'pointer' : 'not-allowed'};
+                        font-size: 12px;
+                    "
+                >
+                    ${t('buy')}
+                </button>
+            </div>
+        </div>
+      `;
+    }
+
+    function buySpecificRig(slotIndex, rigType) {
+      if (!user) { showMessage(t('signIn')); return; }
+      if (farmSlots[slotIndex]) return;
+      
+      const rig = RIG_TYPES[rigType];
+      
+      if (score < rig.costTokens) {
+        showMessage(`${t('needTokens')}: ${rig.costTokens}!`);
         return;
       }
+      if (crystals < rig.costCrystals) {
+        showMessage(`${t('needCrystals')}: ${rig.costCrystals}!`);
+        return;
+      }
+      
       score -= rig.costTokens;
       crystals -= rig.costCrystals;
-      farmSlots[index] = { type: rigType, overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 };
+      
+      farmSlots[slotIndex] = {
+        type: rigType,
+        overclock: 0,
+        efficiency: 0,
+        luck: 0,
+        merged: false,
+        overheated: false,
+        overheatEnd: 0,
+        calibrateEnd: 0
+      };
+      
       savePlayerData();
       updateCounterDisplay();
       updateProfilePanel();
       updateFarmUI();
-      showMessage('🖥️ CPU Miner installed!');
+      closeRigShopModal();
+      
+      showMessage(`${rig.icon} ${rig.name} ${t('rigInstalled')}`);
+    }
+
+    function closeRigShopModal() {
+      const modal = document.getElementById('rigShopModal');
+      const overlay = document.getElementById('rigShopOverlay');
+      if (modal) modal.style.display = 'none';
+      if (overlay) overlay.style.display = 'none';
     }
 
     function showRigDetail(index) {
@@ -2334,7 +2513,6 @@
       if ((slot.luck || 0) >= 5) { lkBtn.textContent = 'MAX'; lkBtn.disabled = true; }
       else { lkBtn.textContent = getLuckCost(slot.type, slot.luck || 0) + ' 🪙'; lkBtn.disabled = false; }
 
-      // Проверка возможности слияния: нужен партнёр с ОДИНАКОВЫМИ характеристиками
       let canMerge = false;
       if (!slot.merged) {
         const partner = farmSlots.find((s, i) => 
@@ -2407,7 +2585,6 @@
       const slot = farmSlots[selectedRigSlot];
       if (!slot || slot.merged) return;
       
-      // Находим партнёра с ОДИНАКОВЫМИ характеристиками
       const partnerIdx = farmSlots.findIndex((s, i) => 
         s && 
         s.type === slot.type && 
@@ -2459,6 +2636,9 @@
       showMessage('🔧 Rig repaired!');
     }
 
+    window.closeRigShopModal = closeRigShopModal;
+    window.buySpecificRig = buySpecificRig;
+
     // ==================== ИНИЦИАЛИЗАЦИЯ ====================
     (async function init() {
       document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -2467,7 +2647,6 @@
       
       loadAdState();
       
-      // Инициализируем аналитику
       Analytics.init();
       
       const loggedIn = await autoLogin();
