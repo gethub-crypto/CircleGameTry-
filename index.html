@@ -58,6 +58,7 @@
     .booster-card .feature-list { text-align: left; margin: 15px 0; font-size: 13px; color: #ccc; }
     .booster-card .feature-list div { margin: 5px 0; }
     .booster-card .feature-list i { color: #00ffa6; margin-right: 8px; }
+    .booster-card .rewards-preview { display: flex; justify-content: space-around; font-size: 24px; margin: 10px 0; }
     .requirement-text { font-size: 11px; color: #888; margin: 5px 0; }
     .booster-timer { font-size: 12px; color: #ffd700; margin-top: 8px; min-height: 20px; }
     #settings { background: #2a2a2a; padding: 20px; border-radius: 8px; width: 320px; margin: 15px auto !important; box-shadow: 0 0 10px #00c3ff; text-align: center; }
@@ -89,14 +90,17 @@
     .auth-error { color: #ff5555; padding: 15px; }
     .score-popup { position: fixed; font-weight: bold; pointer-events: none; z-index: 9999; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4); animation: floatUpChaotic 0.8s ease-out forwards; user-select: none; }
     @keyframes floatUpChaotic { 0% { opacity: 0; transform: translate(0, 0) scale(0.2) rotate(0deg); } 15% { opacity: 1; transform: translate(var(--dx20, 0px), -10px) scale(0.8) rotate(var(--rot20, 0deg)); } 40% { opacity: 1; transform: translate(var(--dx50, 0px), -35px) scale(1.3) rotate(var(--rot50, 0deg)); } 70% { opacity: 0.7; transform: translate(var(--dx100, 0px), -65px) scale(1.1) rotate(var(--rot100, 0deg)); } 100% { opacity: 0; transform: translate(calc(var(--dx100, 0px) * 1.5), -100px) scale(0.6) rotate(calc(var(--rot100, 0deg) * 1.5)); } }
+
     .signout-button { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; transition: all 0.3s; font-size: 14px; display: none; }
     .signout-button.visible { display: block; }
     .signout-button:hover { background: #cc0000; transform: translateY(-2px); }
     .language-switch { position: fixed; top: 10px; right: 10px; z-index: 10000; display: flex; gap: 5px; }
     .lang-btn { background: #2a2a2a; color: #fff; border: 1px solid #00c3ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
     .lang-btn.active { background: linear-gradient(135deg, #00c3ff, #00ffa6); color: #000; font-weight: bold; }
+    
     .telegram-login-btn { background: linear-gradient(135deg, #0088cc, #00c3ff) !important; color: #fff !important; font-size: 18px !important; padding: 15px 40px !important; }
     .telegram-login-btn:hover { box-shadow: 0 5px 20px rgba(0, 136, 204, 0.5) !important; }
+
     #adRewardPopup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 25px; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 195, 255, 0.5); z-index: 10001; text-align: center; max-width: 350px; width: 90%; }
     #adRewardPopup h3 { color: #ffd700; margin-bottom: 15px; font-size: 20px; }
     #adRewardPopup p { color: #fff; margin-bottom: 20px; font-size: 16px; }
@@ -122,13 +126,7 @@
       #adminPanel { bottom: 10px; right: 10px; max-width: 250px; }
       .farm-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 480px) { 
-      h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; }
-      .energy-panel-farm, .warehouse-panel-farm { flex-wrap: wrap; }
-      .energy-panel-farm .energy-info, .warehouse-panel-farm .warehouse-info { flex: 1 1 60%; min-width: 140px; }
-      .energy-boost-btn, .warehouse-panel-farm .collect-btn, .warehouse-boost-btn { flex: 1 1 35%; min-width: 90px; }
-      .warehouse-panel-farm > div:last-child { flex: 1 1 35%; min-width: 90px; }
-    }
+    @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     @media (min-width: 1024px) {
       .game-header { padding: 20px; } #profilePanel { width: 250px; font-size: 16px; max-height: none; overflow: visible; }
       #profilePanel .collapse-arrow { display: none; } .bonus-card { width: 220px; }
@@ -139,7 +137,22 @@
 
     /* ===== MINING FARM STYLES ===== */
     .farm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px auto; max-width: 500px; }
-    .farm-slot { background: linear-gradient(135deg, #111118, #1a1a2a); border: 2px dashed #2a2a3a; border-radius: 14px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.25s ease; position: relative; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+    .farm-slot {
+      background: linear-gradient(135deg, #111118, #1a1a2a);
+      border: 2px dashed #2a2a3a;
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
     .farm-slot:hover { border-color: #00c3ff; box-shadow: 0 0 20px rgba(0, 195, 255, 0.1); transform: translateY(-2px); }
     .farm-slot.occupied { border-style: solid; border-color: #2a2a3a; }
     .farm-slot.occupied:hover { border-color: #00c3ff; }
@@ -165,28 +178,22 @@
     .heat-high { background: linear-gradient(90deg, #ff4444, #ff2222); }
     .overheat-overlay { position: absolute; inset: 0; background: rgba(255, 68, 68, 0.06); border-radius: 14px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 2; }
     .overheat-text { color: #ff4444; font-size: 11px; font-weight: 800; background: rgba(10, 10, 15, 0.9); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.3); text-transform: uppercase; letter-spacing: 1px; }
-    .energy-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; flex-wrap: nowrap; }
+    .energy-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; }
     .energy-panel-farm .energy-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #222; flex-shrink: 0; }
-    .energy-panel-farm .energy-info { flex: 1; text-align: left; min-width: 0; }
+    .energy-panel-farm .energy-info { flex: 1; text-align: left; }
     .energy-panel-farm .energy-label { font-size: 12px; color: #888; }
-    .energy-panel-farm .energy-value { font-size: 16px; font-weight: bold; white-space: nowrap; }
+    .energy-panel-farm .energy-value { font-size: 16px; font-weight: bold; }
     .energy-panel-farm .energy-bar { width: 100%; height: 8px; background: #222; border-radius: 4px; margin-top: 4px; overflow: hidden; }
     .energy-panel-farm .energy-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
     .energy-panel-farm .energy-fill.high { background: #00c3ff; }
     .energy-panel-farm .energy-fill.med { background: #ffd700; }
     .energy-panel-farm .energy-fill.low { background: #ff4444; }
-    .energy-boost-btn { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-weight: bold; padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; transition: all 0.3s ease; flex-shrink: 0; white-space: nowrap; min-width: 80px; }
-    .energy-boost-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
-    .energy-boost-btn:disabled { background: #555; cursor: not-allowed; transform: none; }
-    .warehouse-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; flex-wrap: nowrap; }
+    .warehouse-panel-farm { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #333; border-radius: 10px; margin: 15px auto; max-width: 500px; background: #1a1a1a; }
     .warehouse-panel-farm .warehouse-info { flex: 1; text-align: left; }
     .warehouse-panel-farm .warehouse-label { font-size: 12px; color: #888; }
-    .warehouse-panel-farm .warehouse-value { font-size: 16px; font-weight: bold; white-space: nowrap; }
-    .warehouse-panel-farm .collect-btn { padding: 10px 14px; border-radius: 8px; border: none; background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-size: 13px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; min-width: 80px; }
+    .warehouse-panel-farm .warehouse-value { font-size: 16px; font-weight: bold; }
+    .warehouse-panel-farm .collect-btn { padding: 8px 16px; border-radius: 8px; border: none; background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; font-size: 13px; font-weight: bold; cursor: pointer; }
     .warehouse-panel-farm .collect-btn:disabled { background: #555; cursor: not-allowed; }
-    .warehouse-boost-btn { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-weight: bold; padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; transition: all 0.3s ease; flex-shrink: 0; white-space: nowrap; min-width: 80px; width: 100%; }
-    .warehouse-boost-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
-    .warehouse-boost-btn:disabled { background: #555; cursor: not-allowed; transform: none; }
     .stats-grid-farm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px auto; max-width: 500px; }
     .stats-grid-farm .stat-box { border: 1px solid #333; border-radius: 8px; padding: 10px; text-align: center; background: #1a1a1a; }
     .stats-grid-farm .stat-box-label { font-size: 11px; color: #888; margin-bottom: 4px; }
@@ -204,14 +211,94 @@
     .upgrade-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid #333; background: linear-gradient(135deg, #1a1a2a, #111118); color: #e0e0e0; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
     .upgrade-btn:hover { border-color: #00c3ff; }
     .upgrade-btn:disabled { background: #1a1a2a; color: #444; cursor: not-allowed; }
+    .upgrade-btn.max { background: transparent; border-color: #333; color: #555; }
     @keyframes fanSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .fan-spin-slow { animation: fanSpin 2s linear infinite; }
     .fan-spin { animation: fanSpin 1s linear infinite; }
     .fan-spin-fast { animation: fanSpin 0.5s linear infinite; }
-    #rigShopModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border: 2px solid #00c3ff; border-radius: 15px; padding: 20px; z-index: 10003; max-width: 90%; width: 350px; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 30px rgba(0, 195, 255, 0.3); animation: modalIn 0.3s ease; }
-    #rigShopOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 10002; }
-    .rig-option { transition: all 0.2s ease; }
-    .rig-option:hover { border-color: #00ffa6 !important; box-shadow: 0 0 15px rgba(0, 255, 166, 0.2); }
+
+    /* ===== RIG SHOP MODAL ===== */
+    #rigShopModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+      border: 2px solid #00c3ff;
+      border-radius: 15px;
+      padding: 20px;
+      z-index: 10003;
+      max-width: 90%;
+      width: 350px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 30px rgba(0, 195, 255, 0.3);
+      animation: modalIn 0.3s ease;
+    }
+    #rigShopOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 10002;
+    }
+    .rig-option {
+      transition: all 0.2s ease;
+    }
+    .rig-option:hover {
+      border-color: #00ffa6 !important;
+      box-shadow: 0 0 15px rgba(0, 255, 166, 0.2);
+    }
+
+    /* ===== ENERGY BOOST STYLES ===== */
+    .energy-boost-btn {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      color: #000;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+      transition: all 0.3s ease;
+    }
+    .energy-boost-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+    .energy-boost-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .warehouse-boost-btn {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      color: #000;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+      transition: all 0.3s ease;
+    }
+    .warehouse-boost-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+    .warehouse-boost-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ===== BONUS MODAL ===== */
     #bonusModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border: 2px solid #ffd700; border-radius: 20px; padding: 30px; z-index: 10002; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 0 40px rgba(255, 215, 0, 0.3); animation: modalIn 0.3s ease; }
     @keyframes modalIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     #bonusModal .bonus-icon { font-size: 50px; margin-bottom: 15px; animation: pulse 1.5s infinite; }
@@ -323,9 +410,10 @@
             <div class="energy-label">Energy</div>
             <div class="energy-value" id="farmEnergyDisplay">50 / 50 ⚡</div>
             <div class="energy-bar"><div class="energy-fill high" id="farmEnergyBar" style="width:100%"></div></div>
-            <div style="font-size:11px;color:#888;margin-top:4px;">+1 / 5 min</div>
           </div>
-          <button class="energy-boost-btn" id="energyBoostBtn" onclick="watchEnergyAd()">📺 +25⚡</button>
+          <div style="font-size:12px;color:#888">+1 / 5 min
+            <button class="energy-boost-btn" id="energyBoostBtn" onclick="watchEnergyAd()">📺 +25⚡</button>
+          </div>
         </div>
         <div class="warehouse-panel-farm">
           <div class="warehouse-info">
@@ -408,29 +496,35 @@
 
     // ==================== НАСТРОЙКИ ЭНЕРГИИ ====================
     const ENERGY_SETTINGS = {
-      efficiencyPerLevel: 0.07,
-      rigPenalty: 0.15,
-      maxEfficiencyLevel: 5,
-      energyRegenPerMinute: 0.2,
-      maxEnergy: 50
+      efficiencyPerLevel: 0.07,  // 7% снижения за уровень (было 10%)
+      rigPenalty: 0.15,          // 15% штраф за каждый доп. риг
+      maxEfficiencyLevel: 5,     // максимум уровней эффективности
+      energyRegenPerMinute: 0.2, // +1 ⚡ каждые 5 минут
+      maxEnergy: 50              // максимум энергии
     };
 
     // ==================== НАСТРОЙКИ РЕКЛАМЫ ====================
     const AD_SETTINGS = {
       cooldown: 15 * 60 * 1000,
       dailyLimit: 10,
-      energyAdLimit: 3,
-      warehouseAdLimit: 3,
+      energyAdLimit: 3,           // Лимит рекламы за энергию
+      warehouseAdLimit: 3,        // Лимит рекламы за склад
       rewards: {
         taskAd: 50,
         miniGameFail: 100,
         hourlyBonusMultiplier: 2,
-        energyBoost: 25,
-        warehouseBoost: 5
+        energyBoost: 25,          // +25 энергии за рекламу
+        warehouseBoost: 5         // +5 к складу за рекламу
       }
     };
 
-    const AD_CRYSTAL_TASK = { id: "watchAdsForCrystal", goal: 5, reward: 1, rewardType: "crystals", period: "daily" };
+    const AD_CRYSTAL_TASK = {
+      id: "watchAdsForCrystal",
+      goal: 5,
+      reward: 1,
+      rewardType: "crystals",
+      period: "daily"
+    };
     
     let adState = {
       lastWatchTime: 0,
@@ -575,11 +669,21 @@
       let rewardTitle = '📺 Rewarded Ad';
       
       switch (rewardType) {
-        case 'task': rewardText = `+${AD_SETTINGS.rewards.taskAd} tokens`; break;
-        case 'minigame': rewardText = `+${AD_SETTINGS.rewards.miniGameFail} tokens`; break;
-        case 'hourly': rewardText = `x${AD_SETTINGS.rewards.hourlyBonusMultiplier} bonus`; break;
-        case 'energy': rewardText = `+${AD_SETTINGS.rewards.energyBoost} ⚡ energy`; break;
-        case 'warehouse': rewardText = `+${AD_SETTINGS.rewards.warehouseBoost} warehouse for 1h`; break;
+        case 'task':
+          rewardText = `+${AD_SETTINGS.rewards.taskAd} tokens`;
+          break;
+        case 'minigame':
+          rewardText = `+${AD_SETTINGS.rewards.miniGameFail} tokens`;
+          break;
+        case 'hourly':
+          rewardText = `x${AD_SETTINGS.rewards.hourlyBonusMultiplier} bonus`;
+          break;
+        case 'energy':
+          rewardText = `+${AD_SETTINGS.rewards.energyBoost} ⚡ energy`;
+          break;
+        case 'warehouse':
+          rewardText = `+${AD_SETTINGS.rewards.warehouseBoost} warehouse for 1h`;
+          break;
       }
       
       document.getElementById('adRewardTitle').textContent = rewardTitle;
@@ -605,9 +709,11 @@
       document.getElementById('adWatchBtn').textContent = 'Loading...';
       
       try {
+        // Пытаемся показать реальную рекламу
         if (typeof show_11486843 === 'function') {
           await show_11486843();
         } else {
+          // Если SDK не загружен, имитируем просмотр
           console.log('Ad SDK not loaded, simulating ad completion');
           await new Promise(resolve => setTimeout(resolve, 1500));
         }
@@ -616,6 +722,7 @@
         
       } catch (error) {
         console.error('Ad error:', error);
+        // Даже при ошибке начисляем награду для тестирования
         await handleAdCompletion(rewardType);
       } finally {
         adState.isAdLoading = false;
@@ -663,8 +770,8 @@
           
         case 'warehouse':
           adState.warehouseAdWatchesToday++;
-          adState.warehouseBoostEndTime = Date.now() + 3600000;
-          warehouseLimit = 17;
+          adState.warehouseBoostEndTime = Date.now() + 3600000; // 1 час
+          warehouseLimit = 17; // 12 + 5
           showMessage(`✅ Warehouse +5 for 1 hour!`);
           break;
       }
@@ -707,11 +814,10 @@
       const remaining = AD_SETTINGS.energyAdLimit - adState.energyAdWatchesToday;
       if (remaining <= 0) {
         btn.disabled = true;
-        btn.textContent = '📺 Limit';
+        btn.textContent = '📺 Limit reached';
       } else {
         btn.disabled = false;
-        btn.textContent = `📺 +25⚡`;
-        btn.title = `${remaining} left today`;
+        btn.textContent = `📺 +25⚡ (${remaining} left)`;
       }
     }
 
@@ -721,18 +827,18 @@
       const remaining = AD_SETTINGS.warehouseAdLimit - adState.warehouseAdWatchesToday;
       if (remaining <= 0) {
         btn.disabled = true;
-        btn.textContent = '📺 Limit';
+        btn.textContent = '📺 Limit reached';
       } else if (adState.warehouseBoostEndTime > Date.now()) {
         btn.disabled = true;
         const mins = Math.ceil((adState.warehouseBoostEndTime - Date.now()) / 60000);
-        btn.textContent = `🕐${mins}m`;
+        btn.textContent = `📺 Active (${mins}m)`;
       } else {
         btn.disabled = false;
-        btn.textContent = `📺 +5 🕐1h`;
-        btn.title = `${remaining} left today`;
+        btn.textContent = `📺 +5 🕐1h (${remaining} left)`;
       }
     }
 
+    // Проверка окончания буста склада
     setInterval(() => {
       if (adState.warehouseBoostEndTime > 0 && adState.warehouseBoostEndTime <= Date.now()) {
         adState.warehouseBoostEndTime = 0;
@@ -755,9 +861,11 @@
         const rig = RIG_TYPES[slot.type];
         if (!rig) continue;
         
+        // Новый расчет: 7% за уровень вместо 10%
         total += rig.energy * (1 - (slot.efficiency || 0) * ENERGY_SETTINGS.efficiencyPerLevel);
       }
       
+      // Множитель за количество ригов
       const totalRigs = farmSlots.filter(s => s !== null).length;
       if (totalRigs > 1) {
         const energyMultiplier = 1 + (totalRigs - 1) * ENERGY_SETTINGS.rigPenalty;
@@ -913,9 +1021,18 @@
       `;
       
       html += createRigOption(slotIndex, 'cpu');
-      if (slotIndex >= 1) html += createRigOption(slotIndex, 'gpu');
-      if (slotIndex >= 2) html += createRigOption(slotIndex, 'asic');
-      if (slotIndex >= 3) html += createRigOption(slotIndex, 'quantum');
+      
+      if (slotIndex >= 1) {
+        html += createRigOption(slotIndex, 'gpu');
+      }
+      
+      if (slotIndex >= 2) {
+        html += createRigOption(slotIndex, 'asic');
+      }
+      
+      if (slotIndex >= 3) {
+        html += createRigOption(slotIndex, 'quantum');
+      }
       
       modal.innerHTML = html;
       overlay.style.display = 'block';
@@ -927,20 +1044,46 @@
       const canAfford = score >= rig.costTokens && crystals >= rig.costCrystals;
       
       return `
-        <div class="rig-option" style="background: ${canAfford ? '#1a1a2a' : '#0f0f1a'}; border: 1px solid ${canAfford ? '#00c3ff' : '#333'}; border-radius: 10px; padding: 12px; margin-bottom: 10px; opacity: ${canAfford ? '1' : '0.6'};">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:24px;">${rig.icon}</span>
-              <div style="text-align:left;">
-                <div style="font-weight:bold;color:#fff;">${rig.name}</div>
-                <div style="font-size:11px;color:#888;">${rig.speed}/min · ${rig.energy} ⚡/h</div>
-              </div>
+        <div class="rig-option" style="
+            background: ${canAfford ? '#1a1a2a' : '#0f0f1a'};
+            border: 1px solid ${canAfford ? '#00c3ff' : '#333'};
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            opacity: ${canAfford ? '1' : '0.6'};
+        ">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:24px;">${rig.icon}</span>
+                    <div style="text-align:left;">
+                        <div style="font-weight:bold;color:#fff;">${rig.name}</div>
+                        <div style="font-size:11px;color:#888;">
+                            ${rig.speed}/min · ${rig.energy} ⚡/h
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-size:12px;color:#aaa;">${rig.costTokens} 🪙 ${rig.costCrystals > 0 ? `+ ${rig.costCrystals} 💎` : ''}</div>
-            <button onclick="buySpecificRig(${slotIndex}, '${rigType}')" ${!canAfford ? 'disabled' : ''} style="padding: 6px 15px; border-radius: 8px; border: none; background: ${canAfford ? 'linear-gradient(135deg, #00ffa6, #00c3ff)' : '#333'}; color: ${canAfford ? '#000' : '#555'}; font-weight: bold; cursor: ${canAfford ? 'pointer' : 'not-allowed'}; font-size: 12px;">Buy</button>
-          </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:12px;color:#aaa;">
+                    ${rig.costTokens} 🪙 ${rig.costCrystals > 0 ? `+ ${rig.costCrystals} 💎` : ''}
+                </div>
+                <button 
+                    onclick="buySpecificRig(${slotIndex}, '${rigType}')"
+                    ${!canAfford ? 'disabled' : ''}
+                    style="
+                        padding: 6px 15px;
+                        border-radius: 8px;
+                        border: none;
+                        background: ${canAfford ? 'linear-gradient(135deg, #00ffa6, #00c3ff)' : '#333'};
+                        color: ${canAfford ? '#000' : '#555'};
+                        font-weight: bold;
+                        cursor: ${canAfford ? 'pointer' : 'not-allowed'};
+                        font-size: 12px;
+                    "
+                >
+                    Buy
+                </button>
+            </div>
         </div>
       `;
     }
@@ -951,13 +1094,28 @@
       
       const rig = RIG_TYPES[rigType];
       
-      if (score < rig.costTokens) { showMessage(`Need ${rig.costTokens} tokens!`); return; }
-      if (crystals < rig.costCrystals) { showMessage(`Need ${rig.costCrystals} crystals!`); return; }
+      if (score < rig.costTokens) {
+        showMessage(`Need ${rig.costTokens} tokens!`);
+        return;
+      }
+      if (crystals < rig.costCrystals) {
+        showMessage(`Need ${rig.costCrystals} crystals!`);
+        return;
+      }
       
       score -= rig.costTokens;
       crystals -= rig.costCrystals;
       
-      farmSlots[slotIndex] = { type: rigType, overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 };
+      farmSlots[slotIndex] = {
+        type: rigType,
+        overclock: 0,
+        efficiency: 0,
+        luck: 0,
+        merged: false,
+        overheated: false,
+        overheatEnd: 0,
+        calibrateEnd: 0
+      };
       
       savePlayerData();
       updateCounterDisplay();
@@ -1016,7 +1174,15 @@
 
       let canMerge = false;
       if (!slot.merged) {
-        const partner = farmSlots.find((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot && (s.overclock || 0) === (slot.overclock || 0) && (s.efficiency || 0) === (slot.efficiency || 0) && (s.luck || 0) === (slot.luck || 0));
+        const partner = farmSlots.find((s, i) => 
+          s && 
+          s.type === slot.type && 
+          !s.merged && 
+          i !== selectedRigSlot &&
+          (s.overclock || 0) === (slot.overclock || 0) &&
+          (s.efficiency || 0) === (slot.efficiency || 0) &&
+          (s.luck || 0) === (slot.luck || 0)
+        );
         canMerge = !!partner;
       }
       document.getElementById('mergeRow').style.display = canMerge ? 'flex' : 'none';
@@ -1078,12 +1244,31 @@
       const slot = farmSlots[selectedRigSlot];
       if (!slot || slot.merged) return;
       
-      const partnerIdx = farmSlots.findIndex((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot && (s.overclock || 0) === (slot.overclock || 0) && (s.efficiency || 0) === (slot.efficiency || 0) && (s.luck || 0) === (slot.luck || 0));
+      const partnerIdx = farmSlots.findIndex((s, i) => 
+        s && 
+        s.type === slot.type && 
+        !s.merged && 
+        i !== selectedRigSlot &&
+        (s.overclock || 0) === (slot.overclock || 0) &&
+        (s.efficiency || 0) === (slot.efficiency || 0) &&
+        (s.luck || 0) === (slot.luck || 0)
+      );
       
       if (partnerIdx < 0) {
         const anySameType = farmSlots.some((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
-        if (!anySameType) { showMessage('No second rig of same type!'); }
-        else { showMessage('Same characteristics needed!'); }
+        if (!anySameType) {
+          showMessage('No second rig of same type!');
+        } else {
+          let msg = 'Same characteristics needed: ';
+          const diffs = [];
+          const partner = farmSlots.find((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
+          if (partner) {
+            if ((partner.overclock || 0) !== (slot.overclock || 0)) diffs.push('Overclock');
+            if ((partner.efficiency || 0) !== (slot.efficiency || 0)) diffs.push('Efficiency');
+            if ((partner.luck || 0) !== (slot.luck || 0)) diffs.push('Luck');
+          }
+          showMessage(msg + diffs.join(', '));
+        }
         return;
       }
       
@@ -1132,6 +1317,7 @@
 
       const elapsedMinutes = elapsedMs / 60000;
       const energyRegenAmount = Math.floor(elapsedMs / 300000);
+
       farmEnergy = Math.min(farmMaxEnergy, farmEnergy + energyRegenAmount);
 
       let totalIncomePerMin = 0;
@@ -1232,15 +1418,31 @@
 
     function savePlayerScore() { 
       if (user) { 
-        db.ref(`player_data/${user.uid}`).update({ score: score, clickPower: clickPower, hasResonance: hasResonance, totalClicks: totalClicks }); 
-        db.ref(`leaderboard/${user.uid}`).update({ score: score, clickPower: clickPower, totalClicks: totalClicks, hasResonance: hasResonance }); 
+        db.ref(`player_data/${user.uid}`).update({
+          score: score,
+          clickPower: clickPower,
+          hasResonance: hasResonance,
+          totalClicks: totalClicks
+        }); 
+        db.ref(`leaderboard/${user.uid}`).update({
+          score: score,
+          clickPower: clickPower,
+          totalClicks: totalClicks,
+          hasResonance: hasResonance
+        }); 
       } 
     }
     
     function savePlayerCrystals() { 
       if (user) { 
-        db.ref(`player_data/${user.uid}`).update({ crystals: crystals, hasResonance: hasResonance }); 
-        db.ref(`leaderboard/${user.uid}`).update({ crystals: crystals, hasResonance: hasResonance }); 
+        db.ref(`player_data/${user.uid}`).update({
+          crystals: crystals,
+          hasResonance: hasResonance
+        }); 
+        db.ref(`leaderboard/${user.uid}`).update({
+          crystals: crystals,
+          hasResonance: hasResonance
+        }); 
       } 
     }
 
@@ -1287,7 +1489,9 @@
       document.getElementById('profileTokens').innerText = score;
       document.getElementById('profileName').textContent = user?.displayName || 'Anonymous';
       document.getElementById('profileCrystals').textContent = `${crystals||0} 💎`;
-      if (user) { document.getElementById('referralLink').value = generateReferralLink(); }
+      if (user) {
+        document.getElementById('referralLink').value = generateReferralLink();
+      }
     }
 
     function generateReferralLink() { 
@@ -1311,8 +1515,6 @@
       if (!isOpen) {
         panel.classList.add('open');
         if (pn === 'mining') { updateFarmUI(); }
-        else if (pn === 'tasks') { renderTasks(); }
-        else if (pn === 'shop') { updateResonanceUI(); updateAutoclickerShopUI(); }
       }
     }
 
@@ -1328,8 +1530,6 @@
         popup.textContent = `+${clickPower}`;
         popup.style.left = `${r.left + r.width/2 - 20}px`;
         popup.style.top = `${r.top}px`;
-        popup.style.color = ['#ffd700','#ffcc00','#ffe44d','#ffaa00','#ffc107','#ffeb3b','#ffdf00','#fff176'][Math.floor(Math.random()*8)];
-        popup.style.fontSize = `${16+Math.random()*12}px`;
         document.body.appendChild(popup);
         setTimeout(() => popup.remove(), 800);
       }
@@ -1383,7 +1583,6 @@
       savePlayerCrystals(); 
       updateProfilePanel(); 
       updateCounterDisplay(); 
-      updateAutoclickerShopUI();
     }
 
     function getAutoclickerUpgradeCost() { 
@@ -1391,32 +1590,6 @@
       if (autoclickerLevel >= 6) return { tokens: 1000000+125000*(autoclickerLevel-6), crystals: 500+125*(autoclickerLevel-6) }; 
       return { tokens: Math.round(1000*Math.pow(Math.pow(1000,1/5),autoclickerLevel-1)), crystals: 10+98*(autoclickerLevel-1) }; 
     }
-
-    function updateAutoclickerShopUI() {
-      document.getElementById("autoclickerLevel").innerText = autoclickerLevel;
-      document.getElementById("autoclickerDurationValue").innerHTML = `Duration: <span id="timeLeft">${formatTimeFromSeconds(Math.floor(getAutoclickerDuration()/1000))}</span>`;
-      const ub = document.getElementById("upgradeAutoclickerBtn");
-      if (autoclickerLevel >= 20) { document.getElementById("autoclickerUpgradeCost").innerText = "MAX LEVEL"; ub.disabled = true; }
-      else { const c = getAutoclickerUpgradeCost(); document.getElementById("autoclickerUpgradeCost").innerText = `Upgrade: ${c.tokens} 🪙 + ${c.crystals} 💎`; ub.disabled = false; }
-    }
-
-    function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel-1)*(14400000-60000)/19); }
-
-    function activateFreeAutoclicker() { if (autoclickActive) showMessage("Already active!"); else startAutoclicker(getAutoclickerDuration()); }
-
-    function startAutoclicker(duration, extendTime = false) {
-      if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; }
-      if (autoclickActive && extendTime) { autoclickEndTime = Math.max(autoclickEndTime, Date.now()) + duration; }
-      else { autoclickActive = true; autoclickEndTime = Date.now() + duration; }
-      autoclickInterval = setInterval(autoclickTick, 1000);
-      savePlayerData();
-      updateProfilePanel(); updateAutoclickerShopUI();
-    }
-
-    function autoclickTick() { if (!user) { stopAllAutoclickers(); return; } clickToken(); }
-
-    function stopAllAutoclickers() { stopAutoclicker(); if (instantAutoclickActive) { if (instantAutoclickInterval) { clearInterval(instantAutoclickInterval); instantAutoclickInterval = null; } if (instantAutoclickTimerInterval) { clearInterval(instantAutoclickTimerInterval); instantAutoclickTimerInterval = null; } instantAutoclickActive = false; instantAutoclickEndTime = 0; } }
-    function stopAutoclicker() { if (autoclickInterval) { clearInterval(autoclickInterval); autoclickInterval = null; } autoclickActive = false; autoclickEndTime = 0; updateProfilePanel(); updateAutoclickerShopUI(); savePlayerData(); }
 
     function buyResonance() { 
       if (!user) return; 
@@ -1434,9 +1607,13 @@
     function updateResonanceUI() { 
       const b = document.getElementById('buyResonanceBtn'), r = document.getElementById('resonanceClickCount'); 
       if (r) r.textContent = totalClicks; 
-      if (hasResonance) { if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } } 
-      else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } } 
-      else { if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } } 
+      if (hasResonance) { 
+        if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } 
+      } else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { 
+        if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } 
+      } else { 
+        if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } 
+      } 
     }
 
     function checkAchievements() {
@@ -1452,38 +1629,81 @@
       const task = dailyTasks.find(t => t.id === taskId); 
       if (!task) return;
       if (task.isAdTask || task.isAdCrystalTask) return;
-      const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today;
+      const now = new Date(), today = now.toDateString(), 
+        sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), 
+        rk = task.period === "weekly" ? sow : today;
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
         let td = s.val() || { progress: 0, lastReset: rk, completions: 0, completed: false };
-        if (td.lastReset !== rk) { td = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; }
+        if (td.lastReset !== rk) { 
+          td = { progress: 0, lastReset: rk, completions: 0, completed: false, 
+            ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], 
+              reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; 
+        }
         if (td.completed || td.completions >= 1) return;
         const np = Math.min((td.progress||0) + inc, td.goal || task.goal);
-        if (np !== td.progress) { td.progress = np; db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{}); }
+        if (np !== td.progress) { 
+          td.progress = np; 
+          db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{}); 
+        }
       }).catch(()=>{});
     }
 
     function renderTasks() {
-      if (isRenderingTasks) return; isRenderingTasks = true;
-      const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; }
-      list.innerHTML = "Loading..."; if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; }
+      if (isRenderingTasks) return; 
+      isRenderingTasks = true;
+      const list = document.getElementById("tasksList"); 
+      if (!list) { isRenderingTasks = false; return; }
+      list.innerHTML = "Loading..."; 
+      if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; }
       db.ref(`tasks/${user.uid}`).once("value").then(s => {
-        const td = s.val() || {}, today = new Date().toDateString(), sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), wn = getWeekNumber(), ew = wn % 2 === 0;
-        const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
+        const td = s.val() || {}, today = new Date().toDateString(), 
+          sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), 
+          wn = getWeekNumber(), ew = wn % 2 === 0;
+        const at = dailyTasks.filter(t => { 
+          if (!t.alternate) return true; 
+          if (t.id==="autoclickerMaster"&&ew) return true; 
+          if (t.id==="collectBigTokens"&&!ew) return true; 
+          return false; 
+        });
         list.innerHTML = "";
+        
         const adTaskDiv = document.createElement("div");
         adTaskDiv.id = "adTaskContainer";
-        adTaskDiv.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;"><div style="text-align:left;flex:1;min-width:150px;"><strong>📺 Watch ad for tokens</strong><br><small style="color:#aaa;">Cooldown: 15 min | Limit: ${AD_SETTINGS.dailyLimit}/day</small></div><button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;flex-shrink:0;">▶️ Watch</button></div>`;
+        adTaskDiv.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
+            <div style="text-align:left;flex:1;min-width:150px;">
+              <strong>📺 Watch ad for tokens</strong><br>
+              <small style="color:#aaa;">Cooldown: 15 min | Limit: ${AD_SETTINGS.dailyLimit}/day</small>
+            </div>
+            <button id="watchAdButton" class="ad-button" onclick="showAdPopup('task')" style="white-space:nowrap;flex-shrink:0;">
+              ▶️ Watch
+            </button>
+          </div>
+        `;
         list.appendChild(adTaskDiv);
+        
         at.forEach(task => {
           if (task.isAdTask || task.isAdCrystalTask) return;
           let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
           const rk = task.period === "weekly" ? sow : today;
-          if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
+          if (tdd.lastReset !== rk) { 
+            tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, 
+              ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], 
+                reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; 
+            db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); 
+          }
           const div = document.createElement("div");
-          if (tdd.completed || tdd.completions >= 1) { div.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(task.description)} - Done!</span>`; }
-          else { const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, cc = p >= g;
-            if (task.id === "subscribeTwitter") { div.innerHTML = `${escapeHTML(task.description)}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; }
-            else { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; } }
+          if (tdd.completed || tdd.completions >= 1) { 
+            div.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(task.description)} - Done!</span>`; 
+          } else { 
+            const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, 
+              rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, cc = p >= g;
+            if (task.id === "subscribeTwitter") { 
+              div.innerHTML = `${escapeHTML(task.description)}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; 
+            } else { 
+              div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; 
+            } 
+          }
           list.appendChild(div);
         });
         isRenderingTasks = false;
@@ -1493,10 +1713,12 @@
     function claimTask(taskId) {
       if (!user) return showMessage('Sign in!');
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
-        const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return;
+        const td = s.val(), task = dailyTasks.find(t => t.id === taskId); 
+        if (!task || !td) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
         const g = td.goal || task.goal;
-        if ((td.progress||0) >= g) { const rw = td.reward || task.reward;
+        if ((td.progress||0) >= g) { 
+          const rw = td.reward || task.reward;
           if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); savePlayerCrystals(); }
           else { score += rw; savePlayerScore(); showMessage(`✅ +${rw} tokens!`); }
           db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); updateCounterDisplay(); renderTasks(); });
@@ -1507,13 +1729,18 @@
     function completeTwitterTask(taskId) {
       if (!user) return showMessage('Sign in!');
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
-        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return;
+        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); 
+        if (!task) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
         db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); });
       });
     }
 
-    function getWeekNumber() { const n = new Date(); const s = new Date(n.getFullYear(), 0, 1); return Math.ceil(((n - s) / 86400000 + s.getDay() + 1) / 7); }
+    function getWeekNumber() { 
+      const n = new Date(); 
+      const s = new Date(n.getFullYear(), 0, 1); 
+      return Math.ceil(((n - s) / 86400000 + s.getDay() + 1) / 7); 
+    }
     function getWeekKey() { return `${new Date().getFullYear()}_${getWeekNumber()}`; }
 
     function startMiniGame() {
@@ -1529,7 +1756,12 @@
       updateCounterDisplay();
     }
     
-    function miniGameClick() { if (!miniGameActive) return; miniGameClicks++; document.getElementById("miniGameClicks").innerText = miniGameClicks; if (miniGameClicks >= 50) endMiniGame(true); }
+    function miniGameClick() { 
+      if (!miniGameActive) return; 
+      miniGameClicks++; 
+      document.getElementById("miniGameClicks").innerText = miniGameClicks; 
+      if (miniGameClicks >= 50) endMiniGame(true); 
+    }
     
     function endMiniGame(won, leftManually = false) {
       if (!miniGameActive) return;
@@ -1537,20 +1769,38 @@
       document.getElementById("miniGamePanel").style.display = "none";
       if (!user) return;
       if (won) { score += MINI_GAME_REWARD; savePlayerScore(); showMessage(`Victory! +${MINI_GAME_REWARD} tokens!`); updateTaskProgress("miniGameChallenge", 1); updateProfilePanel(); updateCounterDisplay(); }
-      else if (!leftManually) { showMessage(`Time's up! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); setTimeout(() => { if (canWatchAd()) showAdPopup('minigame'); }, 1500); }
+      else if (!leftManually) { 
+        showMessage(`Time's up! Lost ${MINI_GAME_ENTRY_FEE} tokens.`);
+        setTimeout(() => { if (canWatchAd()) showAdPopup('minigame'); }, 1500);
+      }
     }
 
     function showComingSoon(f) { showMessage(`🚧 ${f} is coming soon!`); }
 
     function startBonusTimer() {
       if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-      bonusTimerInterval = setInterval(async () => { if (!user) return; try { const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); document.getElementById("claimBonusBtn").disabled = rem > 0; document.getElementById("bonusTimer").innerText = rem <= 0 ? 'Claim now!' : `Next in: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; } catch (e) {} }, 1000);
+      bonusTimerInterval = setInterval(async () => { 
+        if (!user) return; 
+        try { 
+          const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); 
+          const d = s.val() || { lastClaim: 0 }; 
+          const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); 
+          document.getElementById("claimBonusBtn").disabled = rem > 0; 
+          document.getElementById("bonusTimer").innerText = rem <= 0 ? 'Claim now!' : `Next in: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; 
+        } catch (e) {} 
+      }, 1000);
     }
     
     async function claimHourlyBonus() {
       if (!user) return;
-      const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 };
-      if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { const rw = Math.floor(Math.random()*191)+10; await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw }); showBonusModal(rw); await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw }); }
+      const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); 
+      const d = s.val() || { lastClaim: 0 };
+      if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { 
+        const rw = Math.floor(Math.random()*191)+10; 
+        await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
+        showBonusModal(rw);
+        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
+      }
     }
 
     function showBonusModal(amount) {
@@ -1561,50 +1811,122 @@
     }
 
     function closeBonusModal() {
-      if (pendingBonusAmount > 0) { score += pendingBonusAmount; savePlayerScore(); updateCounterDisplay(); updateProfilePanel(); showMessage('✅ +' + pendingBonusAmount + ' tokens!', true); pendingBonusAmount = 0; }
+      if (pendingBonusAmount > 0) {
+        score += pendingBonusAmount;
+        savePlayerScore();
+        updateCounterDisplay();
+        updateProfilePanel();
+        showMessage('✅ +' + pendingBonusAmount + ' tokens!', true);
+        pendingBonusAmount = 0;
+      }
       document.getElementById('bonusModal').style.display = 'none';
       document.getElementById('bonusOverlay').style.display = 'none';
     }
 
     function watchBonusAd() {
       if (!user || pendingBonusAmount <= 0) return;
-      const amount = pendingBonusAmount; pendingBonusAmount = 0;
+      const amount = pendingBonusAmount;
+      pendingBonusAmount = 0;
       document.getElementById('bonusModal').style.display = 'none';
       document.getElementById('bonusOverlay').style.display = 'none';
-      score += amount; savePlayerScore(); updateCounterDisplay(); updateProfilePanel(); showMessage('✅ +' + amount + ' tokens!', true);
-      adState.pendingRewardType = 'hourly'; adState.isAdLoading = true;
+      score += amount;
+      savePlayerScore();
+      updateCounterDisplay();
+      updateProfilePanel();
+      showMessage('✅ +' + amount + ' tokens!', true);
+      adState.pendingRewardType = 'hourly';
+      adState.isAdLoading = true;
       try {
         if (typeof show_11486843 === 'function') {
-          show_11486843().then(async () => { await handleAdCompletion('hourly'); adState.isAdLoading = false; }).catch(async (error) => { await handleAdCompletion('hourly'); adState.isAdLoading = false; });
-        } else { setTimeout(async () => { await handleAdCompletion('hourly'); adState.isAdLoading = false; }, 1500); }
-      } catch (e) { adState.isAdLoading = false; }
+          show_11486843().then(async () => {
+            await handleAdCompletion('hourly');
+            adState.isAdLoading = false;
+          }).catch(async (error) => {
+            await handleAdCompletion('hourly');
+            adState.isAdLoading = false;
+          });
+        } else {
+          setTimeout(async () => {
+            await handleAdCompletion('hourly');
+            adState.isAdLoading = false;
+          }, 1500);
+        }
+      } catch (e) {
+        adState.isAdLoading = false;
+      }
     }
 
-    function showTab(tab) { currentTab = tab; if (tab === "overall") { document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; } else { document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; } }
+    function showTab(tab) { 
+      currentTab = tab; 
+      if (tab === "overall") { 
+        document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th></tr>"; 
+      } else { 
+        document.getElementById("tableHeader").innerHTML = "<tr><th>#</th><th>Player</th><th>Tokens</th><th>Reward</th></tr>"; 
+      } 
+    }
 
-    db.ref("leaderboard").on("value", s => { if (currentTab !== "overall") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td></tr>`).join(''); });
-    db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${getRewardForRank(i+1)}</td></tr>`).join(''); });
+    db.ref("leaderboard").on("value", s => { 
+      if (currentTab !== "overall") return; 
+      const data = []; 
+      s.forEach(c => { const e = c.val(); if (e?.score !== undefined && e.name) data.push(e); }); 
+      data.sort((a,b) => b.score - a.score); 
+      document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='3'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td></tr>`).join(''); 
+    });
+    
+    db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { 
+      if (currentTab !== "weekly") return; 
+      const data = []; 
+      s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); 
+      data.sort((a,b) => b.score - a.score); 
+      document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${getRewardForRank(i+1)}</td></tr>`).join(''); 
+    });
+    
     function getRewardForRank(r) { return r <= 3 ? 10000 : r <= 5 ? 7000 : 5000; }
 
     function setupAuthUI() {
       const ab = document.getElementById('authButtons');
-      if (isTelegramMiniApp) { ab.innerHTML = `<div class="auth-loading">Authenticating...</div>`; setTimeout(() => signInWithTelegramMiniApp(), 500); try { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } catch (e) {} } 
-      else { ab.innerHTML = `<div style="display: flex; flex-direction: column; gap: 15px; align-items: center;"><h3 style="color: #00c3ff; margin-bottom: 10px;">Sign in with Telegram</h3><button class="click-button telegram-login-btn" onclick="loginWithTelegramPC()">🚀 Login with Telegram</button></div>`; }
+      if (isTelegramMiniApp) { 
+        ab.innerHTML = `<div class="auth-loading">Authenticating...</div>`; 
+        setTimeout(() => signInWithTelegramMiniApp(), 500); 
+        try { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } catch (e) {} 
+      } else { 
+        ab.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+            <h3 style="color: #00c3ff; margin-bottom: 10px;">Sign in with Telegram</h3>
+            <button class="click-button telegram-login-btn" onclick="loginWithTelegramPC()">🚀 Login with Telegram</button>
+          </div>
+        `;
+      }
     }
 
     function loginWithTelegramPC() {
       window.open('https://t.me/circlegametry_bot', '_blank');
       const ab = document.getElementById('authButtons');
-      ab.innerHTML = `<div style="display: flex; flex-direction: column; gap: 15px; align-items: center;"><h3 style="color: #00c3ff; margin-bottom: 10px;">Login Instructions</h3><div style="background: #1a1a2e; padding: 20px; border-radius: 12px; text-align: left; max-width: 400px;"><p style="color: #fff; margin-bottom: 15px;">1. In Telegram press <b>START</b></p><p style="color: #fff; margin-bottom: 15px;">2. Press <b>🎮 Play</b> button</p><p style="color: #ffd700; font-size: 14px;">💡 Open this page on your phone for automatic login</p></div><button class="click-button" onclick="setupAuthUI()" style="background: #555; color: #fff;">← Back</button></div>`;
+      ab.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+          <h3 style="color: #00c3ff; margin-bottom: 10px;">Login Instructions</h3>
+          <div style="background: #1a1a2e; padding: 20px; border-radius: 12px; text-align: left; max-width: 400px;">
+            <p style="color: #fff; margin-bottom: 15px;">1. In Telegram press <b>START</b></p>
+            <p style="color: #fff; margin-bottom: 15px;">2. Press <b>🎮 Play</b> button</p>
+            <p style="color: #ffd700; font-size: 14px;">💡 Open this page on your phone for automatic login</p>
+          </div>
+          <button class="click-button" onclick="setupAuthUI()" style="background: #555; color: #fff;">← Back</button>
+        </div>
+      `;
     }
 
     async function signInWithTelegramMiniApp() {
       try {
         const tg = window.Telegram.WebApp;
         const u = tg.initDataUnsafe?.user;
-        if (!u?.id) { document.getElementById('authButtons').innerHTML = `<div class="auth-error">Authentication error</div>`; return; }
+        if (!u?.id) { 
+          document.getElementById('authButtons').innerHTML = `<div class="auth-error">Authentication error</div>`; 
+          return; 
+        }
         await handleTelegramUser(u);
-      } catch (e) { document.getElementById('authButtons').innerHTML = `<div class="auth-error">Authentication error</div>`; }
+      } catch (e) { 
+        document.getElementById('authButtons').innerHTML = `<div class="auth-error">Authentication error</div>`; 
+      }
     }
 
     async function handleTelegramUser(telegramUser) {
@@ -1612,21 +1934,37 @@
         const tgId = telegramUser.id;
         const displayName = sanitizeInput(telegramUser.first_name || telegramUser.username || 'Player');
         let uid = await unifiedAuth.findUserByIdentifier('tg_user_id', tgId);
+        
         if (!uid) {
           const userRef = db.ref('users').push();
           uid = userRef.key;
-          await userRef.set({ auth_methods: { tg_user_id: tgId }, display_name: displayName, created_at: firebase.database.ServerValue.TIMESTAMP });
-          await db.ref(`player_data/${uid}`).set({ score: 0, crystals: 0, clickPower: 1, totalClicks: 0, autoclickerLevel: 1, hasResonance: false, farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12, farmSlots: farmSlots, lastFarmTick: Date.now() });
-          await db.ref(`leaderboard/${uid}`).set({ id: uid, name: displayName, score: 0, crystals: 0, lastUpdate: Date.now() });
+          await userRef.set({ 
+            auth_methods: { tg_user_id: tgId }, 
+            display_name: displayName,
+            created_at: firebase.database.ServerValue.TIMESTAMP
+          });
+          await db.ref(`player_data/${uid}`).set({
+            score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
+            autoclickerLevel: 1, hasResonance: false,
+            farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
+            farmSlots: farmSlots,
+            lastFarmTick: Date.now()
+          });
+          await db.ref(`leaderboard/${uid}`).set({ 
+            id: uid, name: displayName, score: 0, crystals: 0, lastUpdate: Date.now() 
+          });
           await db.ref(`auth_lookup/tg_user_id_${tgId}`).set(uid);
         } else {
           await db.ref(`users/${uid}`).update({ display_name: displayName });
         }
+        
         user = { uid, tgUid: 'tg_' + tgId, displayName };
         if (isWhitelisted(user.tgUid)) showAdminPanel();
         saveSession(uid, tgId);
         startGameAfterAuth();
-      } catch (error) { showMessage('Error'); }
+      } catch (error) {
+        showMessage('Error');
+      }
     }
 
     const unifiedAuth = {
@@ -1639,7 +1977,9 @@
       }
     };
 
-    function saveSession(uid, tgId) { localStorage.setItem('cryptoClickerSession', JSON.stringify({ uid, tgId, timestamp: Date.now() })); }
+    function saveSession(uid, tgId) {
+      localStorage.setItem('cryptoClickerSession', JSON.stringify({ uid, tgId, timestamp: Date.now() }));
+    }
 
     function restoreSession() {
       try {
@@ -1703,7 +2043,10 @@
       });
     }
 
-    function saveReferrer(ruid) { if (!user || !ruid) return; db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now() }).catch(() => {}); }
+    function saveReferrer(ruid) {
+      if (!user || !ruid) return;
+      db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now() }).catch(() => {});
+    }
 
     async function signOut() {
       if (user) savePlayerData();
@@ -1719,12 +2062,17 @@
       setupAuthUI();
     }
 
+    // ==================== АДМИН ФУНКЦИИ ====================
     function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; savePlayerCrystals(); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
     function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; savePlayerScore(); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
     function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
     function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; showMessage('🛡️ Battle Pass removed from UI'); }
-    window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags; window.adminSetBPLevel = adminSetBPLevel;
+    window.adminAddCrystals = adminAddCrystals; 
+    window.adminAddTokens = adminAddTokens; 
+    window.adminResetFlags = adminResetFlags; 
+    window.adminSetBPLevel = adminSetBPLevel;
 
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
     window.closeRigShopModal = closeRigShopModal;
     window.buySpecificRig = buySpecificRig;
     window.closeBonusModal = closeBonusModal;
