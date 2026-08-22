@@ -2152,7 +2152,7 @@
         const dimReturn = Math.max(0.5, 1 - slotIndex * 0.1);
         const overclockBonus = 1 + (slot.overclock || 0) * 0.1;
         const mergeBonus = slot.merged ? 1.4 : 1;
-        const efficiencyReduction = 1 - (slot.efficiency || 0) * 0.1;
+        const efficiencyReduction = 1 - (slot.efficiency || 0) * 0.03;
 
         totalIncomePerMin += rig.speed * dimReturn * overclockBonus * mergeBonus;
         totalEnergyPerHour += rig.energy * efficiencyReduction;
@@ -2230,7 +2230,7 @@
         if (!slot) continue;
         const rig = RIG_TYPES[slot.type];
         if (!rig) continue;
-        total += rig.energy * (1 - (slot.efficiency || 0) * 0.1);
+        total += rig.energy * (1 - (slot.efficiency || 0) * 0.03);
       }
       return total;
     }
@@ -2313,7 +2313,7 @@
             const ocBonus = 1 + (slot.overclock || 0) * 0.1;
             const mergeBonus = slot.merged ? 1.4 : 1;
             const actualSpeed = (rig.speed * dimReturn * ocBonus * mergeBonus).toFixed(2);
-            const actualEnergy = (rig.energy * (1 - (slot.efficiency || 0) * 0.1)).toFixed(1);
+            const actualEnergy = (rig.energy * (1 - (slot.efficiency || 0) * 0.03)).toFixed(1);
             const heatPct = Math.min(100, ((slot.overclock || 0) / 10) * 100);
             const fanClass = slot.type === 'cpu' ? 'fan-spin-slow' : slot.type === 'gpu' ? 'fan-spin' : 'fan-spin-fast';
 
@@ -2490,13 +2490,13 @@
       const ocBonus = 1 + (slot.overclock || 0) * 0.1;
       const mergeBonus = slot.merged ? 1.4 : 1;
       const actualSpeed = (rig.speed * dimReturn * ocBonus * mergeBonus).toFixed(2);
-      const actualEnergy = (rig.energy * (1 - (slot.efficiency || 0) * 0.1)).toFixed(1);
+      const actualEnergy = (rig.energy * (1 - (slot.efficiency || 0) * 0.03)).toFixed(1);
       document.getElementById('detailRigSub').textContent = actualSpeed + '/min · ' + actualEnergy + ' ⚡/h';
 
       document.getElementById('detailOverclockLevel').textContent = slot.overclock || 0;
       document.getElementById('detailOverclockBonus').textContent = ((slot.overclock || 0) * 10);
       document.getElementById('detailEfficiencyLevel').textContent = slot.efficiency || 0;
-      document.getElementById('detailEfficiencyBonus').textContent = ((slot.efficiency || 0) * 10);
+      document.getElementById('detailEfficiencyBonus').textContent = ((slot.efficiency || 0) * 3);
       document.getElementById('detailLuckLevel').textContent = slot.luck || 0;
       document.getElementById('detailLuckBonus').textContent = ((slot.luck || 0) * 2);
       document.getElementById('detailRigType').textContent = slot.type.toUpperCase();
@@ -2562,7 +2562,7 @@
       updateCounterDisplay();
       updateFarmUI();
       showRigDetail(selectedRigSlot);
-      showMessage('🔋 Efficiency +' + (slot.efficiency * 10) + '%!');
+      showMessage('🔋 Efficiency +' + (slot.efficiency * 3) + '%!');
     }
 
     function upgradeRigLuck() {
