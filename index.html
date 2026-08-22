@@ -107,6 +107,11 @@
     #adRewardPopup .button-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 10000; }
 
+    .streak-display { margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #1a1a2a, #2a2a1a); border-radius: 8px; border: 1px solid #ffd700; }
+    .streak-display .streak-title { color: #ffd700; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+    .streak-display .streak-reward { color: #00ffa6; font-size: 12px; margin: 3px 0; }
+    .streak-display .streak-tomorrow { color: #aaa; font-size: 11px; margin-top: 5px; }
+
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
       .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
@@ -666,7 +671,19 @@
         buy: 'Купить',
         needTokens: 'Нужно токенов',
         needCrystals: 'Нужно кристаллов',
-        rigInstalled: 'установлен!'
+        rigInstalled: 'установлен!',
+        streakTitle: '🔥 Серия просмотров!',
+        streakDay: 'День',
+        streakDays: 'дней',
+        streakDay1: 'день',
+        streakDay2: 'дня',
+        streakCurrent: 'Текущая награда',
+        streakTomorrow: 'Завтра',
+        streakStart: 'Начни серию! Смотри рекламу каждый день!',
+        streakRewardTokens: '+{tokens} токенов',
+        streakRewardCrystals: '+{crystals} 💎',
+        streakRewardBooster: '+ Бустер',
+        streakMaxReward: 'Максимальная награда'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -754,7 +771,19 @@
         buy: 'Buy',
         needTokens: 'Need tokens',
         needCrystals: 'Need crystals',
-        rigInstalled: 'installed!'
+        rigInstalled: 'installed!',
+        streakTitle: '🔥 Viewing streak!',
+        streakDay: 'Day',
+        streakDays: 'days',
+        streakDay1: 'day',
+        streakDay2: 'days',
+        streakCurrent: 'Current reward',
+        streakTomorrow: 'Tomorrow',
+        streakStart: 'Start a streak! Watch ads every day!',
+        streakRewardTokens: '+{tokens} tokens',
+        streakRewardCrystals: '+{crystals} 💎',
+        streakRewardBooster: '+ Booster',
+        streakMaxReward: 'Max reward'
       }
     };
     
@@ -771,6 +800,7 @@
       updateAdTaskUI();
       renderTasks();
       updateFarmUI();
+      updateAdStreakUI();
     }
     window.switchLanguage = switchLanguage;
 
@@ -801,6 +831,19 @@
       }
     };
 
+    // ==================== СИСТЕМА СТРИКОВ ====================
+    const AD_STREAK_REWARDS = {
+      1: { tokens: 50, crystals: 0, booster: null },
+      2: { tokens: 75, crystals: 0, booster: null },
+      3: { tokens: 100, crystals: 1, booster: null },
+      4: { tokens: 150, crystals: 2, booster: null },
+      5: { tokens: 250, crystals: 0, booster: 'instant_autoclick_30min' },
+      6: { tokens: 250, crystals: 0, booster: 'instant_autoclick_30min' }
+    };
+
+    let adStreak = 0;
+    let lastAdClaimDate = null;
+
     const AD_CRYSTAL_TASK = {
       id: "watchAdsForCrystal",
       goal: 5,
@@ -817,6 +860,130 @@
       isAdLoading: false
     };
 
+    // ==================== ФУНКЦИИ СТРИКОВ ====================
+    function loadAdStreak() {
+      if (!user) return;
+      db.ref(`player_data/${user.uid}/adStreak`).once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          adStreak = data.streak || 0;
+          lastAdClaimDate = data.lastClaimDate || null;
+        }
+        updateAdStreakUI();
+      });
+    }
+
+    function saveAdStreak() {
+      if (!user) return;
+      db.ref(`player_data/${user.uid}/adStreak`).set({
+        streak: adStreak,
+        lastClaimDate: lastAdClaimDate
+      });
+    }
+
+    function checkAndUpdateStreak() {
+      const today = new Date().toDateString();
+      
+      if (!lastAdClaimDate) {
+        adStreak = 1;
+      } else {
+        const lastDate = new Date(lastAdClaimDate);
+        const currentDate = new Date(today);
+        const diffTime = Math.abs(currentDate - lastDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          adStreak = Math.min(adStreak + 1, 6);
+        } else if (diffDays > 1) {
+          adStreak = 1;
+        } else {
+          return;
+        }
+      }
+      
+      lastAdClaimDate = today;
+      saveAdStreak();
+    }
+
+    function getStreakReward() {
+      const streakDay = Math.min(adStreak, 6);
+      return AD_STREAK_REWARDS[streakDay] || AD_STREAK_REWARDS[6];
+    }
+
+    function getDayWord(days) {
+      if (currentLanguage === 'en') {
+        return days === 1 ? 'day' : 'days';
+      }
+      
+      const lastDigit = days % 10;
+      const lastTwoDigits = days % 100;
+      
+      if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return 'дней';
+      if (lastDigit === 1) return 'день';
+      if (lastDigit >= 2 && lastDigit <= 4) return 'дня';
+      return 'дней';
+    }
+
+    function getTomorrowRewardText() {
+      const tomorrowStreak = Math.min(adStreak + 1, 6);
+      const reward = AD_STREAK_REWARDS[tomorrowStreak];
+      
+      if (!reward) return t('streakMaxReward');
+      
+      let text = t('streakRewardTokens').replace('{tokens}', reward.tokens);
+      if (reward.crystals > 0) {
+        text += ' + ' + t('streakRewardCrystals').replace('{crystals}', reward.crystals);
+      }
+      if (reward.booster) {
+        text += ' + ' + t('streakRewardBooster');
+      }
+      return text;
+    }
+
+    function updateAdStreakUI() {
+      const streakDisplay = document.getElementById('adStreakDisplay');
+      if (!streakDisplay) return;
+      
+      if (adStreak > 0) {
+        const reward = getStreakReward();
+        let rewardText = t('streakRewardTokens').replace('{tokens}', reward.tokens);
+        if (reward.crystals > 0) {
+          rewardText += ' + ' + t('streakRewardCrystals').replace('{crystals}', reward.crystals);
+        }
+        if (reward.booster) {
+          rewardText += ' + ' + t('streakRewardBooster');
+        }
+        
+        streakDisplay.innerHTML = `
+          <div class="streak-display">
+            <div class="streak-title">${t('streakTitle')}</div>
+            <div style="color: #fff; font-size: 14px; margin: 5px 0;">
+              ${t('streakDay')} ${adStreak} ${getDayWord(adStreak)}
+            </div>
+            <div class="streak-reward">
+              ${t('streakCurrent')}: ${rewardText}
+            </div>
+            <div class="streak-tomorrow">
+              ${t('streakTomorrow')}: ${getTomorrowRewardText()}
+            </div>
+          </div>
+        `;
+      } else {
+        streakDisplay.innerHTML = `
+          <div class="streak-display">
+            <div class="streak-title">${t('streakTitle')}</div>
+            <div class="streak-reward">
+              ${t('streakStart')}
+            </div>
+            <div class="streak-tomorrow">
+              ${t('streakDay')} 1: ${t('streakRewardTokens').replace('{tokens}', '50')}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // ==================== ЗАГРУЗКА СОСТОЯНИЯ РЕКЛАМЫ ====================
     function loadAdState() {
       const saved = localStorage.getItem('cryptoClickerAdState');
       if (saved) {
@@ -930,7 +1097,14 @@
       
       switch (rewardType) {
         case 'task':
-          rewardText = `+${AD_SETTINGS.rewards.taskAd} ${t('tokens')}`;
+          const streakReward = getStreakReward();
+          rewardText = `+${streakReward.tokens} ${t('tokens')}`;
+          if (streakReward.crystals > 0) {
+            rewardText += ` + ${streakReward.crystals} 💎`;
+          }
+          if (streakReward.booster) {
+            rewardText += ' + Бустер';
+          }
           break;
         case 'minigame':
           rewardText = `+${AD_SETTINGS.rewards.miniGameFail} ${t('tokens')}`;
@@ -1008,33 +1182,49 @@
       
       let rewardAmount = 0;
       
-      switch (rewardType) {
-        case 'task':
-          rewardAmount = AD_SETTINGS.rewards.taskAd;
-          score += rewardAmount;
-          showMessage(t('adRewardReceived').replace('{amount}', rewardAmount));
-          break;
-          
-        case 'minigame':
-          rewardAmount = AD_SETTINGS.rewards.miniGameFail;
-          score += rewardAmount;
-          showMessage(t('adMiniGameReward'));
-          break;
-          
-        case 'hourly':
-          const bonusSnap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
-          const bonusData = bonusSnap.val() || {};
-          const lastBonus = bonusData.lastBonusAmount || 50;
-          rewardAmount = lastBonus * (AD_SETTINGS.rewards.hourlyBonusMultiplier - 1);
-          score += rewardAmount;
-          showMessage(t('adHourlyReward'));
-          break;
+      if (rewardType === 'task') {
+        checkAndUpdateStreak();
+        const streakReward = getStreakReward();
+        rewardAmount = streakReward.tokens;
+        
+        score += rewardAmount;
+        
+        if (streakReward.crystals > 0) {
+          crystals += streakReward.crystals;
+          savePlayerCrystals();
+        }
+        
+        if (streakReward.booster && streakReward.booster === 'instant_autoclick_30min') {
+          startInstantAutoclick(1800000);
+          showMessage('🎁 Бонус: Бустер мгновенного автоклика на 30 минут!');
+        }
+        
+        showMessage(`✅ Получено ${rewardAmount} токенов! (Серия: ${adStreak} ${getDayWord(adStreak)})`);
+        
+      } else {
+        switch (rewardType) {
+          case 'minigame':
+            rewardAmount = AD_SETTINGS.rewards.miniGameFail;
+            score += rewardAmount;
+            showMessage(t('adMiniGameReward'));
+            break;
+            
+          case 'hourly':
+            const bonusSnap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+            const bonusData = bonusSnap.val() || {};
+            const lastBonus = bonusData.lastBonusAmount || 50;
+            rewardAmount = lastBonus * (AD_SETTINGS.rewards.hourlyBonusMultiplier - 1);
+            score += rewardAmount;
+            showMessage(t('adHourlyReward'));
+            break;
+        }
       }
       
       savePlayerScore();
       updateCounterDisplay();
       updateProfilePanel();
       updateAdTaskUI();
+      updateAdStreakUI();
       
       setTimeout(() => checkAdCrystalTaskCompletion(), 500);
     }
@@ -1299,7 +1489,8 @@
             farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
             farmSlots: farmSlots,
             lastFarmTick: Date.now(),
-            lastActive: firebase.database.ServerValue.TIMESTAMP
+            lastActive: firebase.database.ServerValue.TIMESTAMP,
+            adStreak: { streak: 0, lastClaimDate: null }
           });
           await db.ref(`leaderboard/${uid}`).set({ 
             id: uid, name: displayName, score: 0, crystals: 0, 
@@ -1351,6 +1542,7 @@
       document.getElementById('authSection').style.display = 'none';
       document.getElementById('gameSection').style.display = 'block';
       await loadPlayerData(user.uid);
+      loadAdStreak();
       setupCrossPlatformSync();
       startBonusTimer();
       startOnlineTimer();
@@ -1359,6 +1551,14 @@
       updateAdTaskUI();
       checkAdCrystalTaskCompletion();
       startFarmSystem();
+      
+      setInterval(() => {
+        if (user) {
+          checkAndUpdateStreak();
+          updateAdStreakUI();
+        }
+      }, 300000);
+      
       const ref = new URLSearchParams(window.location.search).get('ref');
       if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
     }
@@ -1398,6 +1598,14 @@
         const newSlots = snapshot.val();
         if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); }
       });
+      db.ref(`player_data/${user.uid}/adStreak`).on('value', (snapshot) => {
+        const newStreak = snapshot.val();
+        if (newStreak) { 
+          adStreak = newStreak.streak || 0;
+          lastAdClaimDate = newStreak.lastClaimDate || null;
+          updateAdStreakUI(); 
+        }
+      });
     }
 
     // ==================== ЗАГРУЗКА ДАННЫХ ====================
@@ -1413,13 +1621,16 @@
               farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
               farmSlots: farmSlots,
               lastFarmTick: Date.now(),
-              lastActive: firebase.database.ServerValue.TIMESTAMP
+              lastActive: firebase.database.ServerValue.TIMESTAMP,
+              adStreak: { streak: 0, lastClaimDate: null }
             };
             db.ref(`player_data/${uid}`).set(defaultData);
             score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
             autoclickerLevel = 1; hasResonance = false;
             farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
             lastFarmTickTime = Date.now();
+            adStreak = 0;
+            lastAdClaimDate = null;
           } else {
             score = data.score || 0;
             crystals = data.crystals || 0;
@@ -1433,6 +1644,11 @@
             warehouseLimit = data.warehouseLimit || 12;
             if (data.farmSlots) farmSlots = data.farmSlots;
             lastFarmTickTime = data.lastFarmTick || Date.now();
+            
+            if (data.adStreak) {
+              adStreak = data.adStreak.streak || 0;
+              lastAdClaimDate = data.adStreak.lastClaimDate || null;
+            }
             
             if (data.autoclickActive && data.autoclickEndTime && data.autoclickEndTime > Date.now()) {
               const remaining = data.autoclickEndTime - Date.now();
@@ -1457,6 +1673,7 @@
           updateCloneTimer();
           processOfflineMining();
           updateFarmUI();
+          updateAdStreakUI();
           resolve();
         }).catch(() => { score = 0; crystals = 0; clickPower = 1; resolve(); });
       });
@@ -1482,7 +1699,8 @@
         warehouseLimit: warehouseLimit,
         farmSlots: farmSlots,
         lastFarmTick: lastFarmTickTime,
-        lastActive: firebase.database.ServerValue.TIMESTAMP
+        lastActive: firebase.database.ServerValue.TIMESTAMP,
+        adStreak: { streak: adStreak, lastClaimDate: lastAdClaimDate }
       };
       db.ref(`player_data/${user.uid}`).update(data).catch(() => {});
       db.ref(`leaderboard/${user.uid}`).update({
@@ -1575,6 +1793,8 @@
       }
       if (document.visibilityState === 'visible' && user) {
         processOfflineMining();
+        checkAndUpdateStreak();
+        updateAdStreakUI();
       }
     });
 
@@ -1864,7 +2084,6 @@
         list.innerHTML = "";
         
         const adTaskDiv = document.createElement("div");
-        adTaskDiv.id = "adTaskContainer";
         adTaskDiv.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
             <div style="text-align:left;flex:1;min-width:150px;">
@@ -1875,6 +2094,7 @@
               ${t('adBtnWatch')}
             </button>
           </div>
+          <div id="adStreakDisplay"></div>
         `;
         list.appendChild(adTaskDiv);
         
@@ -1925,6 +2145,7 @@
           list.appendChild(div);
         });
         updateAdTaskUI();
+        updateAdStreakUI();
         isRenderingTasks = false;
       }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; });
     }
@@ -2080,6 +2301,8 @@
       farmSlots = [{ type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 }, null, null, null, null, null];
       lastFarmTickTime = 0;
       pendingBonusAmount = 0;
+      adStreak = 0;
+      lastAdClaimDate = null;
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
       document.getElementById('adminPanel').classList.remove('open');
@@ -2101,7 +2324,7 @@
     db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${getRewardForRank(i+1)}</td></tr>`).join(''); });
     function getRewardForRank(r) { return r <= 3 ? 10000 : r <= 5 ? 7000 : 5000; }
     showTab("overall");
-    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); updateAdTaskUI(); updateFarmUI(); }, 1000);
+    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); updateAdTaskUI(); updateFarmUI(); updateAdStreakUI(); }, 1000);
     setInterval(checkWeeklyReset, 600000);
 
     let mi = 0; const me = document.getElementById("motiveText");
@@ -2654,6 +2877,7 @@
         document.getElementById('authSection').style.display = 'none';
         document.getElementById('gameSection').style.display = 'block';
         await loadPlayerData(user.uid);
+        loadAdStreak();
         setupCrossPlatformSync();
         startBonusTimer();
         startOnlineTimer();
