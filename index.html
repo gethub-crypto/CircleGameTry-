@@ -373,7 +373,7 @@
             <div class="energy-value" id="farmEnergyDisplay">50 / 50 ⚡</div>
             <div class="energy-bar"><div class="energy-fill high" id="farmEnergyBar" style="width:100%"></div></div>
           </div>
-          <div style="font-size:12px;color:#888">+1 / 5 min</div>
+          <div style="font-size:12px;color:#888">+1 / 15 min</div>
         </div>
         <div class="warehouse-panel-farm">
           <div class="warehouse-info">
@@ -2345,7 +2345,7 @@
         farmEnergy = Math.min(farmMaxEnergy, farmEnergy + 1);
         savePlayerData();
         updateFarmUI();
-      }, 300000);
+      }, 900000); // Changed from 300000 (5 min) to 900000 (15 min)
     }
 
     function processOfflineMining() {
@@ -2355,7 +2355,7 @@
       if (elapsedMs < 60000) return;
 
       const elapsedMinutes = elapsedMs / 60000;
-      const energyRegenAmount = Math.floor(elapsedMs / 300000);
+      const energyRegenAmount = Math.floor(elapsedMs / 900000); // Changed from 300000 to 900000
 
       farmEnergy = Math.min(farmMaxEnergy, farmEnergy + energyRegenAmount);
 
