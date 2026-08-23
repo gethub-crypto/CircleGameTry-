@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -2345,7 +2346,7 @@
         farmEnergy = Math.min(farmMaxEnergy, farmEnergy + 1);
         savePlayerData();
         updateFarmUI();
-      }, 900000); // Changed from 300000 (5 min) to 900000 (15 min)
+      }, 900000); // 15 минут
     }
 
     function processOfflineMining() {
@@ -2355,8 +2356,9 @@
       if (elapsedMs < 60000) return;
 
       const elapsedMinutes = elapsedMs / 60000;
-      const energyRegenAmount = Math.floor(elapsedMs / 900000); // Changed from 300000 to 900000
-
+      
+      // ВАЖНО: Сначала восстанавливаем энергию
+      const energyRegenAmount = Math.floor(elapsedMs / 900000);
       farmEnergy = Math.min(farmMaxEnergy, farmEnergy + energyRegenAmount);
 
       let totalIncomePerMin = 0;
@@ -2385,6 +2387,8 @@
       const maxMiningMinutesByEnergy = totalEnergyPerMin > 0 ? farmEnergy / totalEnergyPerMin : elapsedMinutes;
       const warehouseSpace = warehouseLimit - warehouseTokens;
       const maxMiningMinutesByWarehouse = totalIncomePerMin > 0 ? warehouseSpace / totalIncomePerMin : elapsedMinutes;
+      
+      // ВАЖНО: Не даем майнить дольше, чем прошло времени
       const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy, maxMiningMinutesByWarehouse);
 
       if (actualMiningMinutes > 0) {
