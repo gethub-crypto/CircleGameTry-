@@ -1598,6 +1598,13 @@
         const newSlots = snapshot.val();
         if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); }
       });
+      db.ref(`player_data/${user.uid}/warehouseLimit`).on('value', (snapshot) => {
+        const newLimit = snapshot.val();
+        if (newLimit !== null && newLimit !== warehouseLimit) { 
+          warehouseLimit = newLimit; 
+          updateFarmUI(); 
+        }
+      });
       db.ref(`player_data/${user.uid}/adStreak`).on('value', (snapshot) => {
         const newStreak = snapshot.val();
         if (newStreak) { 
@@ -1642,6 +1649,13 @@
             farmMaxEnergy = data.farmMaxEnergy || 50;
             warehouseTokens = data.warehouseTokens || 0;
             warehouseLimit = data.warehouseLimit || 20;
+            
+            // Миграция: обновляем warehouseLimit с 12 на 20
+            if (warehouseLimit === 12) {
+              warehouseLimit = 20;
+              db.ref(`player_data/${uid}/warehouseLimit`).set(20);
+            }
+            
             if (data.farmSlots) farmSlots = data.farmSlots;
             lastFarmTickTime = data.lastFarmTick || Date.now();
             
