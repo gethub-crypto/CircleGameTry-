@@ -378,7 +378,7 @@
         <div class="warehouse-panel-farm">
           <div class="warehouse-info">
             <div class="warehouse-label">Warehouse</div>
-            <div class="warehouse-value" id="farmWarehouseDisplay">0 / 12 🪙</div>
+            <div class="warehouse-value" id="farmWarehouseDisplay">0 / 20 🪙</div>
           </div>
           <button class="collect-btn" id="collectWarehouseBtn" onclick="collectWarehouse()">Collect</button>
         </div>
@@ -1330,7 +1330,7 @@
       quantum: { name: 'Quantum Rig', speed: 5.0, energy: 20, costTokens: 100000, costCrystals: 200, icon: '💎', color: '#9333ea' }
     };
     let farmEnergy = 50, farmMaxEnergy = 50;
-    let warehouseTokens = 0, warehouseLimit = 12;
+    let warehouseTokens = 0, warehouseLimit = 20; // ИЗМЕНЕНО: с 12 на 20
     let farmSlots = [
       { type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 },
       null, null, null, null, null
@@ -1486,7 +1486,7 @@
             score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
             autoclickerLevel: 1, hasResonance: false,
             autoclickActive: false, autoclickEndTime: 0,
-            farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
+            farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 20, // ИЗМЕНЕНО
             farmSlots: farmSlots,
             lastFarmTick: Date.now(),
             lastActive: firebase.database.ServerValue.TIMESTAMP,
@@ -1618,7 +1618,7 @@
               score: 0, crystals: 0, clickPower: 1, totalClicks: 0,
               autoclickerLevel: 1, hasResonance: false,
               autoclickActive: false, autoclickEndTime: 0,
-              farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 12,
+              farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 20, // ИЗМЕНЕНО
               farmSlots: farmSlots,
               lastFarmTick: Date.now(),
               lastActive: firebase.database.ServerValue.TIMESTAMP,
@@ -1627,7 +1627,7 @@
             db.ref(`player_data/${uid}`).set(defaultData);
             score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
             autoclickerLevel = 1; hasResonance = false;
-            farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
+            farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 20; // ИЗМЕНЕНО
             lastFarmTickTime = Date.now();
             adStreak = 0;
             lastAdClaimDate = null;
@@ -1641,7 +1641,7 @@
             farmEnergy = data.farmEnergy || 50;
             farmMaxEnergy = data.farmMaxEnergy || 50;
             warehouseTokens = data.warehouseTokens || 0;
-            warehouseLimit = data.warehouseLimit || 12;
+            warehouseLimit = data.warehouseLimit || 20; // ИЗМЕНЕНО
             if (data.farmSlots) farmSlots = data.farmSlots;
             lastFarmTickTime = data.lastFarmTick || Date.now();
             
@@ -2297,7 +2297,7 @@
       localStorage.removeItem('cryptoClickerSession');
       user = null; score = 0; clickPower = 1; crystals = 0;
       autoclickActive = false; autoclickEndTime = 0;
-      farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 12;
+      farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 20; // ИЗМЕНЕНО
       farmSlots = [{ type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 }, null, null, null, null, null];
       lastFarmTickTime = 0;
       pendingBonusAmount = 0;
@@ -2383,15 +2383,27 @@
 
       const totalEnergyPerMin = totalEnergyPerHour / 60;
       const maxMiningMinutesByEnergy = totalEnergyPerMin > 0 ? farmEnergy / totalEnergyPerMin : elapsedMinutes;
-      const warehouseSpace = warehouseLimit - warehouseTokens;
-      const maxMiningMinutesByWarehouse = totalIncomePerMin > 0 ? warehouseSpace / totalIncomePerMin : elapsedMinutes;
-      const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy, maxMiningMinutesByWarehouse);
+      
+      // ИЗМЕНЕНИЕ: Убираем ограничение по хранилищу
+      const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy);
 
       if (actualMiningMinutes > 0) {
         const earnedTokens = totalIncomePerMin * actualMiningMinutes;
         const spentEnergy = totalEnergyPerMin * actualMiningMinutes;
-        warehouseTokens += earnedTokens;
+        
+        // ИЗМЕНЕНИЕ: Проверяем, сколько реально помещается в хранилище
+        const spaceAvailable = warehouseLimit - warehouseTokens;
+        const tokensToAdd = Math.min(earnedTokens, spaceAvailable);
+        const tokensLost = earnedTokens - tokensToAdd;
+        
+        warehouseTokens += tokensToAdd;
         farmEnergy -= spentEnergy;
+        
+        // Энергия всегда тратится, даже если монеты не помещаются
+        if (tokensLost > 0) {
+          console.log(`Потеряно монет из-за переполнения: ${tokensLost.toFixed(2)}`);
+        }
+        
         if (warehouseTokens > warehouseLimit) warehouseTokens = warehouseLimit;
         if (farmEnergy < 0) farmEnergy = 0;
       }
@@ -2412,6 +2424,9 @@
     function farmTick() {
       if (!user) return;
       processOfflineMining();
+      
+      // ИЗМЕНЕНИЕ: Майнинг продолжается даже при заполненном хранилище
+      // Энергия расходуется, но монеты не начисляются
       lastFarmTickTime = Date.now();
       savePlayerData();
       updateFarmUI();
@@ -2471,7 +2486,14 @@
         energyBar.className = 'energy-fill ' + (energyPct > 50 ? 'high' : energyPct > 20 ? 'med' : 'low');
       }
       const whDisplay = document.getElementById('farmWarehouseDisplay');
-      if (whDisplay) whDisplay.textContent = warehouseTokens.toFixed(1) + ' / ' + warehouseLimit + ' 🪙';
+      if (whDisplay) {
+        // ИЗМЕНЕНИЕ: Показываем предупреждение при переполнении
+        if (warehouseTokens >= warehouseLimit) {
+          whDisplay.innerHTML = warehouseTokens.toFixed(1) + ' / ' + warehouseLimit + ' 🪙 <span style="color:#ff4444;font-size:10px;">⚠️ OVERFLOW</span>';
+        } else {
+          whDisplay.textContent = warehouseTokens.toFixed(1) + ' / ' + warehouseLimit + ' 🪙';
+        }
+      }
       const collectBtn = document.getElementById('collectWarehouseBtn');
       if (collectBtn) collectBtn.disabled = warehouseTokens <= 0;
       const incomeDisplay = document.getElementById('farmIncomeMin');
