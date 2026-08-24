@@ -280,6 +280,7 @@
     </div>
   </div>
   
+  <!-- Стильное модальное окно для часового бонуса -->
   <div id="bonusOverlay" onclick="closeBonusModal()"></div>
   <div id="bonusModal">
     <div class="bonus-icon">🎁</div>
@@ -654,7 +655,7 @@
         offlineTokens: 'Токенов добыто',
         offlineEnergySpent: 'Энергии потрачено',
         offlineEnergyRegen: 'Энергии восстановлено',
-        offlineWarehouseFull: 'Хранилище заполнено! Монеты сжигаются, майнинг продолжается.',
+        offlineWarehouseFull: 'Хранилище заполнено! Добыча остановлена.',
         offlineEnergyEmpty: 'Энергия закончилась! Добыча остановлена.',
         bonusModalTitle: 'Часовой бонус!',
         bonusModalText: 'Вы получили +{amount} токенов!',
@@ -754,7 +755,7 @@
         offlineTokens: 'Tokens mined',
         offlineEnergySpent: 'Energy spent',
         offlineEnergyRegen: 'Energy regenerated',
-        offlineWarehouseFull: 'Warehouse full! Coins burned, mining continues.',
+        offlineWarehouseFull: 'Warehouse full! Mining stopped.',
         offlineEnergyEmpty: 'Energy depleted! Mining stopped.',
         bonusModalTitle: 'Hourly Bonus!',
         bonusModalText: 'You got +{amount} tokens!',
@@ -1329,7 +1330,7 @@
       quantum: { name: 'Quantum Rig', speed: 5.0, energy: 20, costTokens: 100000, costCrystals: 200, icon: '💎', color: '#9333ea' }
     };
     let farmEnergy = 50, farmMaxEnergy = 50;
-    let warehouseTokens = 0, warehouseLimit = 20; // Лимит хранилища: 20 монет
+    let warehouseTokens = 0, warehouseLimit = 20;
     let farmSlots = [
       { type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 },
       null, null, null, null, null
@@ -1596,14 +1597,6 @@
       db.ref(`player_data/${user.uid}/farmSlots`).on('value', (snapshot) => {
         const newSlots = snapshot.val();
         if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); }
-      });
-      db.ref(`player_data/${user.uid}/warehouseTokens`).on('value', (snapshot) => {
-        const newTokens = snapshot.val();
-        if (newTokens !== null && newTokens !== warehouseTokens) { warehouseTokens = newTokens; updateFarmUI(); }
-      });
-      db.ref(`player_data/${user.uid}/warehouseLimit`).on('value', (snapshot) => {
-        const newLimit = snapshot.val();
-        if (newLimit !== null && newLimit !== warehouseLimit) { warehouseLimit = newLimit; updateFarmUI(); }
       });
       db.ref(`player_data/${user.uid}/adStreak`).on('value', (snapshot) => {
         const newStreak = snapshot.val();
@@ -2390,30 +2383,15 @@
 
       const totalEnergyPerMin = totalEnergyPerHour / 60;
       const maxMiningMinutesByEnergy = totalEnergyPerMin > 0 ? farmEnergy / totalEnergyPerMin : elapsedMinutes;
-      
-      // Майним всё время, пока есть энергия (без ограничения по хранилищу)
-      const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy);
+      const warehouseSpace = warehouseLimit - warehouseTokens;
+      const maxMiningMinutesByWarehouse = totalIncomePerMin > 0 ? warehouseSpace / totalIncomePerMin : elapsedMinutes;
+      const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy, maxMiningMinutesByWarehouse);
 
       if (actualMiningMinutes > 0) {
         const earnedTokens = totalIncomePerMin * actualMiningMinutes;
         const spentEnergy = totalEnergyPerMin * actualMiningMinutes;
-        
-        // Проверяем, сколько реально помещается в хранилище
-        const spaceAvailable = Math.max(0, warehouseLimit - warehouseTokens);
-        const tokensToAdd = Math.min(earnedTokens, spaceAvailable);
-        const tokensLost = earnedTokens - tokensToAdd;
-        
-        // Начисляем только то, что помещается
-        warehouseTokens += tokensToAdd;
-        // Энергия тратится всегда
+        warehouseTokens += earnedTokens;
         farmEnergy -= spentEnergy;
-        
-        // Логируем потери
-        if (tokensLost > 0) {
-          console.log(`Потеряно монет из-за переполнения: ${tokensLost.toFixed(2)}`);
-        }
-        
-        // Ограничиваем хранилище
         if (warehouseTokens > warehouseLimit) warehouseTokens = warehouseLimit;
         if (farmEnergy < 0) farmEnergy = 0;
       }
@@ -2426,14 +2404,8 @@
         const hours = Math.floor(elapsedMs / 3600000);
         const mins = Math.floor((elapsedMs % 3600000) / 60000);
         const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-        
-        // Показываем реально начисленное количество (не более лимита)
-        const actuallyEarned = Math.min(
-          totalIncomePerMin * actualMiningMinutes,
-          Math.max(0, warehouseLimit - warehouseTokens)
-        );
-        
-        showMessage(`${t('offlineEarning')} +${actuallyEarned.toFixed(1)} ${t('tokens')} (${timeStr})`);
+        const earned = totalIncomePerMin * actualMiningMinutes;
+        showMessage(`${t('offlineEarning')} +${earned.toFixed(1)} ${t('tokens')} (${timeStr})`);
       }
     }
 
@@ -2499,13 +2471,7 @@
         energyBar.className = 'energy-fill ' + (energyPct > 50 ? 'high' : energyPct > 20 ? 'med' : 'low');
       }
       const whDisplay = document.getElementById('farmWarehouseDisplay');
-      if (whDisplay) {
-        if (warehouseTokens >= warehouseLimit) {
-          whDisplay.innerHTML = Math.floor(warehouseTokens) + ' / ' + warehouseLimit + ' 🪙 <span style="color:#ff4444;font-size:10px;">⚠️ OVERFLOW - MINING CONTINUES</span>';
-        } else {
-          whDisplay.textContent = Math.floor(warehouseTokens) + ' / ' + warehouseLimit + ' 🪙';
-        }
-      }
+      if (whDisplay) whDisplay.textContent = warehouseTokens.toFixed(1) + ' / ' + warehouseLimit + ' 🪙';
       const collectBtn = document.getElementById('collectWarehouseBtn');
       if (collectBtn) collectBtn.disabled = warehouseTokens <= 0;
       const incomeDisplay = document.getElementById('farmIncomeMin');
