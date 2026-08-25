@@ -267,6 +267,19 @@
     #bonusModal p { color: #e0e0e0; font-size: 16px; margin-bottom: 20px; }
     #bonusModal .modal-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     #bonusOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10001; }
+
+    /* ===== DAILY STREAK MODAL ===== */
+    #dailyStreakModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border: 2px solid #ffd700; border-radius: 20px; padding: 25px; z-index: 10002; text-align: center; max-width: 500px; width: 95%; box-shadow: 0 0 40px rgba(255, 215, 0, 0.3); animation: modalIn 0.3s ease; }
+    #dailyStreakModal h3 { color: #ffd700; font-size: 24px; margin-bottom: 15px; }
+    #dailyStreakModal .streak-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 15px 0; }
+    #dailyStreakModal .streak-day { background: #1a1a2a; border: 1px solid #333; border-radius: 8px; padding: 10px 5px; text-align: center; font-size: 11px; color: #888; position: relative; }
+    #dailyStreakModal .streak-day.claimed { background: #1a2a1a; border-color: #00ffa6; color: #00ffa6; }
+    #dailyStreakModal .streak-day.current { background: #2a2a1a; border-color: #ffd700; color: #ffd700; animation: pulse 2s infinite; }
+    #dailyStreakModal .streak-day.locked { opacity: 0.5; }
+    #dailyStreakModal .streak-day .day-num { font-size: 14px; font-weight: bold; }
+    #dailyStreakModal .streak-day .day-reward { font-size: 10px; margin-top: 3px; }
+    #dailyStreakModal .streak-day .check-mark { position: absolute; top: 2px; right: 3px; font-size: 12px; color: #00ffa6; }
+    #dailyStreakOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10001; }
   </style>
 </head>
 <body>
@@ -290,6 +303,17 @@
       <button class="ad-button" onclick="watchBonusAd()" style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:14px;">📺 x2 за рекламу</button>
       <button class="click-button" onclick="closeBonusModal()" style="background:linear-gradient(135deg,#00ffa6,#00c3ff);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:14px;">✅ Забрать</button>
     </div>
+  </div>
+
+  <!-- Модальное окно ежедневного стрика -->
+  <div id="dailyStreakOverlay" onclick="closeDailyStreakModal()"></div>
+  <div id="dailyStreakModal">
+    <h3>📅 Ежедневный вход</h3>
+    <div class="streak-days" id="streakDaysContainer"></div>
+    <div style="margin: 15px 0;">
+      <button class="ad-button" id="claimDailyStreakBtn" onclick="claimDailyStreak()" style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:16px;">🎁 Забрать награду</button>
+    </div>
+    <button class="click-button" onclick="closeDailyStreakModal()" style="background:#555;color:#fff;padding:8px 20px;font-size:14px;">✖️ Закрыть</button>
   </div>
 
   <div class="language-switch">
@@ -339,6 +363,7 @@
         <button class="click-button" id="tasksBtn" onclick="togglePanel('tasks')">📋 Tasks ▼</button>
         <button class="click-button" id="miningBtn" onclick="togglePanel('mining')">⛏️ Mining ▼</button>
         <button class="click-button" onclick="startMiniGame()">Start Mini-Game</button>
+        <button class="click-button" onclick="showDailyStreakModal()">📅 Daily Login</button>
       </div>
       <div id="shop" class="panel">
         <h2>🛒 Upgrades</h2><p id="clickPowerCostText">💪 Click Power +1 (Cost: 50)</p><p>Current: <span id="clickPowerDisplay">1</span> / 8</p><div class="progress-container"><div class="progress-bar" id="clickPowerBar"></div></div><button class="click-button" onclick="buyUpgrade('clickPower')">Buy</button>
@@ -684,7 +709,15 @@
         streakRewardCrystals: '+{crystals} 💎',
         streakRewardBooster: '+ Бустер',
         streakMaxReward: 'Максимальная награда',
-        warehouseBonus: '📦 Бонус хранилища! Уровень {level}: +{bonus} монет!'
+        warehouseBonus: '📦 Бонус хранилища! Уровень {level}: +{bonus} монет!',
+        dailyLoginTitle: '📅 Ежедневный вход',
+        dailyLoginClaim: '🎁 Забрать награду',
+        dailyLoginClose: '✖️ Закрыть',
+        dailyLoginDay: 'День',
+        dailyLoginReward: 'Награда',
+        dailyLoginClaimed: '✅ Получено',
+        dailyLoginAlreadyClaimed: 'Уже получено сегодня!',
+        dailyLoginNextDay: 'Приходите завтра!'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -785,7 +818,15 @@
         streakRewardCrystals: '+{crystals} 💎',
         streakRewardBooster: '+ Booster',
         streakMaxReward: 'Max reward',
-        warehouseBonus: '📦 Warehouse bonus! Level {level}: +{bonus} coins!'
+        warehouseBonus: '📦 Warehouse bonus! Level {level}: +{bonus} coins!',
+        dailyLoginTitle: '📅 Daily Login',
+        dailyLoginClaim: '🎁 Claim Reward',
+        dailyLoginClose: '✖️ Close',
+        dailyLoginDay: 'Day',
+        dailyLoginReward: 'Reward',
+        dailyLoginClaimed: '✅ Claimed',
+        dailyLoginAlreadyClaimed: 'Already claimed today!',
+        dailyLoginNextDay: 'Come back tomorrow!'
       }
     };
     
@@ -803,6 +844,7 @@
       renderTasks();
       updateFarmUI();
       updateAdStreakUI();
+      updateDailyStreakModal();
     }
     window.switchLanguage = switchLanguage;
 
@@ -843,6 +885,20 @@
       6: { tokens: 250, crystals: 0, booster: 'instant_autoclick_30min' }
     };
 
+    // ==================== СИСТЕМА ЕЖЕДНЕВНОГО ВХОДА ====================
+    const DAILY_LOGIN_REWARDS = [
+      { day: 1, tokens: 100, crystals: 0, booster: null },
+      { day: 2, tokens: 200, crystals: 0, booster: null },
+      { day: 3, tokens: 0, crystals: 1, booster: null },
+      { day: 4, tokens: 400, crystals: 0, booster: null },
+      { day: 5, tokens: 0, crystals: 0, booster: '30min_booster' },
+      { day: 6, tokens: 0, crystals: 2, booster: null },
+      { day: 7, tokens: 1000, crystals: 5, booster: null }
+    ];
+    
+    let dailyLoginStreak = 0;
+    let lastDailyLoginDate = null;
+
     let adStreak = 0;
     let lastAdClaimDate = null;
 
@@ -861,6 +917,181 @@
       pendingRewardType: null,
       isAdLoading: false
     };
+
+    // ==================== ФУНКЦИИ ЕЖЕДНЕВНОГО ВХОДА ====================
+    function loadDailyLoginData() {
+      if (!user) return;
+      db.ref(`player_data/${user.uid}/dailyLogin`).once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          dailyLoginStreak = data.streak || 0;
+          lastDailyLoginDate = data.lastClaimDate || null;
+        }
+        checkDailyLoginAvailability();
+        updateDailyStreakModal();
+      });
+    }
+
+    function saveDailyLoginData() {
+      if (!user) return;
+      db.ref(`player_data/${user.uid}/dailyLogin`).set({
+        streak: dailyLoginStreak,
+        lastClaimDate: lastDailyLoginDate
+      });
+    }
+
+    function checkDailyLoginAvailability() {
+      const today = new Date().toDateString();
+      const canClaim = lastDailyLoginDate !== today;
+      const claimBtn = document.getElementById('claimDailyStreakBtn');
+      if (claimBtn) {
+        claimBtn.disabled = !canClaim;
+        claimBtn.textContent = canClaim ? t('dailyLoginClaim') : t('dailyLoginAlreadyClaimed');
+      }
+    }
+
+    function showDailyStreakModal() {
+      if (!user) {
+        showMessage(t('signIn'));
+        return;
+      }
+      updateDailyStreakModal();
+      document.getElementById('dailyStreakOverlay').style.display = 'block';
+      document.getElementById('dailyStreakModal').style.display = 'block';
+    }
+
+    function closeDailyStreakModal() {
+      document.getElementById('dailyStreakOverlay').style.display = 'none';
+      document.getElementById('dailyStreakModal').style.display = 'none';
+    }
+
+    function updateDailyStreakModal() {
+      const container = document.getElementById('streakDaysContainer');
+      if (!container) return;
+      
+      const today = new Date().toDateString();
+      let currentDay = dailyLoginStreak;
+      
+      // Если последний вход был вчера, продолжаем стрик
+      if (lastDailyLoginDate) {
+        const lastDate = new Date(lastDailyLoginDate);
+        const todayDate = new Date(today);
+        const diffTime = Math.abs(todayDate - lastDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1 && lastDailyLoginDate !== today) {
+          // Стрик продолжается
+        } else if (diffDays > 1) {
+          // Стрик сброшен
+          currentDay = 0;
+        }
+      }
+      
+      let html = '';
+      for (let i = 0; i < 7; i++) {
+        const reward = DAILY_LOGIN_REWARDS[i];
+        let rewardText = '';
+        if (reward.tokens > 0) rewardText += `+${reward.tokens} 🪙`;
+        if (reward.crystals > 0) rewardText += (rewardText ? ' ' : '') + `+${reward.crystals} 💎`;
+        if (reward.booster) rewardText += ' ⚡';
+        
+        let dayClass = 'streak-day';
+        let checkMark = '';
+        
+        if (i + 1 < currentDay) {
+          dayClass += ' claimed';
+          checkMark = '<span class="check-mark">✓</span>';
+        } else if (i + 1 === currentDay && lastDailyLoginDate !== today) {
+          dayClass += ' current';
+        } else if (i + 1 > currentDay) {
+          dayClass += ' locked';
+        }
+        
+        if (lastDailyLoginDate === today && i + 1 === currentDay) {
+          dayClass += ' claimed';
+          checkMark = '<span class="check-mark">✓</span>';
+        }
+        
+        html += `
+          <div class="${dayClass}">
+            ${checkMark}
+            <div class="day-num">${t('dailyLoginDay')} ${i + 1}</div>
+            <div class="day-reward">${rewardText || '🎁'}</div>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+      checkDailyLoginAvailability();
+    }
+
+    function claimDailyStreak() {
+      if (!user) {
+        showMessage(t('signIn'));
+        return;
+      }
+      
+      const today = new Date().toDateString();
+      
+      if (lastDailyLoginDate === today) {
+        showMessage(t('dailyLoginAlreadyClaimed'));
+        return;
+      }
+      
+      // Определяем текущий день стрика
+      if (!lastDailyLoginDate) {
+        dailyLoginStreak = 1;
+      } else {
+        const lastDate = new Date(lastDailyLoginDate);
+        const todayDate = new Date(today);
+        const diffTime = Math.abs(todayDate - lastDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          dailyLoginStreak = (dailyLoginStreak % 7) + 1;
+        } else {
+          dailyLoginStreak = 1;
+        }
+      }
+      
+      lastDailyLoginDate = today;
+      
+      // Выдаем награду
+      const rewardIndex = (dailyLoginStreak - 1) % 7;
+      const reward = DAILY_LOGIN_REWARDS[rewardIndex];
+      
+      if (reward.tokens > 0) {
+        score += reward.tokens;
+        savePlayerScore();
+      }
+      
+      if (reward.crystals > 0) {
+        crystals += reward.crystals;
+        savePlayerCrystals();
+      }
+      
+      if (reward.booster === '30min_booster') {
+        startInstantAutoclick(1800000); // 30 минут
+        showMessage('🎁 Бустер на 30 минут активирован!');
+      }
+      
+      saveDailyLoginData();
+      updateCounterDisplay();
+      updateProfilePanel();
+      updateDailyStreakModal();
+      
+      let rewardMessage = t('dailyLoginClaimed') + ': ';
+      if (reward.tokens > 0) rewardMessage += `+${reward.tokens} 🪙 `;
+      if (reward.crystals > 0) rewardMessage += `+${reward.crystals} 💎 `;
+      if (reward.booster) rewardMessage += '+ ⚡ Бустер';
+      
+      showMessage(rewardMessage);
+      
+      // Закрываем модальное окно через 2 секунды
+      setTimeout(() => {
+        closeDailyStreakModal();
+      }, 2000);
+    }
 
     // ==================== ФУНКЦИИ СТРИКОВ ====================
     function loadAdStreak() {
@@ -1515,7 +1746,8 @@
             farmSlots: farmSlots,
             lastFarmTick: Date.now(),
             lastActive: firebase.database.ServerValue.TIMESTAMP,
-            adStreak: { streak: 0, lastClaimDate: null }
+            adStreak: { streak: 0, lastClaimDate: null },
+            dailyLogin: { streak: 0, lastClaimDate: null }
           });
           await db.ref(`leaderboard/${uid}`).set({ 
             id: uid, name: displayName, score: 0, crystals: 0, 
@@ -1568,6 +1800,7 @@
       document.getElementById('gameSection').style.display = 'block';
       await loadPlayerData(user.uid);
       loadAdStreak();
+      loadDailyLoginData();
       setupCrossPlatformSync();
       startBonusTimer();
       startOnlineTimer();
@@ -1587,6 +1820,13 @@
       
       const ref = new URLSearchParams(window.location.search).get('ref');
       if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
+      
+      // Показываем ежедневный стрик при входе
+      setTimeout(() => {
+        if (lastDailyLoginDate !== new Date().toDateString()) {
+          showDailyStreakModal();
+        }
+      }, 1000);
     }
 
     // ==================== СИНХРОНИЗАЦИЯ ====================
@@ -1637,6 +1877,15 @@
           updateAdStreakUI(); 
         }
       });
+      db.ref(`player_data/${user.uid}/dailyLogin`).on('value', (snapshot) => {
+        const newDailyLogin = snapshot.val();
+        if (newDailyLogin) { 
+          dailyLoginStreak = newDailyLogin.streak || 0;
+          lastDailyLoginDate = newDailyLogin.lastClaimDate || null;
+          updateDailyStreakModal();
+          checkDailyLoginAvailability();
+        }
+      });
     }
 
     // ==================== ЗАГРУЗКА ДАННЫХ ====================
@@ -1653,7 +1902,8 @@
               farmSlots: farmSlots,
               lastFarmTick: Date.now(),
               lastActive: firebase.database.ServerValue.TIMESTAMP,
-              adStreak: { streak: 0, lastClaimDate: null }
+              adStreak: { streak: 0, lastClaimDate: null },
+              dailyLogin: { streak: 0, lastClaimDate: null }
             };
             db.ref(`player_data/${uid}`).set(defaultData);
             score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
@@ -1662,6 +1912,8 @@
             lastFarmTickTime = Date.now();
             adStreak = 0;
             lastAdClaimDate = null;
+            dailyLoginStreak = 0;
+            lastDailyLoginDate = null;
             lastWarehouseLevel = 1;
           } else {
             score = data.score || 0;
@@ -1682,6 +1934,11 @@
             if (data.adStreak) {
               adStreak = data.adStreak.streak || 0;
               lastAdClaimDate = data.adStreak.lastClaimDate || null;
+            }
+            
+            if (data.dailyLogin) {
+              dailyLoginStreak = data.dailyLogin.streak || 0;
+              lastDailyLoginDate = data.dailyLogin.lastClaimDate || null;
             }
             
             if (data.autoclickActive && data.autoclickEndTime && data.autoclickEndTime > Date.now()) {
@@ -1708,6 +1965,7 @@
           processOfflineMining();
           updateFarmUI();
           updateAdStreakUI();
+          updateDailyStreakModal();
           resolve();
         }).catch(() => { score = 0; crystals = 0; clickPower = 1; resolve(); });
       });
@@ -1734,7 +1992,8 @@
         farmSlots: farmSlots,
         lastFarmTick: lastFarmTickTime,
         lastActive: firebase.database.ServerValue.TIMESTAMP,
-        adStreak: { streak: adStreak, lastClaimDate: lastAdClaimDate }
+        adStreak: { streak: adStreak, lastClaimDate: lastAdClaimDate },
+        dailyLogin: { streak: dailyLoginStreak, lastClaimDate: lastDailyLoginDate }
       };
       db.ref(`player_data/${user.uid}`).update(data).catch(() => {});
       db.ref(`leaderboard/${user.uid}`).update({
@@ -1831,6 +2090,7 @@
         checkAndUpdateStreak();
         updateAdStreakUI();
         checkWarehouseLevelUp();
+        checkDailyLoginAvailability();
       }
     });
 
@@ -2339,6 +2599,8 @@
       pendingBonusAmount = 0;
       adStreak = 0;
       lastAdClaimDate = null;
+      dailyLoginStreak = 0;
+      lastDailyLoginDate = null;
       lastWarehouseLevel = 1;
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
@@ -2347,6 +2609,8 @@
       document.getElementById('adminBadge').style.display = 'none';
       document.getElementById('bonusModal').style.display = 'none';
       document.getElementById('bonusOverlay').style.display = 'none';
+      document.getElementById('dailyStreakModal').style.display = 'none';
+      document.getElementById('dailyStreakOverlay').style.display = 'none';
       const signOutBtn = document.getElementById('signOutBtn');
       if (signOutBtn) signOutBtn.classList.remove('visible');
       setupAuthUI();
@@ -2361,7 +2625,7 @@
     db.ref(`weeklyLeaderboard/${getWeekKey()}`).on("value", s => { if (currentTab !== "weekly") return; const data = []; s.forEach(c => { const e = c.val(); if (e?.score >= 50000 && e.name) data.push(e); }); data.sort((a,b) => b.score - a.score); document.getElementById("leaderboardBody").innerHTML = data.length === 0 ? "<tr><td colspan='4'>No players</td></tr>" : data.slice(0,10).map((e,i) => `<tr><td>${i+1}</td><td>${escapeHTML(e.name)}</td><td>${e.score}</td><td>${getRewardForRank(i+1)}</td></tr>`).join(''); });
     function getRewardForRank(r) { return r <= 3 ? 10000 : r <= 5 ? 7000 : 5000; }
     showTab("overall");
-    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); updateAdTaskUI(); updateFarmUI(); updateAdStreakUI(); }, 1000);
+    setInterval(() => { updateProfilePanel(); updateInstantAutoclickTimer(); updateCloneTimer(); updateAutoclickerShopUI(); updateAdTaskUI(); updateFarmUI(); updateAdStreakUI(); updateDailyStreakModal(); }, 1000);
     setInterval(checkWeeklyReset, 600000);
 
     let mi = 0; const me = document.getElementById("motiveText");
@@ -2370,6 +2634,9 @@
 
     document.getElementById('buyCloneBtn').onclick = buyClone;
     document.getElementById('buyInstantAutoclickBtn').onclick = buyInstantAutoclick;
+    window.showDailyStreakModal = showDailyStreakModal;
+    window.closeDailyStreakModal = closeDailyStreakModal;
+    window.claimDailyStreak = claimDailyStreak;
 
     // ==================== MINING FARM SYSTEM (OFFLINE SUPPORT) ====================
     function startFarmSystem() {
@@ -2916,6 +3183,7 @@
         document.getElementById('gameSection').style.display = 'block';
         await loadPlayerData(user.uid);
         loadAdStreak();
+        loadDailyLoginData();
         setupCrossPlatformSync();
         startBonusTimer();
         startOnlineTimer();
@@ -2923,6 +3191,13 @@
         updateAdTaskUI();
         checkAdCrystalTaskCompletion();
         startFarmSystem();
+        
+        // Показываем ежедневный стрик при входе
+        setTimeout(() => {
+          if (lastDailyLoginDate !== new Date().toDateString()) {
+            showDailyStreakModal();
+          }
+        }, 1000);
       } else {
         setupAuthUI();
       }
