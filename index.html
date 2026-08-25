@@ -683,7 +683,8 @@
         streakRewardTokens: '+{tokens} токенов',
         streakRewardCrystals: '+{crystals} 💎',
         streakRewardBooster: '+ Бустер',
-        streakMaxReward: 'Максимальная награда'
+        streakMaxReward: 'Максимальная награда',
+        warehouseBonus: '📦 Бонус хранилища! Уровень {level}: +{bonus} монет!'
       },
       en: {
         authTitle: 'Sign in with Telegram',
@@ -783,7 +784,8 @@
         streakRewardTokens: '+{tokens} tokens',
         streakRewardCrystals: '+{crystals} 💎',
         streakRewardBooster: '+ Booster',
-        streakMaxReward: 'Max reward'
+        streakMaxReward: 'Max reward',
+        warehouseBonus: '📦 Warehouse bonus! Level {level}: +{bonus} coins!'
       }
     };
     
@@ -1291,6 +1293,7 @@
     let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
     let isRenderingTasks = false, isProcessingReferrer = false;
     let pendingBonusAmount = 0;
+    let lastWarehouseLevel = 1;
     
     const MAX_CLICK_POWER = 100, MAX_SUSPICIOUS_FLAGS = 5;
     const INSTANT_AUTOCLICK_COST = 50, INSTANT_AUTOCLICK_DURATION = 3600000;
@@ -1340,6 +1343,28 @@
     let farmTickInterval = null;
     let energyRegenInterval = null;
     let lastFarmTickTime = 0;
+
+    // ==================== WAREHOUSE LIMIT BY LEVEL ====================
+    function getWarehouseLimit() {
+      const level = getPlayerLevel();
+      // Увеличиваем лимит на четных уровнях: 2, 4, 6, 8, 10
+      const warehouseBonus = Math.floor(level / 2) * 10;
+      return 20 + warehouseBonus;
+      // Уровень 1: 20, Уровень 2: 30, Уровень 3: 30, Уровень 4: 40, Уровень 5: 40,
+      // Уровень 6: 50, Уровень 7: 50, Уровень 8: 60, Уровень 9: 60, Уровень 10: 70
+    }
+
+    function checkWarehouseLevelUp() {
+      const currentLevel = getPlayerLevel();
+      if (currentLevel > lastWarehouseLevel && currentLevel % 2 === 0) {
+        const newLimit = getWarehouseLimit();
+        const bonus = newLimit - warehouseLimit;
+        if (bonus > 0) {
+          showMessage(t('warehouseBonus').replace('{level}', currentLevel).replace('{bonus}', bonus));
+        }
+        lastWarehouseLevel = currentLevel;
+      }
+    }
 
     // ==================== BONUS MODAL ====================
     function showBonusModal(amount) {
@@ -1556,6 +1581,7 @@
         if (user) {
           checkAndUpdateStreak();
           updateAdStreakUI();
+          checkWarehouseLevelUp();
         }
       }, 300000);
       
@@ -1568,7 +1594,12 @@
       if (!user) return;
       db.ref(`player_data/${user.uid}/score`).on('value', (snapshot) => {
         const newScore = snapshot.val();
-        if (newScore !== null && newScore !== score) { score = newScore; updateCounterDisplay(); updateProfilePanel(); }
+        if (newScore !== null && newScore !== score) { 
+          score = newScore; 
+          updateCounterDisplay(); 
+          updateProfilePanel(); 
+          checkWarehouseLevelUp();
+        }
       });
       db.ref(`player_data/${user.uid}/crystals`).on('value', (snapshot) => {
         const newCrystals = snapshot.val();
@@ -1631,6 +1662,7 @@
             lastFarmTickTime = Date.now();
             adStreak = 0;
             lastAdClaimDate = null;
+            lastWarehouseLevel = 1;
           } else {
             score = data.score || 0;
             crystals = data.crystals || 0;
@@ -1641,13 +1673,8 @@
             farmEnergy = data.farmEnergy || 50;
             farmMaxEnergy = data.farmMaxEnergy || 50;
             warehouseTokens = data.warehouseTokens || 0;
-            warehouseLimit = data.warehouseLimit > 0 ? data.warehouseLimit : 20;
-            
-            // Миграция: обновляем warehouseLimit с 12 на 20
-            if (warehouseLimit === 12) {
-              warehouseLimit = 20;
-              db.ref(`player_data/${uid}/warehouseLimit`).set(20);
-            }
+            warehouseLimit = getWarehouseLimit();
+            lastWarehouseLevel = getPlayerLevel();
             
             if (data.farmSlots) farmSlots = data.farmSlots;
             lastFarmTickTime = data.lastFarmTick || Date.now();
@@ -1703,7 +1730,7 @@
         farmEnergy: farmEnergy,
         farmMaxEnergy: farmMaxEnergy,
         warehouseTokens: warehouseTokens,
-        warehouseLimit: warehouseLimit,
+        warehouseLimit: getWarehouseLimit(),
         farmSlots: farmSlots,
         lastFarmTick: lastFarmTickTime,
         lastActive: firebase.database.ServerValue.TIMESTAMP,
@@ -1735,6 +1762,7 @@
           totalClicks: totalClicks,
           hasResonance: hasResonance
         }); 
+        checkWarehouseLevelUp();
       } 
     }
     
@@ -1802,6 +1830,7 @@
         processOfflineMining();
         checkAndUpdateStreak();
         updateAdStreakUI();
+        checkWarehouseLevelUp();
       }
     });
 
@@ -2310,6 +2339,7 @@
       pendingBonusAmount = 0;
       adStreak = 0;
       lastAdClaimDate = null;
+      lastWarehouseLevel = 1;
       document.getElementById("authSection").style.display = "block";
       document.getElementById("gameSection").style.display = "none";
       document.getElementById('adminPanel').classList.remove('open');
@@ -2391,7 +2421,7 @@
 
       const totalEnergyPerMin = totalEnergyPerHour / 60;
       const maxMiningMinutesByEnergy = totalEnergyPerMin > 0 ? farmEnergy / totalEnergyPerMin : elapsedMinutes;
-      const warehouseSpace = warehouseLimit - warehouseTokens;
+      const warehouseSpace = getWarehouseLimit() - warehouseTokens;
       const maxMiningMinutesByWarehouse = totalIncomePerMin > 0 ? warehouseSpace / totalIncomePerMin : elapsedMinutes;
       const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy, maxMiningMinutesByWarehouse);
 
@@ -2400,7 +2430,7 @@
         const spentEnergy = totalEnergyPerMin * actualMiningMinutes;
         warehouseTokens += earnedTokens;
         farmEnergy -= spentEnergy;
-        if (warehouseTokens > warehouseLimit) warehouseTokens = warehouseLimit;
+        if (warehouseTokens > getWarehouseLimit()) warehouseTokens = getWarehouseLimit();
         if (farmEnergy < 0) farmEnergy = 0;
       }
 
@@ -2479,7 +2509,7 @@
         energyBar.className = 'energy-fill ' + (energyPct > 50 ? 'high' : energyPct > 20 ? 'med' : 'low');
       }
       const whDisplay = document.getElementById('farmWarehouseDisplay');
-      if (whDisplay) whDisplay.textContent = warehouseTokens.toFixed(1) + ' / ' + warehouseLimit + ' 🪙';
+      if (whDisplay) whDisplay.textContent = warehouseTokens.toFixed(1) + ' / ' + getWarehouseLimit() + ' 🪙';
       const collectBtn = document.getElementById('collectWarehouseBtn');
       if (collectBtn) collectBtn.disabled = warehouseTokens <= 0;
       const incomeDisplay = document.getElementById('farmIncomeMin');
