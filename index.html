@@ -112,6 +112,43 @@
     .streak-display .streak-reward { color: #00ffa6; font-size: 12px; margin: 3px 0; }
     .streak-display .streak-tomorrow { color: #aaa; font-size: 11px; margin-top: 5px; }
 
+    /* AADS Ad Container */
+    #aadsAdContainer {
+      width: 100%;
+      max-width: 728px;
+      margin: 15px auto;
+      padding: 10px;
+      background: rgba(26, 26, 26, 0.5);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 195, 255, 0.1);
+      position: relative;
+      z-index: 9998;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #aadsAdContainer iframe {
+      border: 0;
+      padding: 0;
+      width: 100%;
+      max-width: 728px;
+      height: auto;
+      min-height: 60px;
+      display: block;
+      margin: 0 auto;
+      background: transparent;
+    }
+    #aadsAdContainer .ad-label {
+      position: absolute;
+      top: 2px;
+      right: 8px;
+      font-size: 8px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
       .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
@@ -130,6 +167,8 @@
       #leaderboardTable { font-size: 11px; } .score-popup { font-size: 16px; }
       #adminPanel { bottom: 10px; right: 10px; max-width: 250px; }
       .farm-grid { grid-template-columns: repeat(2, 1fr); }
+      #aadsAdContainer { padding: 5px; min-height: 50px; }
+      #aadsAdContainer iframe { min-height: 50px; }
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     @media (min-width: 1024px) {
@@ -138,6 +177,8 @@
       #mainButtonContainer { width: 450px; height: 450px; overflow: hidden; }
       .main-click-button { width: 220px; height: 220px; } .main-click-button .icon { font-size: 80px; }
       .score-popup { font-size: 24px; }
+      #aadsAdContainer { padding: 15px; min-height: 90px; }
+      #aadsAdContainer iframe { min-height: 90px; }
     }
 
     /* ===== MINING FARM STYLES ===== */
@@ -390,8 +431,21 @@
   <div class="main-content">
     <div id="playerLevelContainer"><div id="levelMessage" style="display:none;color:gold;font-weight:bold;margin-top:5px;"></div></div>
     <h1>Crypto Clicker 💰</h1>
-    <div id="authSection"><div id="authButtons"></div><div id="motiveText">Click — earn tokens.</div></div>
+    <div id="authSection">
+      <div id="authButtons"></div>
+      <!-- Реклама AADS до авторизации -->
+      <div id="aadsAdContainer" class="aads-ad-before-auth">
+        <span class="ad-label">— Реклама —</span>
+        <iframe data-aa='2453313' src='//acceptable.a-ads.com/2453313/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden; display:block; margin:0 auto; background:transparent;'></iframe>
+      </div>
+      <div id="motiveText">Click — earn tokens.</div>
+    </div>
     <div id="gameSection" style="display:none;">
+      <!-- Реклама AADS после авторизации -->
+      <div id="aadsAdContainer" class="aads-ad-after-auth">
+        <span class="ad-label">— Реклама —</span>
+        <iframe data-aa='2453313' src='//acceptable.a-ads.com/2453313/?size=Adaptive' style='border:0; padding:0; width:100%; height:auto; overflow:hidden; display:block; margin:0 auto; background:transparent;'></iframe>
+      </div>
       <div id="mainButtonContainer"><button id="mainClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button><button id="secondClickButton" class="main-click-button" onclick="clickToken(event)"><span class="icon">💰</span></button></div>
       <div id="counter">Tokens: 0</div><div id="message"></div>
       <div id="buttonGroup">
