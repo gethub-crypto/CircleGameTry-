@@ -280,6 +280,31 @@
     #dailyStreakModal .streak-day .day-reward { font-size: 10px; margin-top: 3px; }
     #dailyStreakModal .streak-day .check-mark { position: absolute; top: 2px; right: 3px; font-size: 12px; color: #00ffa6; }
     #dailyStreakOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10001; }
+
+    /* ===== ACHIEVEMENT MODAL (NEW) ===== */
+    #achievementModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+      border: 2px solid #ffd700;
+      border-radius: 20px;
+      padding: 30px;
+      z-index: 10002;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+      animation: modalIn 0.3s ease;
+    }
+    #achievementModal .ach-icon { font-size: 50px; margin-bottom: 15px; animation: pulse 1.5s infinite; }
+    #achievementModal h3 { color: #ffd700; font-size: 22px; margin-bottom: 10px; }
+    #achievementModal p { color: #e0e0e0; font-size: 16px; margin-bottom: 10px; }
+    #achievementModal .ach-reward { color: #00ffa6; font-size: 14px; margin-bottom: 20px; }
+    #achievementModal .modal-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    #achievementOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10001; }
   </style>
 </head>
 <body>
@@ -314,6 +339,18 @@
       <button class="ad-button" id="claimDailyStreakBtn" onclick="claimDailyStreak()" style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:16px;">🎁 Забрать награду</button>
     </div>
     <button class="click-button" onclick="closeDailyStreakModal()" style="background:#555;color:#fff;padding:8px 20px;font-size:14px;">✖️ Закрыть</button>
+  </div>
+
+  <!-- Модальное окно для достижений (новое) -->
+  <div id="achievementOverlay" onclick="closeAchievementModal()"></div>
+  <div id="achievementModal">
+    <div class="ach-icon" id="achModalIcon">🏆</div>
+    <h3 id="achModalTitle">Достижение!</h3>
+    <p id="achModalDesc">Вы получили достижение!</p>
+    <div class="ach-reward" id="achModalReward">Награда: +0</div>
+    <div class="modal-buttons">
+      <button class="click-button" onclick="closeAchievementModal()" style="background:linear-gradient(135deg,#00ffa6,#00c3ff);color:#000;font-weight:bold;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:14px;">✅ Отлично!</button>
+    </div>
   </div>
 
   <div class="language-switch">
@@ -918,6 +955,480 @@
       isAdLoading: false
     };
 
+    // ==================== ДОСТИЖЕНИЯ (НОВЫЕ) ====================
+    const ACHIEVEMENTS = {
+      // Базовые
+      'first_click': {
+        id: 'first_click',
+        name: 'Первый шаг',
+        desc: 'Сделай первый клик',
+        icon: '👆',
+        reward: { tokens: 10, crystals: 0 },
+        check: () => totalClicks >= 1
+      },
+      'thousander': {
+        id: 'thousander',
+        name: 'Тысячник',
+        desc: 'Накопи 1,000 токенов',
+        icon: '💵',
+        reward: { tokens: 0, crystals: 1 },
+        check: () => score >= 1000
+      },
+      'millionaire': {
+        id: 'millionaire',
+        name: 'Миллионер',
+        desc: 'Накопи 1,000,000 токенов',
+        icon: '🏦',
+        reward: { tokens: 0, crystals: 10 },
+        check: () => score >= 1000000
+      },
+      'billionaire': {
+        id: 'billionaire',
+        name: 'Миллиардер',
+        desc: 'Накопи 1,000,000,000 токенов',
+        icon: '💎',
+        reward: { tokens: 0, crystals: 100 },
+        check: () => score >= 1000000000
+      },
+      'crystal_cave': {
+        id: 'crystal_cave',
+        name: 'Кристальная пещера',
+        desc: 'Накопи 100 кристаллов',
+        icon: '💠',
+        reward: { tokens: 5000, crystals: 0 },
+        check: () => crystals >= 100
+      },
+      'crystal_king': {
+        id: 'crystal_king',
+        name: 'Кристальный король',
+        desc: 'Накопи 1,000 кристаллов',
+        icon: '👑',
+        reward: { tokens: 50000, crystals: 0 },
+        check: () => crystals >= 1000
+      },
+      'tireless': {
+        id: 'tireless',
+        name: 'Неутомимый',
+        desc: 'Сделай 100,000 кликов',
+        icon: '💪',
+        reward: { tokens: 0, crystals: 5 },
+        check: () => totalClicks >= 100000
+      },
+      'click_master': {
+        id: 'click_master',
+        name: 'Мастер клика',
+        desc: 'Сделай 1,000,000 кликов',
+        icon: '🎯',
+        reward: { tokens: 0, crystals: 50 },
+        check: () => totalClicks >= 1000000
+      },
+      'series_watcher': {
+        id: 'series_watcher',
+        name: 'Серийный смотрящий',
+        desc: 'Посмотри рекламу 7 дней подряд',
+        icon: '📺',
+        reward: { tokens: 10000, crystals: 10 },
+        check: () => adStreak >= 7
+      },
+      'ad_magnate': {
+        id: 'ad_magnate',
+        name: 'Рекламный магнат',
+        desc: 'Посмотри 100 реклам',
+        icon: '📡',
+        reward: { tokens: 0, crystals: 20 },
+        check: () => (adState.watchCountToday + (adState.watchDate !== new Date().toDateString() ? 0 : 0)) >= 100
+      },
+      'miner_amateur': {
+        id: 'miner_amateur',
+        name: 'Майнер-любитель',
+        desc: 'Купи 5 майнеров',
+        icon: '⛏️',
+        reward: { tokens: 1000, crystals: 0 },
+        check: () => farmSlots.filter(s => s !== null).length >= 5
+      },
+      'industrialist': {
+        id: 'industrialist',
+        name: 'Промышленник',
+        desc: 'Купи 25 майнеров',
+        icon: '🏭',
+        reward: { tokens: 0, crystals: 15 },
+        check: () => farmSlots.filter(s => s !== null).length >= 25
+      },
+      'quantum_leap': {
+        id: 'quantum_leap',
+        name: 'Квантовый скачок',
+        desc: 'Купи Quantum Miner',
+        icon: '⚛️',
+        reward: { tokens: 0, crystals: 30 },
+        check: () => farmSlots.some(s => s && s.type === 'quantum')
+      },
+      'farmer_millionaire': {
+        id: 'farmer_millionaire',
+        name: 'Фермер-миллионер',
+        desc: 'Заработай 1,000,000 токенов с майнинга',
+        icon: '🌾',
+        reward: { tokens: 0, crystals: 25 },
+        check: () => warehouseTokens >= 1000000
+      },
+      'collector': {
+        id: 'collector',
+        name: 'Коллекционер',
+        desc: 'Разблокируй все 6 слотов',
+        icon: '📦',
+        reward: { tokens: 5000, crystals: 5 },
+        check: () => farmSlots.every(s => s !== null)
+      },
+      'efficient': {
+        id: 'efficient',
+        name: 'Эффективный',
+        desc: 'Прокачай эффективность майнера до 5 уровня',
+        icon: '🔋',
+        reward: { tokens: 0, crystals: 10 },
+        check: () => farmSlots.some(s => s && (s.efficiency || 0) >= 5)
+      },
+      'overclocker': {
+        id: 'overclocker',
+        name: 'Оверклокер',
+        desc: 'Прокачай разгон до 10 уровня',
+        icon: '🚀',
+        reward: { tokens: 0, crystals: 15 },
+        check: () => farmSlots.some(s => s && (s.overclock || 0) >= 10)
+      },
+      'lucky': {
+        id: 'lucky',
+        name: 'Счастливчик',
+        desc: 'Получи критический удар от удачи',
+        icon: '🍀',
+        reward: { tokens: 500, crystals: 0 },
+        check: () => farmSlots.some(s => s && (s.luck || 0) >= 1 && Math.random() < 0.01)
+      },
+      'merger': {
+        id: 'merger',
+        name: 'Слияние',
+        desc: 'Объедини двух майнеров',
+        icon: '🔗',
+        reward: { tokens: 0, crystals: 5 },
+        check: () => farmSlots.some(s => s && s.merged === true)
+      },
+      'repairer': {
+        id: 'repairer',
+        name: 'Ремонтник',
+        desc: 'Почини перегретый майнер',
+        icon: '🔧',
+        reward: { tokens: 0, crystals: 3 },
+        check: () => repairCount > 0
+      },
+      'mini_gamer': {
+        id: 'mini_gamer',
+        name: 'Мини-игрок',
+        desc: 'Сыграй 50 мини-игр',
+        icon: '🕹️',
+        reward: { tokens: 0, crystals: 10 },
+        check: () => miniGamesPlayed >= 50
+      },
+      'winner': {
+        id: 'winner',
+        name: 'Победитель',
+        desc: 'Выиграй 10 мини-игр',
+        icon: '🏆',
+        reward: { tokens: 2000, crystals: 0 },
+        check: () => miniGamesWon >= 10
+      },
+      'referrer': {
+        id: 'referrer',
+        name: 'Реферер',
+        desc: 'Пригласи 5 друзей',
+        icon: '🤝',
+        reward: { tokens: 1000, crystals: 0 },
+        check: () => referrerCount >= 5
+      },
+      'social': {
+        id: 'social',
+        name: 'Социальный',
+        desc: 'Пригласи 20 друзей',
+        icon: '🌐',
+        reward: { tokens: 0, crystals: 10 },
+        check: () => referrerCount >= 20
+      },
+      // Секретные
+      'patient': {
+        id: 'patient',
+        name: 'Терпеливый',
+        desc: 'Не заходи в игру 24 часа',
+        icon: '⏳',
+        reward: { tokens: 10000, crystals: 5 },
+        check: () => {
+          const last = localStorage.getItem('cryptoClickerLastVisit');
+          if (!last) return false;
+          return Date.now() - parseInt(last) >= 86400000;
+        }
+      },
+      'night_miner': {
+        id: 'night_miner',
+        name: 'Ночной майнер',
+        desc: 'Зайди в игру ночью (с 00:00 до 05:00)',
+        icon: '🌙',
+        reward: { tokens: 500, crystals: 2 },
+        check: () => {
+          const h = new Date().getHours();
+          return h >= 0 && h < 5;
+        }
+      },
+      'fast_finger': {
+        id: 'fast_finger',
+        name: 'Быстрый палец',
+        desc: 'Сделай 20 кликов за 1 секунду',
+        icon: '⚡',
+        reward: { tokens: 2000, crystals: 3 },
+        check: () => {
+          const now = Date.now();
+          const recent = clickHistory.filter(t => now - t < 1000);
+          return recent.length >= 20;
+        }
+      }
+    };
+
+    // ==================== ПЕРЕМЕННЫЕ ИГРЫ ====================
+    let user = null, score = 0, clickPower = 1, crystals = 0;
+    let autoclickActive = false, autoclickInterval = null, autoclickEndTime = 0;
+    let instantAutoclickActive = false, instantAutoclickEndTime = 0, instantAutoclickInterval = null, instantAutoclickTimerInterval = null;
+    let autoclickerLevel = 1, totalClicks = 0;
+    let achievements = {}, currentTab = "overall";
+    let bonusTimerInterval = null, isAnimating = false;
+    let miniGameActive = false, miniGameClicks = 0, miniGameTimer = null;
+    let dualClickActive = false, lastClickTime = 0;
+    let cloneTimeout = null, cloneTimerInterval = null;
+    let hasResonance = false, cloneEndTime = 0;
+    let suspiciousFlags = 0;
+    let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
+    let isRenderingTasks = false, isProcessingReferrer = false;
+    let pendingBonusAmount = 0;
+    let lastWarehouseLevel = 1;
+    let clickHistory = [];
+    let repairCount = 0;
+    let miniGamesPlayed = 0;
+    let miniGamesWon = 0;
+    let referrerCount = 0;
+    
+    const MAX_CLICK_POWER = 100, MAX_SUSPICIOUS_FLAGS = 5;
+    const INSTANT_AUTOCLICK_COST = 50, INSTANT_AUTOCLICK_DURATION = 3600000;
+    const RESONANCE_COST = 750, RESONANCE_CLICK_REQUIREMENT = 10000;
+    const CLONE_COST = 300, CLONE_DURATION = 6000000;
+    const MAX_MINI_GAMES_PER_DAY = 10;
+    const MINI_GAME_ENTRY_FEE = 100;
+    const MINI_GAME_REWARD = 500;
+    const levelUpRequirements = [50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000];
+    const isTelegramMiniApp = !!(window.Telegram?.WebApp?.initData);
+    const isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
+
+    // Сохраняем время последнего визита для секретного достижения
+    if (!localStorage.getItem('cryptoClickerLastVisit')) {
+      localStorage.setItem('cryptoClickerLastVisit', Date.now().toString());
+    }
+
+    // Обновляем время визита при активности
+    setInterval(() => {
+      if (user) {
+        localStorage.setItem('cryptoClickerLastVisit', Date.now().toString());
+      }
+    }, 60000);
+
+    // Очищаем историю кликов
+    setInterval(() => {
+      const now = Date.now();
+      clickHistory = clickHistory.filter(t => now - t < 2000);
+    }, 1000);
+
+    // ==================== ФУНКЦИИ ДОСТИЖЕНИЙ ====================
+    function checkAchievements() {
+      if (!user) return;
+      
+      // Загружаем текущие достижения игрока
+      db.ref(`achievements/${user.uid}`).once('value').then(snap => {
+        const playerAchievements = snap.val() || {};
+        
+        for (const key in ACHIEVEMENTS) {
+          // Пропускаем уже полученные
+          if (playerAchievements[key] === true) continue;
+          
+          const ach = ACHIEVEMENTS[key];
+          if (ach.check()) {
+            // Получение достижения!
+            unlockAchievement(key);
+          }
+        }
+      }).catch(() => {});
+    }
+
+    function unlockAchievement(key) {
+      const ach = ACHIEVEMENTS[key];
+      if (!ach) return;
+      
+      // Отмечаем как полученное
+      db.ref(`achievements/${user.uid}/${key}`).set(true);
+      
+      // Выдаём награду
+      if (ach.reward.tokens > 0) {
+        score += ach.reward.tokens;
+        savePlayerScore();
+      }
+      if (ach.reward.crystals > 0) {
+        crystals += ach.reward.crystals;
+        savePlayerCrystals();
+      }
+      
+      // Показываем модальное окно
+      showAchievementModal(ach);
+      
+      // Обновляем UI
+      renderAchievements();
+      updateProfilePanel();
+      updateCounterDisplay();
+    }
+
+    function showAchievementModal(ach) {
+      document.getElementById('achModalIcon').textContent = ach.icon;
+      document.getElementById('achModalTitle').textContent = ach.name;
+      document.getElementById('achModalDesc').textContent = ach.desc;
+      
+      let rewardText = '';
+      if (ach.reward.tokens > 0) rewardText += `+${ach.reward.tokens} 🪙 `;
+      if (ach.reward.crystals > 0) rewardText += `+${ach.reward.crystals} 💎`;
+      document.getElementById('achModalReward').textContent = `Награда: ${rewardText || 'Нет награды'}`;
+      
+      document.getElementById('achievementOverlay').style.display = 'block';
+      document.getElementById('achievementModal').style.display = 'block';
+      
+      // Автоматически закрываем через 5 секунд
+      setTimeout(() => {
+        closeAchievementModal();
+      }, 5000);
+    }
+
+    function closeAchievementModal() {
+      document.getElementById('achievementOverlay').style.display = 'none';
+      document.getElementById('achievementModal').style.display = 'none';
+    }
+
+    function renderAchievements() {
+      const list = document.getElementById('achievementsList');
+      if (!list) return;
+      
+      list.innerHTML = '';
+      
+      // Загружаем полученные достижения
+      if (!user) {
+        list.innerHTML = 'Войдите в аккаунт для просмотра достижений.';
+        return;
+      }
+      
+      db.ref(`achievements/${user.uid}`).once('value').then(snap => {
+        const playerAchievements = snap.val() || {};
+        
+        // Группируем по типу
+        const basic = [];
+        const secret = [];
+        
+        for (const key in ACHIEVEMENTS) {
+          const ach = ACHIEVEMENTS[key];
+          const isUnlocked = playerAchievements[key] === true;
+          
+          // Секретные: Терпеливый, Ночной майнер, Быстрый палец
+          const isSecret = ['patient', 'night_miner', 'fast_finger'].includes(key);
+          
+          const item = {
+            ...ach,
+            unlocked: isUnlocked,
+            isSecret: isSecret
+          };
+          
+          if (isSecret) {
+            secret.push(item);
+          } else {
+            basic.push(item);
+          }
+        }
+        
+        // Сортируем: сначала полученные, потом остальные
+        basic.sort((a, b) => (a.unlocked === b.unlocked) ? 0 : a.unlocked ? -1 : 1);
+        secret.sort((a, b) => (a.unlocked === b.unlocked) ? 0 : a.unlocked ? -1 : 1);
+        
+        // Рендерим базовые
+        const basicDiv = document.createElement('div');
+        basicDiv.innerHTML = '<h3 style="color:#00c3ff;margin:10px 0;">📋 Базовые достижения</h3>';
+        basic.forEach(ach => {
+          basicDiv.appendChild(createAchievementElement(ach));
+        });
+        list.appendChild(basicDiv);
+        
+        // Рендерим секретные
+        const secretDiv = document.createElement('div');
+        secretDiv.innerHTML = '<h3 style="color:#ffd700;margin:10px 0;">🔮 Секретные достижения</h3>';
+        secret.forEach(ach => {
+          secretDiv.appendChild(createAchievementElement(ach));
+        });
+        list.appendChild(secretDiv);
+        
+      }).catch(() => {
+        list.innerHTML = 'Ошибка загрузки достижений.';
+      });
+    }
+
+    function createAchievementElement(ach) {
+      const div = document.createElement('div');
+      div.style.cssText = `
+        margin-bottom: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: ${ach.unlocked ? 'linear-gradient(135deg, #1a2a1a, #0a1a0a)' : '#1a1a1a'};
+        border: 1px solid ${ach.unlocked ? '#00ffa6' : '#333'};
+        opacity: ${ach.unlocked ? '1' : '0.6'};
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+        transition: all 0.3s ease;
+      `;
+      
+      const icon = document.createElement('span');
+      icon.style.cssText = 'font-size: 24px; width: 40px; text-align: center;';
+      icon.textContent = ach.unlocked ? ach.icon : '❓';
+      
+      const info = document.createElement('div');
+      info.style.cssText = 'flex: 1;';
+      
+      const name = document.createElement('div');
+      name.style.cssText = 'font-weight: bold; color: #fff; font-size: 14px;';
+      name.textContent = ach.unlocked ? ach.name : (ach.isSecret ? '???' : ach.name);
+      
+      const desc = document.createElement('div');
+      desc.style.cssText = 'font-size: 12px; color: #888;';
+      desc.textContent = ach.unlocked ? ach.desc : (ach.isSecret ? 'Секретное достижение' : ach.desc);
+      
+      const reward = document.createElement('div');
+      reward.style.cssText = 'font-size: 11px; color: #ffd700; margin-top: 2px;';
+      let rewardText = '';
+      if (ach.reward.tokens > 0) rewardText += `+${ach.reward.tokens} 🪙 `;
+      if (ach.reward.crystals > 0) rewardText += `+${ach.reward.crystals} 💎`;
+      reward.textContent = ach.unlocked ? `✅ Получено! ${rewardText}` : `🎯 ${rewardText}`;
+      
+      const status = document.createElement('span');
+      status.style.cssText = `
+        font-size: 14px;
+        color: ${ach.unlocked ? '#00ffa6' : '#555'};
+      `;
+      status.textContent = ach.unlocked ? '✅' : '🔒';
+      
+      info.appendChild(name);
+      info.appendChild(desc);
+      info.appendChild(reward);
+      div.appendChild(icon);
+      div.appendChild(info);
+      div.appendChild(status);
+      
+      return div;
+    }
+
     // ==================== ФУНКЦИИ ЕЖЕДНЕВНОГО ВХОДА ====================
     function loadDailyLoginData() {
       if (!user) return;
@@ -1126,7 +1637,7 @@
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
         if (diffDays === 1) {
-          adStreak = Math.min(adStreak + 1, 6);
+          adStreak = Math.min(adStreak + 1, 7);
         } else if (diffDays > 1) {
           adStreak = 1;
         } else {
@@ -1459,6 +1970,9 @@
       updateAdTaskUI();
       updateAdStreakUI();
       
+      // Проверяем достижения после получения награды
+      checkAchievements();
+      
       setTimeout(() => checkAdCrystalTaskCompletion(), 500);
     }
     
@@ -1510,39 +2024,6 @@
     }
 
     // ==================== ПЕРЕМЕННЫЕ ИГРЫ ====================
-    let user = null, score = 0, clickPower = 1, crystals = 0;
-    let autoclickActive = false, autoclickInterval = null, autoclickEndTime = 0;
-    let instantAutoclickActive = false, instantAutoclickEndTime = 0, instantAutoclickInterval = null, instantAutoclickTimerInterval = null;
-    let autoclickerLevel = 1, totalClicks = 0;
-    let achievements = {}, currentTab = "overall";
-    let bonusTimerInterval = null, isAnimating = false;
-    let miniGameActive = false, miniGameClicks = 0, miniGameTimer = null;
-    let dualClickActive = false, lastClickTime = 0;
-    let cloneTimeout = null, cloneTimerInterval = null;
-    let hasResonance = false, cloneEndTime = 0;
-    let suspiciousFlags = 0;
-    let onlineTime = 0, onlineTimer = null, lastOnlinePing = 0, isPageActive = false;
-    let isRenderingTasks = false, isProcessingReferrer = false;
-    let pendingBonusAmount = 0;
-    let lastWarehouseLevel = 1;
-    
-    const MAX_CLICK_POWER = 100, MAX_SUSPICIOUS_FLAGS = 5;
-    const INSTANT_AUTOCLICK_COST = 50, INSTANT_AUTOCLICK_DURATION = 3600000;
-    const RESONANCE_COST = 750, RESONANCE_CLICK_REQUIREMENT = 10000;
-    const CLONE_COST = 300, CLONE_DURATION = 6000000;
-    const MAX_MINI_GAMES_PER_DAY = 10;
-    const MINI_GAME_ENTRY_FEE = 100;
-    const MINI_GAME_REWARD = 500;
-    const levelUpRequirements = [50000, 100000, 500000, 2500000, 50000000, 200000000, 800000000, 3200000000, 10000000000];
-    const isTelegramMiniApp = !!(window.Telegram?.WebApp?.initData);
-    const isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
-
-    const allAchievements = {
-      superClicker: { name: "Super Clicker", description: "Click 10,000 times", reward: "+2 Click Power (2 min)" },
-      tokenHoarder: { name: "Token Hoarder", description: "Collect 1,000,000 tokens", reward: "+2 Click Power (2min)" },
-      level5: { name: "Level 5 Reached", description: "Reach level 5", reward: "+1 Click Power" },
-    };
-
     const dailyTasks = [
       { id: "clickMarathon", description: "Make 100 clicks", goal: 100, reward: 50, period: "daily" },
       { id: "collectTokens", description: "Collect tokens", goalOptions: [1000, 3000, 5000], rewards: [100, 350, 600], period: "daily" },
@@ -1578,11 +2059,8 @@
     // ==================== WAREHOUSE LIMIT BY LEVEL ====================
     function getWarehouseLimit() {
       const level = getPlayerLevel();
-      // Увеличиваем лимит на четных уровнях: 2, 4, 6, 8, 10
       const warehouseBonus = Math.floor(level / 2) * 10;
       return 20 + warehouseBonus;
-      // Уровень 1: 20, Уровень 2: 30, Уровень 3: 30, Уровень 4: 40, Уровень 5: 40,
-      // Уровень 6: 50, Уровень 7: 50, Уровень 8: 60, Уровень 9: 60, Уровень 10: 70
     }
 
     function checkWarehouseLevelUp() {
@@ -1810,13 +2288,18 @@
       checkAdCrystalTaskCompletion();
       startFarmSystem();
       
+      // Проверяем достижения при старте
+      checkAchievements();
+      
       setInterval(() => {
         if (user) {
           checkAndUpdateStreak();
           updateAdStreakUI();
           checkWarehouseLevelUp();
+          // Периодически проверяем достижения
+          checkAchievements();
         }
-      }, 300000);
+      }, 30000);
       
       const ref = new URLSearchParams(window.location.search).get('ref');
       if (ref) { saveReferrer(ref); window.history.replaceState({}, document.title, window.location.pathname); }
@@ -1839,11 +2322,12 @@
           updateCounterDisplay(); 
           updateProfilePanel(); 
           checkWarehouseLevelUp();
+          checkAchievements();
         }
       });
       db.ref(`player_data/${user.uid}/crystals`).on('value', (snapshot) => {
         const newCrystals = snapshot.val();
-        if (newCrystals !== null && newCrystals !== crystals) { crystals = newCrystals; updateProfilePanel(); }
+        if (newCrystals !== null && newCrystals !== crystals) { crystals = newCrystals; updateProfilePanel(); checkAchievements(); }
       });
       db.ref(`player_data/${user.uid}/clickPower`).on('value', (snapshot) => {
         const newClickPower = snapshot.val();
@@ -1867,7 +2351,7 @@
       });
       db.ref(`player_data/${user.uid}/farmSlots`).on('value', (snapshot) => {
         const newSlots = snapshot.val();
-        if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); }
+        if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); checkAchievements(); }
       });
       db.ref(`player_data/${user.uid}/adStreak`).on('value', (snapshot) => {
         const newStreak = snapshot.val();
@@ -1875,6 +2359,7 @@
           adStreak = newStreak.streak || 0;
           lastAdClaimDate = newStreak.lastClaimDate || null;
           updateAdStreakUI(); 
+          checkAchievements();
         }
       });
       db.ref(`player_data/${user.uid}/dailyLogin`).on('value', (snapshot) => {
@@ -1966,6 +2451,7 @@
           updateFarmUI();
           updateAdStreakUI();
           updateDailyStreakModal();
+          checkAchievements();
           resolve();
         }).catch(() => { score = 0; crystals = 0; clickPower = 1; resolve(); });
       });
@@ -2022,6 +2508,7 @@
           hasResonance: hasResonance
         }); 
         checkWarehouseLevelUp();
+        checkAchievements();
       } 
     }
     
@@ -2035,12 +2522,13 @@
           crystals: crystals,
           hasResonance: hasResonance
         }); 
+        checkAchievements();
       } 
     }
 
     // ==================== АДМИН ====================
-    function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; savePlayerCrystals(); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); }
-    function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; savePlayerScore(); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); }
+    function adminAddCrystals(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; crystals += a; savePlayerCrystals(); updateProfilePanel(); showMessage(`🛡️ +${a} 💎`); checkAchievements(); }
+    function adminAddTokens(a) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; score += a; savePlayerScore(); updateProfilePanel(); updateCounterDisplay(); showMessage(`🛡️ +${a} tokens`); checkAchievements(); }
     function adminResetFlags() { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; suspiciousFlags = 0; showMessage('🛡️ Flags reset'); }
     function adminSetBPLevel(l) { if (!user || !isWhitelisted(user.tgUid||user.uid)) return; showMessage('🛡️ Battle Pass removed from UI'); }
     window.adminAddCrystals = adminAddCrystals; window.adminAddTokens = adminAddTokens; window.adminResetFlags = adminResetFlags; window.adminSetBPLevel = adminSetBPLevel;
@@ -2091,6 +2579,7 @@
         updateAdStreakUI();
         checkWarehouseLevelUp();
         checkDailyLoginAvailability();
+        checkAchievements();
       }
     });
 
@@ -2109,6 +2598,10 @@
       if (!rateLimiter.canClick()) { showMessage(t('slowDown')); return; }
       if (Date.now() - lastClickTime < 50) return;
       lastClickTime = Date.now(); isAnimating = true;
+      
+      // Запоминаем клик для достижения "Быстрый палец"
+      clickHistory.push(Date.now());
+      
       if (event) { const r = event.target.getBoundingClientRect(); spawnScorePopup(r.left+r.width/2-20, r.top, clickPower); }
       score += clickPower; totalClicks++;
       
@@ -2125,6 +2618,7 @@
         savePlayerCrystals();
         showMessage(`🔮 Resonance! +1 💎`); 
         updateProfilePanel(); 
+        checkAchievements();
       }
       updateResonanceUI();
       const btn = document.getElementById("mainClickButton"); if (btn) { btn.classList.add("pulse"); setTimeout(() => { if (btn) btn.classList.remove("pulse"); isAnimating = false; }, 200); } else isAnimating = false;
@@ -2168,7 +2662,7 @@
     }
 
     function updateInstantAutoclickButtonState() { const b = document.getElementById('buyInstantAutoclickBtn'); if (!b) return; b.onclick = null; if (dualClickActive || cloneEndTime > Date.now()) { b.disabled = true; b.textContent = '🔒 Blocked by Clone'; b.style.background = '#555'; } else if (!instantAutoclickActive) { b.disabled = false; b.textContent = '⚡ Activate (1 hour)'; b.style.background = ''; b.onclick = buyInstantAutoclick; } }
-    function buyInstantAutoclick() { if (!user) { showMessage(t('signIn')); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; savePlayerCrystals(); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); }
+    function buyInstantAutoclick() { if (!user) { showMessage(t('signIn')); return; } if (instantAutoclickActive) { showMessage('Already active!'); return; } if (dualClickActive || cloneEndTime > Date.now()) { showMessage('Clone is active! Deactivate it first.'); return; } if (crystals < INSTANT_AUTOCLICK_COST) { showMessage(`Need ${INSTANT_AUTOCLICK_COST} 💎!`); return; } crystals -= INSTANT_AUTOCLICK_COST; savePlayerCrystals(); startInstantAutoclick(INSTANT_AUTOCLICK_DURATION); showMessage(`⚡ Instant Autoclick activated for 1 hour!`); updateProfilePanel(); checkAchievements(); }
 
     // ==================== CLONE ====================
     function startClone(duration) {
@@ -2219,7 +2713,7 @@
       else { b.disabled = false; b.textContent = '👥 Activate Clone'; b.style.background = ''; b.onclick = buyClone; }
     }
 
-    function buyClone() { if (!user) { showMessage(t('signIn')); return; } if (cloneEndTime > 0) { showMessage('Clone already active!'); return; } if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; } if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; } crystals -= CLONE_COST; savePlayerCrystals(); startClone(CLONE_DURATION); showMessage(`👥 Clone activated for 100 minutes! Autoclicker disabled.`); updateProfilePanel(); }
+    function buyClone() { if (!user) { showMessage(t('signIn')); return; } if (cloneEndTime > 0) { showMessage('Clone already active!'); return; } if (instantAutoclickActive) { showMessage('Instant Autoclick is active! Deactivate it first.'); return; } if (crystals < CLONE_COST) { showMessage(`Need ${CLONE_COST} 💎!`); return; } crystals -= CLONE_COST; savePlayerCrystals(); startClone(CLONE_DURATION); showMessage(`👥 Clone activated for 100 minutes! Autoclicker disabled.`); updateProfilePanel(); checkAchievements(); }
     function activateDualClick() { dualClickActive = true; document.getElementById('secondClickButton').classList.add('visible'); }
     function deactivateDualClick() { dualClickActive = false; document.getElementById('secondClickButton').classList.remove('visible'); }
 
@@ -2237,6 +2731,7 @@
         updateProfilePanel(); 
         updateClickPowerCostText(); 
         updateCounterDisplay(); 
+        checkAchievements();
       } else if (clickPower >= 8) showMessage(t('maxLevel')); 
     }
     
@@ -2254,6 +2749,7 @@
       updateProfilePanel(); 
       updateAutoclickerShopUI(); 
       updateCounterDisplay(); 
+      checkAchievements();
     }
     
     function buyResonance() { 
@@ -2269,6 +2765,7 @@
       updateProfilePanel(); 
       updateResonanceUI(); 
       showMessage('🔮 Resonance activated! Every 100th click gives +1 💎');
+      checkAchievements();
     }
 
     function updateResonanceUI() { const b = document.getElementById('buyResonanceBtn'), r = document.getElementById('resonanceClickCount'); if (r) r.textContent = totalClicks; if (hasResonance) { if (b) { b.disabled = true; b.textContent = '✅ Resonance Active'; } } else if (totalClicks >= RESONANCE_CLICK_REQUIREMENT) { if (b) { b.disabled = false; b.textContent = '🔮 Buy Resonance'; } } else { if (b) { b.disabled = true; b.textContent = '🔒 Locked'; } } }
@@ -2285,7 +2782,7 @@
       document.getElementById('profileCrystals').textContent = `${crystals||0} 💎`;
       if (user) {
         document.getElementById('referralLink').value = generateReferralLink();
-        db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; });
+        db.ref(`referrals/${user.uid}`).once('value').then(s => { const r = s.val(); document.getElementById('invitedCount').innerText = r ? Object.keys(r).length : 0; referrerCount = r ? Object.keys(r).length : 0; checkAchievements(); });
       }
       const lm = document.getElementById('levelMessage'); if (lv === 10) { lm.textContent = t('maxLevel'); lm.classList.add('show'); } else lm.classList.remove('show');
     }
@@ -2357,9 +2854,21 @@
       clearInterval(miniGameTimer); miniGameActive = false; miniGameTimer = null;
       document.getElementById("miniGamePanel").style.display = "none";
       if (!user) return;
-      if (won) { score += MINI_GAME_REWARD; savePlayerScore(); showMessage(`${t('victory')} +${MINI_GAME_REWARD} tokens!`); updateTaskProgress("miniGameChallenge", 1); updateProfilePanel(); updateCounterDisplay(); }
-      else if (leftManually) { showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); }
-      else { 
+      if (won) { 
+        score += MINI_GAME_REWARD; 
+        savePlayerScore(); 
+        miniGamesPlayed++;
+        miniGamesWon++;
+        showMessage(`${t('victory')} +${MINI_GAME_REWARD} tokens!`); 
+        updateTaskProgress("miniGameChallenge", 1); 
+        updateProfilePanel(); 
+        updateCounterDisplay(); 
+        checkAchievements();
+      } else if (leftManually) { 
+        miniGamesPlayed++;
+        showMessage(`Mini-game abandoned! Lost ${MINI_GAME_ENTRY_FEE} tokens.`); 
+      } else { 
+        miniGamesPlayed++;
         showMessage(`${t('timeUp')} Lost ${MINI_GAME_ENTRY_FEE} tokens.`);
         setTimeout(() => {
           if (canWatchAd()) {
@@ -2367,6 +2876,7 @@
           }
         }, 1500);
       }
+      checkAchievements();
     }
 
     // ==================== ЗАДАНИЯ ====================
@@ -2464,6 +2974,7 @@
             showMessage(`✅ ${t('adTaskDone')}! +${reward} 💎`);
             updateProfilePanel();
             renderTasks();
+            checkAchievements();
           }).catch(() => {});
         } else {
           showMessage(`${t('adTaskInProgress')}: ${td.progress || 0}/${td.goal || AD_CRYSTAL_TASK.goal}`);
@@ -2495,9 +3006,9 @@
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
         const g = td.goal || task.goal;
         if ((td.progress||0) >= g) { const rw = td.reward || task.reward;
-          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); savePlayerCrystals(); }
+          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); savePlayerCrystals(); checkAchievements(); }
           else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); }
-          else { score += rw; savePlayerScore(); showMessage(`✅ +${rw} tokens!`); }
+          else { score += rw; savePlayerScore(); showMessage(`✅ +${rw} tokens!`); checkAchievements(); }
           db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); updateCounterDisplay(); renderTasks(); });
         } else showMessage(`${td.progress}/${g}`);
       });
@@ -2508,61 +3019,13 @@
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
         const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
-        db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); });
+        db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); checkAchievements(); });
       });
     }
 
     function updateOnlineTimeDisplay(progress) {
       const tasksList = document.getElementById("tasksList"); if (!tasksList || !tasksList.children.length) return;
       for (let i = 0; i < tasksList.children.length; i++) { if (tasksList.children[i].hasAttribute('data-task-id') && tasksList.children[i].getAttribute('data-task-id') === 'onlineTime') { const task = dailyTasks.find(t => t.id === "onlineTime"); if (!task) return; tasksList.children[i].innerHTML = `Stay online for 30 minutes: ${formatTimeFromSeconds(progress)} / ${formatTimeFromSeconds(task.goal)}<br><small>Reward: ${task.reward} 💎</small>`; break; } }
-    }
-
-    // ==================== ДОСТИЖЕНИЯ ====================
-    function checkAchievements() {
-      if (!achievements.superClicker && totalClicks >= 10000) { achievements.superClicker = true; showMessage("Achievement: Super Clicker!"); saveAchievements(); }
-      if (!achievements.tokenHoarder && score >= 1000000) { achievements.tokenHoarder = true; showMessage("Achievement: Token Hoarder!"); saveAchievements(); }
-      if (!achievements.level5 && getPlayerLevel() >= 5) { achievements.level5 = true; showMessage("Achievement: Level 5!"); saveAchievements(); }
-    }
-    
-    function saveAchievements() { if (user) db.ref("achievements/" + user.uid).set(achievements); }
-    
-    function renderAchievements() {
-      const list = document.getElementById('achievementsList'); list.innerHTML = '';
-      for (const k in allAchievements) { const a = achievements[k], ac = allAchievements[k]; const d = document.createElement('div'); d.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #00c3ff;border-radius:8px;'; d.style.backgroundColor = a ? '#00ffa6' : '#222'; d.style.color = a ? '#000' : '#fff'; d.innerHTML = `<strong>${ac.name}</strong><br>${ac.description}<br><em>${ac.reward}</em>`; list.appendChild(d); }
-    }
-
-    // ==================== ОНЛАЙН-ТАЙМЕР ====================
-    function startOnlineTimer() {
-      if (onlineTimer) return; if (!isPageActive) { updatePageActivity(); }
-      lastOnlinePing = Date.now();
-      onlineTimer = setInterval(() => { if (!user) { stopOnlineTimer(); return; } if (!isPageActive) return; if (document.hidden || document.visibilityState !== 'visible') return; if (typeof document.hasFocus === 'function' && !document.hasFocus()) return; const now = Date.now(); const elapsed = now - lastOnlinePing; if (elapsed > 3000 || elapsed < 900) { lastOnlinePing = now; return; } lastOnlinePing = now; onlineTime++; updateTaskProgress("onlineTime", 1); }, 1000);
-    }
-    function stopOnlineTimer() { if (onlineTimer) { clearInterval(onlineTimer); onlineTimer = null; } }
-    function updatePageActivity() { const wasActive = isPageActive; isPageActive = (document.visibilityState === 'visible' && !document.hidden && (typeof document.hasFocus !== 'function' || document.hasFocus())); if (wasActive !== isPageActive) { if (isPageActive) { lastOnlinePing = Date.now(); if (user && !onlineTimer) startOnlineTimer(); } else { stopOnlineTimer(); lastOnlinePing = Date.now(); } } }
-    document.addEventListener('visibilitychange', updatePageActivity);
-    window.addEventListener('focus', () => { lastOnlinePing = Date.now(); updatePageActivity(); if (user && cloneEndTime > 0 && !dualClickActive) resumeCloneIfActive(); });
-    window.addEventListener('blur', () => { stopOnlineTimer(); isPageActive = false; lastOnlinePing = Date.now(); });
-    setInterval(() => { if (user && isPageActive && !onlineTimer) updatePageActivity(); }, 5000);
-
-    // ==================== БОНУСЫ ====================
-    function startBonusTimer() {
-      if (bonusTimerInterval) clearInterval(bonusTimerInterval);
-      bonusTimerInterval = setInterval(async () => { if (!user) return; try { const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); const d = s.val() || { lastClaim: 0 }; const rem = Math.max(0, 3600000 - (Date.now() - d.lastClaim)); document.getElementById("claimBonusBtn").disabled = rem > 0; document.getElementById("bonusTimer").innerText = rem <= 0 ? t('claimNow') : `${t('nextIn')}: ${formatTimeFromSeconds(Math.floor(rem/1000))}`; } catch (e) {} }, 1000);
-    }
-    
-    async function claimHourlyBonus() {
-      if (!user) return;
-      const s = await db.ref(`hourlyBonus/${user.uid}`).once('value'); 
-      const d = s.val() || { lastClaim: 0 };
-      if (Date.now() - d.lastClaim >= 3600000 || !d.lastClaim) { 
-        const rw = Math.floor(Math.random()*191)+10; 
-        
-        await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: rw });
-        
-        showBonusModal(rw);
-        
-        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: rw });
-      }
     }
 
     // ==================== ЛИДЕРБОРД ====================
@@ -2580,6 +3043,7 @@
           db.ref(`leaderboard/${user.uid}`).update({ referrer_uid: ruid, referral_bonus_claimed: true, lastUpdate: Date.now() });
           db.ref(`referrals/${ruid}/${user.uid}`).set({ invited_at: Date.now(), tokens_earned: 0, reward_claimed: false });
           submitScore(); isProcessingReferrer = false;
+          checkAchievements();
         });
       });
     }
@@ -2660,7 +3124,6 @@
 
       const elapsedMinutes = elapsedMs / 60000;
       
-      // Восстановление энергии (1 энергия за 15 минут)
       const energyRegenAmount = Math.floor(elapsedMs / 900000);
       farmEnergy = Math.min(farmMaxEnergy, farmEnergy + energyRegenAmount);
 
@@ -2733,6 +3196,7 @@
       updateFarmUI();
       showMessage('✅ +' + amount + ' tokens!');
       updateTaskProgress("collectTokens", amount);
+      checkAchievements();
     }
 
     function getFarmIncomePerMin() {
@@ -2993,6 +3457,7 @@
       closeRigShopModal();
       
       showMessage(`${rig.icon} ${rig.name} ${t('rigInstalled')}`);
+      checkAchievements();
     }
 
     function closeRigShopModal() {
@@ -3076,6 +3541,7 @@
       updateFarmUI();
       showRigDetail(selectedRigSlot);
       showMessage('⚡ Overclock +' + (slot.overclock * 10) + '%!');
+      checkAchievements();
     }
 
     function upgradeRigEfficiency() {
@@ -3091,6 +3557,7 @@
       updateFarmUI();
       showRigDetail(selectedRigSlot);
       showMessage('🔋 Efficiency +' + (slot.efficiency * 3) + '%!');
+      checkAchievements();
     }
 
     function upgradeRigLuck() {
@@ -3106,6 +3573,7 @@
       updateFarmUI();
       showRigDetail(selectedRigSlot);
       showMessage('🍀 Luck +' + (slot.luck * 2) + '%!');
+      checkAchievements();
     }
 
     function mergeRig() {
@@ -3148,6 +3616,7 @@
       updateFarmUI();
       document.getElementById('rigDetailPanel').classList.remove('open');
       showMessage(t('mergeSuccess'));
+      checkAchievements();
     }
 
     function repairRig() {
@@ -3158,10 +3627,12 @@
       crystals -= 10;
       slot.overheated = false;
       slot.overheatEnd = 0;
+      repairCount++;
       savePlayerCrystals();
       updateFarmUI();
       showRigDetail(selectedRigSlot);
       showMessage('🔧 Rig repaired!');
+      checkAchievements();
     }
 
     window.closeRigShopModal = closeRigShopModal;
@@ -3191,6 +3662,9 @@
         updateAdTaskUI();
         checkAdCrystalTaskCompletion();
         startFarmSystem();
+        
+        // Проверяем достижения при старте
+        checkAchievements();
         
         // Показываем ежедневный стрик при входе
         setTimeout(() => {
