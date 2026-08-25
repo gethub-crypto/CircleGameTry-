@@ -379,14 +379,8 @@
           <div class="warehouse-info">
             <div class="warehouse-label">Warehouse</div>
             <div class="warehouse-value" id="farmWarehouseDisplay">0 / 20 🪙</div>
-            <div id="warehouseBoostInfo" style="font-size:11px;color:#ffd700;margin-top:3px;"></div>
           </div>
           <button class="collect-btn" id="collectWarehouseBtn" onclick="collectWarehouse()">Collect</button>
-        </div>
-        <div style="max-width:500px;margin:10px auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-          <button class="upgrade-btn" onclick="buyWarehouseBoost(2, 2, 5)">📦 2x (2h) - 5💎</button>
-          <button class="upgrade-btn" onclick="buyWarehouseBoost(4, 2, 10)">📦 2x (4h) - 10💎</button>
-          <button class="upgrade-btn" onclick="buyWarehouseBoost(2, 3, 15)">📦 3x (2h) - 15💎</button>
         </div>
         <div class="stats-grid-farm">
           <div class="stat-box">
@@ -1337,8 +1331,6 @@
     };
     let farmEnergy = 50, farmMaxEnergy = 50;
     let warehouseTokens = 0, warehouseLimit = 20;
-    let warehouseBoostEndTime = 0;
-    let warehouseBoostMultiplier = 1;
     let farmSlots = [
       { type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 },
       null, null, null, null, null
@@ -1495,7 +1487,6 @@
             autoclickerLevel: 1, hasResonance: false,
             autoclickActive: false, autoclickEndTime: 0,
             farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 20,
-            warehouseBoostEndTime: 0, warehouseBoostMultiplier: 1,
             farmSlots: farmSlots,
             lastFarmTick: Date.now(),
             lastActive: firebase.database.ServerValue.TIMESTAMP,
@@ -1607,27 +1598,6 @@
         const newSlots = snapshot.val();
         if (newSlots !== null) { farmSlots = newSlots; updateFarmUI(); }
       });
-      db.ref(`player_data/${user.uid}/warehouseLimit`).on('value', (snapshot) => {
-        const newLimit = snapshot.val();
-        if (newLimit !== null && newLimit !== warehouseLimit) { 
-          warehouseLimit = newLimit; 
-          updateFarmUI(); 
-        }
-      });
-      db.ref(`player_data/${user.uid}/warehouseBoostEndTime`).on('value', (snapshot) => {
-        const newBoostEnd = snapshot.val();
-        if (newBoostEnd !== null && newBoostEnd !== warehouseBoostEndTime) { 
-          warehouseBoostEndTime = newBoostEnd; 
-          updateFarmUI(); 
-        }
-      });
-      db.ref(`player_data/${user.uid}/warehouseBoostMultiplier`).on('value', (snapshot) => {
-        const newBoostMult = snapshot.val();
-        if (newBoostMult !== null && newBoostMult !== warehouseBoostMultiplier) { 
-          warehouseBoostMultiplier = newBoostMult; 
-          updateFarmUI(); 
-        }
-      });
       db.ref(`player_data/${user.uid}/adStreak`).on('value', (snapshot) => {
         const newStreak = snapshot.val();
         if (newStreak) { 
@@ -1649,7 +1619,6 @@
               autoclickerLevel: 1, hasResonance: false,
               autoclickActive: false, autoclickEndTime: 0,
               farmEnergy: 50, farmMaxEnergy: 50, warehouseTokens: 0, warehouseLimit: 20,
-              warehouseBoostEndTime: 0, warehouseBoostMultiplier: 1,
               farmSlots: farmSlots,
               lastFarmTick: Date.now(),
               lastActive: firebase.database.ServerValue.TIMESTAMP,
@@ -1659,7 +1628,6 @@
             score = 0; crystals = 0; clickPower = 1; totalClicks = 0;
             autoclickerLevel = 1; hasResonance = false;
             farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 20;
-            warehouseBoostEndTime = 0; warehouseBoostMultiplier = 1;
             lastFarmTickTime = Date.now();
             adStreak = 0;
             lastAdClaimDate = null;
@@ -1673,9 +1641,13 @@
             farmEnergy = data.farmEnergy || 50;
             farmMaxEnergy = data.farmMaxEnergy || 50;
             warehouseTokens = data.warehouseTokens || 0;
-            warehouseLimit = data.warehouseLimit || 20;
-            warehouseBoostEndTime = data.warehouseBoostEndTime || 0;
-            warehouseBoostMultiplier = data.warehouseBoostMultiplier || 1;
+            warehouseLimit = data.warehouseLimit > 0 ? data.warehouseLimit : 20;
+            
+            // Миграция: обновляем warehouseLimit с 12 на 20
+            if (warehouseLimit === 12) {
+              warehouseLimit = 20;
+              db.ref(`player_data/${uid}/warehouseLimit`).set(20);
+            }
             
             if (data.farmSlots) farmSlots = data.farmSlots;
             lastFarmTickTime = data.lastFarmTick || Date.now();
@@ -1732,8 +1704,6 @@
         farmMaxEnergy: farmMaxEnergy,
         warehouseTokens: warehouseTokens,
         warehouseLimit: warehouseLimit,
-        warehouseBoostEndTime: warehouseBoostEndTime,
-        warehouseBoostMultiplier: warehouseBoostMultiplier,
         farmSlots: farmSlots,
         lastFarmTick: lastFarmTickTime,
         lastActive: firebase.database.ServerValue.TIMESTAMP,
@@ -1803,54 +1773,6 @@
     function generateReferralLink() { return user ? `${window.location.origin}/?ref=${user.uid}` : ''; }
     function copyReferralLink() { const r = document.getElementById('referralLink'); r.select(); document.execCommand('copy'); showMessage('Referral link copied!'); }
     function getPlayerLevel() { let lv = 1; for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) lv = i + 2; else break; } return lv; }
-
-    function getWarehouseLimit() {
-      const playerLevel = getPlayerLevel();
-      return 20 + (playerLevel * 10); // Lv.1 = 30, Lv.5 = 70, Lv.10 = 120
-    }
-
-    function getCurrentWarehouseLimit() {
-      const baseLimit = getWarehouseLimit();
-      
-      // Проверяем активен ли буст
-      if (warehouseBoostEndTime > Date.now()) {
-        return Math.floor(baseLimit * warehouseBoostMultiplier);
-      }
-      
-      return baseLimit;
-    }
-
-    function buyWarehouseBoost(hours, multiplier, costCrystals) {
-      if (!user) { showMessage(t('signIn')); return; }
-      
-      const playerLevel = getPlayerLevel();
-      const maxBoostHours = 2 + playerLevel; // Lv.1 = 3ч, Lv.5 = 7ч, Lv.10 = 12ч
-      const maxMultiplier = 2 + Math.floor(playerLevel / 3); // Lv.1-2 = 2x, Lv.3-5 = 3x, Lv.6-8 = 4x, Lv.9-10 = 5x
-      
-      if (hours > maxBoostHours) {
-        showMessage(`Max boost for your level: ${maxBoostHours}h`);
-        return;
-      }
-      
-      if (multiplier > maxMultiplier) {
-        showMessage(`Max multiplier for your level: ${maxMultiplier}x`);
-        return;
-      }
-      
-      if (crystals < costCrystals) {
-        showMessage(`Need ${costCrystals} 💎!`);
-        return;
-      }
-      
-      crystals -= costCrystals;
-      warehouseBoostEndTime = Date.now() + hours * 3600000;
-      warehouseBoostMultiplier = multiplier;
-      
-      savePlayerCrystals();
-      updateProfilePanel();
-      updateFarmUI();
-      showMessage(`📦 Warehouse boost: ${multiplier}x for ${hours}h!`);
-    }
 
     function cleanupAllTimers() {
       if (bonusTimerInterval) { clearInterval(bonusTimerInterval); bonusTimerInterval = null; }
@@ -2383,7 +2305,6 @@
       user = null; score = 0; clickPower = 1; crystals = 0;
       autoclickActive = false; autoclickEndTime = 0;
       farmEnergy = 50; farmMaxEnergy = 50; warehouseTokens = 0; warehouseLimit = 20;
-      warehouseBoostEndTime = 0; warehouseBoostMultiplier = 1;
       farmSlots = [{ type: 'cpu', overclock: 0, efficiency: 0, luck: 0, merged: false, overheated: false, overheatEnd: 0, calibrateEnd: 0 }, null, null, null, null, null];
       lastFarmTickTime = 0;
       pendingBonusAmount = 0;
@@ -2431,7 +2352,7 @@
         farmEnergy = Math.min(farmMaxEnergy, farmEnergy + 1);
         savePlayerData();
         updateFarmUI();
-      }, 900000);
+      }, 900000); // 15 минут
     }
 
     function processOfflineMining() {
@@ -2441,8 +2362,9 @@
       if (elapsedMs < 60000) return;
 
       const elapsedMinutes = elapsedMs / 60000;
+      
+      // Восстановление энергии (1 энергия за 15 минут)
       const energyRegenAmount = Math.floor(elapsedMs / 900000);
-
       farmEnergy = Math.min(farmMaxEnergy, farmEnergy + energyRegenAmount);
 
       let totalIncomePerMin = 0;
@@ -2469,23 +2391,16 @@
 
       const totalEnergyPerMin = totalEnergyPerHour / 60;
       const maxMiningMinutesByEnergy = totalEnergyPerMin > 0 ? farmEnergy / totalEnergyPerMin : elapsedMinutes;
-      const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy);
+      const warehouseSpace = warehouseLimit - warehouseTokens;
+      const maxMiningMinutesByWarehouse = totalIncomePerMin > 0 ? warehouseSpace / totalIncomePerMin : elapsedMinutes;
+      const actualMiningMinutes = Math.min(elapsedMinutes, maxMiningMinutesByEnergy, maxMiningMinutesByWarehouse);
 
       if (actualMiningMinutes > 0) {
         const earnedTokens = totalIncomePerMin * actualMiningMinutes;
         const spentEnergy = totalEnergyPerMin * actualMiningMinutes;
-        
-        // Добавляем токены в хранилище
         warehouseTokens += earnedTokens;
-        
-        // Если хранилище переполнено, сжигаем избыток
-        const currentLimit = getCurrentWarehouseLimit();
-        if (warehouseTokens > currentLimit) {
-          warehouseTokens = currentLimit;
-        }
-        
-        // Энергия снимается всегда, даже если хранилище полно
         farmEnergy -= spentEnergy;
+        if (warehouseTokens > warehouseLimit) warehouseTokens = warehouseLimit;
         if (farmEnergy < 0) farmEnergy = 0;
       }
 
@@ -2498,51 +2413,13 @@
         const mins = Math.floor((elapsedMs % 3600000) / 60000);
         const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
         const earned = totalIncomePerMin * actualMiningMinutes;
-        const currentLimit = getCurrentWarehouseLimit();
-        const burned = warehouseTokens >= currentLimit ? earned : 0;
-        
-        let message = `${t('offlineEarning')} +${earned.toFixed(1)} ${t('tokens')} (${timeStr})`;
-        if (burned > 0) {
-          message += ` | 🔥 ${burned.toFixed(1)} burned`;
-        }
-        showMessage(message);
+        showMessage(`${t('offlineEarning')} +${earned.toFixed(1)} ${t('tokens')} (${timeStr})`);
       }
     }
 
     function farmTick() {
       if (!user) return;
-      
-      // Обработка оффлайн-майнинга
       processOfflineMining();
-      
-      // Текущий тик майнинга
-      if (farmEnergy > 0) {
-        const totalIncomePerMin = getFarmIncomePerMin();
-        const totalEnergyPerHour = getFarmEnergyPerHour();
-        const totalEnergyPerMin = totalEnergyPerHour / 60;
-        
-        if (totalEnergyPerMin > 0 && totalIncomePerMin > 0) {
-          // Майним 1 минуту
-          const earnedTokens = totalIncomePerMin;
-          const spentEnergy = totalEnergyPerMin;
-          
-          if (farmEnergy >= spentEnergy) {
-            // Добавляем токены
-            warehouseTokens += earnedTokens;
-            
-            // Сжигаем избыток если хранилище полно
-            const currentLimit = getCurrentWarehouseLimit();
-            if (warehouseTokens > currentLimit) {
-              warehouseTokens = currentLimit;
-            }
-            
-            // Снимаем энергию всегда
-            farmEnergy -= spentEnergy;
-            if (farmEnergy < 0) farmEnergy = 0;
-          }
-        }
-      }
-      
       lastFarmTickTime = Date.now();
       savePlayerData();
       updateFarmUI();
@@ -2602,23 +2479,7 @@
         energyBar.className = 'energy-fill ' + (energyPct > 50 ? 'high' : energyPct > 20 ? 'med' : 'low');
       }
       const whDisplay = document.getElementById('farmWarehouseDisplay');
-      const currentLimit = getCurrentWarehouseLimit();
-      if (whDisplay) {
-        if (warehouseTokens >= currentLimit) {
-          whDisplay.innerHTML = warehouseTokens.toFixed(1) + ' / ' + currentLimit + ' 🪙 <span style="color:#ff4444;font-size:11px;">🔥 BURNING</span>';
-        } else {
-          whDisplay.textContent = warehouseTokens.toFixed(1) + ' / ' + currentLimit + ' 🪙';
-        }
-      }
-      const boostInfo = document.getElementById('warehouseBoostInfo');
-      if (boostInfo) {
-        if (warehouseBoostEndTime > Date.now()) {
-          const remaining = Math.ceil((warehouseBoostEndTime - Date.now()) / 3600000);
-          boostInfo.textContent = `⚡ Boost: ${warehouseBoostMultiplier}x (${remaining}h left)`;
-        } else {
-          boostInfo.textContent = '';
-        }
-      }
+      if (whDisplay) whDisplay.textContent = warehouseTokens.toFixed(1) + ' / ' + warehouseLimit + ' 🪙';
       const collectBtn = document.getElementById('collectWarehouseBtn');
       if (collectBtn) collectBtn.disabled = warehouseTokens <= 0;
       const incomeDisplay = document.getElementById('farmIncomeMin');
@@ -3008,7 +2869,6 @@
 
     window.closeRigShopModal = closeRigShopModal;
     window.buySpecificRig = buySpecificRig;
-    window.buyWarehouseBoost = buyWarehouseBoost;
 
     // ==================== ИНИЦИАЛИЗАЦИЯ ====================
     (async function init() {
