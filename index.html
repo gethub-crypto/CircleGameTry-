@@ -2372,6 +2372,8 @@
     // ==================== СИНХРОНИЗАЦИЯ ====================
     function setupCrossPlatformSync() {
       if (!user) return;
+      
+      // Существующие слушатели
       db.ref(`player_data/${user.uid}/score`).on('value', (snapshot) => {
         const newScore = snapshot.val();
         if (newScore !== null && newScore !== score) { 
@@ -2426,6 +2428,15 @@
           lastDailyLoginDate = newDailyLogin.lastClaimDate || null;
           updateDailyStreakModal();
           checkDailyLoginAvailability();
+        }
+      });
+      
+      // ====== НОВЫЙ СЛУШАТЕЛЬ ДЛЯ warehouseTokens ======
+      db.ref(`player_data/${user.uid}/warehouseTokens`).on('value', (snapshot) => {
+        const newWarehouse = snapshot.val();
+        if (newWarehouse !== null && newWarehouse !== warehouseTokens) {
+          warehouseTokens = newWarehouse;
+          updateFarmUI();
         }
       });
     }
@@ -3241,12 +3252,26 @@
       updateFarmUI();
     }
 
+    // ====== ИСПРАВЛЕННАЯ ФУНКЦИЯ СБОРА МОНЕТ ======
     function collectWarehouse() {
       if (!user || warehouseTokens <= 0) return;
       const amount = Math.floor(warehouseTokens);
+      
+      // Сначала добавляем токены игроку
       score += amount;
       warehouseTokens = 0;
-      savePlayerScore();
+      
+      // Немедленно обновляем Firebase
+      db.ref(`player_data/${user.uid}`).update({
+        warehouseTokens: 0,
+        score: score,
+        lastActive: firebase.database.ServerValue.TIMESTAMP
+      });
+      db.ref(`leaderboard/${user.uid}`).update({
+        score: score,
+        lastUpdate: Date.now()
+      });
+      
       updateCounterDisplay();
       updateProfilePanel();
       updateFarmUI();
@@ -3719,6 +3744,23 @@
         showBonusModal(reward);
         await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: reward });
       }
+    }
+
+    // ==================== ОНЛАЙН ТАЙМЕР ====================
+    function startOnlineTimer() {
+      if (onlineTimer) clearInterval(onlineTimer);
+      lastOnlinePing = Date.now();
+      isPageActive = true;
+      onlineTimer = setInterval(() => {
+        if (document.visibilityState === 'visible' && user) {
+          const diff = Math.floor((Date.now() - lastOnlinePing) / 1000);
+          if (diff > 0) {
+            onlineTime += diff;
+            updateTaskProgress("onlineTime", diff);
+            lastOnlinePing = Date.now();
+          }
+        }
+      }, 10000);
     }
 
     // ==================== ИНИЦИАЛИЗАЦИЯ ====================
