@@ -281,7 +281,7 @@
     #dailyStreakModal .streak-day .check-mark { position: absolute; top: 2px; right: 3px; font-size: 12px; color: #00ffa6; }
     #dailyStreakOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10001; }
 
-    /* ===== ACHIEVEMENT MODAL (NEW) ===== */
+    /* ===== ACHIEVEMENT MODAL ===== */
     #achievementModal {
       display: none;
       position: fixed;
@@ -341,7 +341,7 @@
     <button class="click-button" onclick="closeDailyStreakModal()" style="background:#555;color:#fff;padding:8px 20px;font-size:14px;">✖️ Закрыть</button>
   </div>
 
-  <!-- Модальное окно для достижений (новое) -->
+  <!-- Модальное окно для достижений -->
   <div id="achievementOverlay" onclick="closeAchievementModal()"></div>
   <div id="achievementModal">
     <div class="ach-icon" id="achModalIcon">🏆</div>
@@ -3637,6 +3637,33 @@
 
     window.closeRigShopModal = closeRigShopModal;
     window.buySpecificRig = buySpecificRig;
+
+    // ==================== ЧАСОВОЙ БОНУС ====================
+    function startBonusTimer() {
+      if (bonusTimerInterval) clearInterval(bonusTimerInterval);
+      bonusTimerInterval = setInterval(async () => {
+        if (!user) return;
+        try {
+          const snap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+          const data = snap.val() || { lastClaim: 0 };
+          const remaining = Math.max(0, 3600000 - (Date.now() - data.lastClaim));
+          document.getElementById("claimBonusBtn").disabled = remaining > 0;
+          document.getElementById("bonusTimer").innerText = remaining <= 0 ? t('claimNow') : `${t('nextIn')}: ${formatTimeFromSeconds(Math.floor(remaining / 1000))}`;
+        } catch (e) {}
+      }, 1000);
+    }
+
+    async function claimHourlyBonus() {
+      if (!user) return;
+      const snap = await db.ref(`hourlyBonus/${user.uid}`).once('value');
+      const data = snap.val() || { lastClaim: 0 };
+      if (Date.now() - data.lastClaim >= 3600000 || !data.lastClaim) {
+        const reward = Math.floor(Math.random() * 191) + 10;
+        await db.ref(`hourlyBonus/${user.uid}`).update({ lastBonusAmount: reward });
+        showBonusModal(reward);
+        await db.ref(`hourlyBonus/${user.uid}`).set({ lastClaim: Date.now(), lastBonusAmount: reward });
+      }
+    }
 
     // ==================== ИНИЦИАЛИЗАЦИЯ ====================
     (async function init() {
