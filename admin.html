@@ -72,11 +72,20 @@
       background: #1a1a2e;
       border-radius: 15px;
       box-shadow: 0 0 20px rgba(0, 195, 255, 0.2);
+      flex-wrap: wrap;
+      gap: 10px;
     }
     
     .header h1 {
       color: #00c3ff;
       font-size: 28px;
+    }
+    
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
     }
     
     .logout-btn {
@@ -312,19 +321,356 @@
       justify-content: center;
       margin-top: 20px;
     }
-    
+
+    /* ==================== МОБИЛЬНЫЙ ПЕРЕКЛЮЧАТЕЛЬ ==================== */
+    .view-toggle {
+      display: flex;
+      gap: 6px;
+      background: #2a2a3a;
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .view-toggle button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      transition: all 0.3s;
+      background: transparent;
+      color: #888;
+    }
+
+    .view-toggle button.active {
+      background: #00c3ff;
+      color: #000;
+    }
+
+    .view-toggle button:hover:not(.active) {
+      color: #fff;
+    }
+
+    /* ==================== МОБИЛЬНАЯ ВЕРСИЯ ==================== */
+    .mobile-view {
+      display: none;
+    }
+
+    .mobile-view .mobile-card {
+      background: #1a1a2e;
+      border-radius: 15px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
+    }
+
+    .mobile-view .mobile-card h3 {
+      color: #00c3ff;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .mobile-view .mobile-stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #2a2a3a;
+    }
+
+    .mobile-view .mobile-stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-view .mobile-stat-label {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .mobile-view .mobile-stat-value {
+      color: #00ffa6;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .mobile-view .mobile-user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #2a2a3a;
+    }
+
+    .mobile-view .mobile-user-item:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-view .mobile-user-info {
+      flex: 1;
+    }
+
+    .mobile-view .mobile-user-name {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .mobile-view .mobile-user-uid {
+      font-size: 11px;
+      color: #888;
+    }
+
+    .mobile-view .mobile-user-balance {
+      font-size: 14px;
+      color: #00ffa6;
+    }
+
+    .mobile-view .mobile-user-actions {
+      display: flex;
+      gap: 4px;
+      margin-left: 10px;
+    }
+
+    .mobile-view .mobile-user-actions .action-btn {
+      font-size: 10px;
+      padding: 4px 8px;
+    }
+
+    .mobile-view .mobile-search {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      background: #2a2a3a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .mobile-view .mobile-top-player {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #2a2a3a;
+      font-size: 13px;
+    }
+
+    .mobile-view .mobile-top-player:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-view .mobile-top-player .rank {
+      color: #ffd700;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .mobile-view .mobile-top-player .name {
+      flex: 1;
+    }
+
+    .mobile-view .mobile-top-player .tokens {
+      color: #00ffa6;
+      font-weight: bold;
+    }
+
+    /* ==================== АДАПТИВ ==================== */
     @media (max-width: 768px) {
+      body { padding: 10px; }
+      
       .charts-grid {
         grid-template-columns: 1fr;
       }
       
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
       }
       
       .header h1 {
         font-size: 20px;
       }
+
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .header-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .header-actions .action-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .stat-card .value {
+        font-size: 24px;
+      }
+
+      .stat-card h3 {
+        font-size: 11px;
+      }
+
+      .section {
+        padding: 12px;
+      }
+
+      .section h2 {
+        font-size: 18px;
+      }
+
+      .chart-container {
+        height: 200px;
+      }
+
+      .funnel-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 12px;
+      }
+
+      .funnel-item .funnel-label {
+        font-size: 14px;
+      }
+
+      .funnel-item .funnel-value {
+        font-size: 18px;
+      }
+
+      .modal-content {
+        padding: 20px;
+        margin: 0 10px;
+      }
+
+      .view-toggle button {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      /* Мобильная таблица -> карточки */
+      .table-container table,
+      .table-container thead,
+      .table-container tbody,
+      .table-container th,
+      .table-container td,
+      .table-container tr {
+        display: block;
+      }
+
+      .table-container thead {
+        display: none;
+      }
+
+      .table-container tr {
+        background: #1a1a2e;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border: 1px solid #2a2a3a;
+      }
+
+      .table-container tr:hover {
+        background: #1a1a2e;
+      }
+
+      .table-container td {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid #2a2a3a;
+        font-size: 13px;
+      }
+
+      .table-container td:last-child {
+        border-bottom: none;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .table-container td::before {
+        content: attr(data-label);
+        color: #888;
+        font-weight: bold;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .table-container td[data-label="Действия"]::before {
+        display: none;
+      }
+
+      .table-container td[data-label="Действия"] {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .stat-card {
+        padding: 12px;
+      }
+
+      .stat-card .value {
+        font-size: 20px;
+      }
+
+      .stat-card h3 {
+        font-size: 10px;
+      }
+
+      .header h1 {
+        font-size: 17px;
+        text-align: center;
+      }
+
+      .view-toggle button {
+        font-size: 11px;
+        padding: 5px 10px;
+      }
+
+      .action-btn {
+        font-size: 10px;
+        padding: 4px 8px;
+      }
+
+      .mobile-view .mobile-user-actions .action-btn {
+        font-size: 9px;
+        padding: 3px 6px;
+      }
+    }
+
+    /* Убираем лишние скроллы на мобилке */
+    .mobile-view .table-container {
+      overflow-x: visible;
+    }
+
+    /* Показываем/скрываем версии */
+    .desktop-view {
+      display: block;
+    }
+
+    .mobile-view {
+      display: none;
+    }
+
+    body.mobile-mode .desktop-view {
+      display: none;
+    }
+
+    body.mobile-mode .mobile-view {
+      display: block;
     }
   </style>
 </head>
@@ -342,119 +688,202 @@
   <div class="dashboard" id="dashboard">
     <div class="header">
       <h1>📊 Crypto Clicker Admin</h1>
-      <div>
-        <button class="action-btn btn-notify" onclick="openNotifyModal()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">📢 Уведомить всех</button>
-        <button class="action-btn btn-delete" onclick="backupData()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">💾 Бэкап</button>
+      <div class="header-actions">
+        <div class="view-toggle">
+          <button class="active" id="desktopToggle" onclick="setView('desktop')">💻 Desktop</button>
+          <button id="mobileToggle" onclick="setView('mobile')">📱 Mobile</button>
+        </div>
+        <button class="action-btn btn-notify" onclick="openNotifyModal()" style="padding: 10px 20px; font-size: 14px;">📢 Уведомить</button>
+        <button class="action-btn btn-delete" onclick="backupData()" style="padding: 10px 20px; font-size: 14px;">💾 Бэкап</button>
         <button class="logout-btn" onclick="logout()">Выйти</button>
       </div>
     </div>
 
-    <!-- Статистика -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Всего визитов</h3>
-        <div class="value" id="totalVisits">0</div>
+    <!-- ========== ДЕСКТОПНАЯ ВЕРСИЯ ========== -->
+    <div class="desktop-view" id="desktopView">
+      <!-- Статистика -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Всего визитов</h3>
+          <div class="value" id="totalVisits">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Всего пользователей</h3>
+          <div class="value" id="totalUsers">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Новых сегодня</h3>
+          <div class="value" id="newToday">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Активных за 24ч</h3>
+          <div class="value" id="active24h">0</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <h3>Всего пользователей</h3>
-        <div class="value" id="totalUsers">0</div>
+
+      <!-- Графики -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>📈 Рост пользователей</h3>
+          <div class="chart-container">
+            <canvas id="userGrowthChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>🕐 Активность по часам</h3>
+          <div class="chart-container">
+            <canvas id="activityChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>🌍 Популярные страны</h3>
+          <div class="chart-container">
+            <canvas id="countriesChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>🔄 Воронка конверсии</h3>
+          <div id="funnelContainer"></div>
+        </div>
       </div>
-      <div class="stat-card">
-        <h3>Новых сегодня</h3>
-        <div class="value" id="newToday">0</div>
+
+      <!-- Экономика -->
+      <div class="section">
+        <h2>🎮 Экономика</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Всего токенов</h3>
+            <div class="value" id="totalTokens">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Всего кристаллов</h3>
+            <div class="value" id="totalCrystals">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Средний баланс</h3>
+            <div class="value" id="avgBalance">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Топ-10 игроков</h3>
+            <div id="topPlayers" style="font-size: 12px; text-align: left; margin-top: 10px;"></div>
+          </div>
+        </div>
       </div>
-      <div class="stat-card">
-        <h3>Активных за 24ч</h3>
-        <div class="value" id="active24h">0</div>
+
+      <!-- Пользователи -->
+      <div class="section">
+        <h2>👥 Пользователи</h2>
+        <input type="text" class="search-bar" id="userSearch" placeholder="Поиск по UID или имени..." onkeyup="filterUsers()">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>UID</th>
+                <th>Имя</th>
+                <th>Токены</th>
+                <th>Кристаллы</th>
+                <th>Последняя активность</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Источники трафика -->
+      <div class="section">
+        <h2>📍 Источники трафика</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Из Telegram</h3>
+            <div class="value" id="telegramUsers">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Из браузера</h3>
+            <div class="value" id="browserUsers">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>По рефералам</h3>
+            <div class="value" id="referralUsers">0</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Графики -->
-    <div class="charts-grid">
-      <div class="chart-card">
-        <h3>📈 Рост пользователей</h3>
-        <div class="chart-container">
-          <canvas id="userGrowthChart"></canvas>
+    <!-- ========== МОБИЛЬНАЯ ВЕРСИЯ ========== -->
+    <div class="mobile-view" id="mobileView">
+      <!-- Статистика -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>👁 Визиты</h3>
+          <div class="value" id="mobileTotalVisits">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>👥 Пользователи</h3>
+          <div class="value" id="mobileTotalUsers">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>🆕 Новых сегодня</h3>
+          <div class="value" id="mobileNewToday">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>⚡ Активны 24ч</h3>
+          <div class="value" id="mobileActive24h">0</div>
         </div>
       </div>
-      <div class="chart-card">
-        <h3>🕐 Активность по часам</h3>
-        <div class="chart-container">
-          <canvas id="activityChart"></canvas>
+
+      <!-- Источники трафика -->
+      <div class="mobile-card">
+        <h3>📍 Источники трафика</h3>
+        <div class="mobile-stat-row">
+          <span class="mobile-stat-label">📱 Telegram</span>
+          <span class="mobile-stat-value" id="mobileTelegramUsers">0</span>
+        </div>
+        <div class="mobile-stat-row">
+          <span class="mobile-stat-label">🌐 Браузер</span>
+          <span class="mobile-stat-value" id="mobileBrowserUsers">0</span>
+        </div>
+        <div class="mobile-stat-row">
+          <span class="mobile-stat-label">🔗 Рефералы</span>
+          <span class="mobile-stat-value" id="mobileReferralUsers">0</span>
         </div>
       </div>
-      <div class="chart-card">
-        <h3>🌍 Популярные страны</h3>
-        <div class="chart-container">
-          <canvas id="countriesChart"></canvas>
+
+      <!-- Экономика -->
+      <div class="mobile-card">
+        <h3>🎮 Экономика</h3>
+        <div class="mobile-stat-row">
+          <span class="mobile-stat-label">💰 Всего токенов</span>
+          <span class="mobile-stat-value" id="mobileTotalTokens">0</span>
+        </div>
+        <div class="mobile-stat-row">
+          <span class="mobile-stat-label">💎 Всего кристаллов</span>
+          <span class="mobile-stat-value" id="mobileTotalCrystals">0</span>
+        </div>
+        <div class="mobile-stat-row">
+          <span class="mobile-stat-label">📊 Средний баланс</span>
+          <span class="mobile-stat-value" id="mobileAvgBalance">0</span>
         </div>
       </div>
-      <div class="chart-card">
+
+      <!-- Топ-10 игроков -->
+      <div class="mobile-card">
+        <h3>🏆 Топ-10 игроков</h3>
+        <div id="mobileTopPlayers"></div>
+      </div>
+
+      <!-- Пользователи -->
+      <div class="mobile-card">
+        <h3>👥 Пользователи</h3>
+        <input type="text" class="mobile-search" id="mobileUserSearch" placeholder="Поиск..." onkeyup="filterMobileUsers()">
+        <div id="mobileUsersList"></div>
+      </div>
+
+      <!-- Воронка -->
+      <div class="mobile-card">
         <h3>🔄 Воронка конверсии</h3>
-        <div id="funnelContainer"></div>
-      </div>
-    </div>
-
-    <!-- Экономика -->
-    <div class="section">
-      <h2>🎮 Экономика</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3>Всего токенов</h3>
-          <div class="value" id="totalTokens">0</div>
-        </div>
-        <div class="stat-card">
-          <h3>Всего кристаллов</h3>
-          <div class="value" id="totalCrystals">0</div>
-        </div>
-        <div class="stat-card">
-          <h3>Средний баланс</h3>
-          <div class="value" id="avgBalance">0</div>
-        </div>
-        <div class="stat-card">
-          <h3>Топ-10 игроков</h3>
-          <div id="topPlayers" style="font-size: 12px; text-align: left; margin-top: 10px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Пользователи -->
-    <div class="section">
-      <h2>👥 Пользователи</h2>
-      <input type="text" class="search-bar" id="userSearch" placeholder="Поиск по UID или имени..." onkeyup="filterUsers()">
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>UID</th>
-              <th>Имя</th>
-              <th>Токены</th>
-              <th>Кристаллы</th>
-              <th>Последняя активность</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody id="usersTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Источники трафика -->
-    <div class="section">
-      <h2>📍 Источники трафика</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3>Из Telegram</h3>
-          <div class="value" id="telegramUsers">0</div>
-        </div>
-        <div class="stat-card">
-          <h3>Из браузера</h3>
-          <div class="value" id="browserUsers">0</div>
-        </div>
-        <div class="stat-card">
-          <h3>По рефералам</h3>
-          <div class="value" id="referralUsers">0</div>
-        </div>
+        <div id="mobileFunnelContainer"></div>
       </div>
     </div>
   </div>
@@ -491,6 +920,27 @@
     
     let allUsers = [];
     let charts = {};
+    let currentView = 'desktop';
+    
+    // ==================== ПЕРЕКЛЮЧЕНИЕ ВИДОВ ====================
+    function setView(view) {
+      currentView = view;
+      const body = document.body;
+      const desktopToggle = document.getElementById('desktopToggle');
+      const mobileToggle = document.getElementById('mobileToggle');
+      
+      if (view === 'desktop') {
+        body.classList.remove('mobile-mode');
+        desktopToggle.classList.add('active');
+        mobileToggle.classList.remove('active');
+      } else {
+        body.classList.add('mobile-mode');
+        mobileToggle.classList.add('active');
+        desktopToggle.classList.remove('active');
+        // Обновляем мобильные данные при переключении
+        updateMobileView();
+      }
+    }
     
     // ==================== АВТОРИЗАЦИЯ ====================
     function checkPassword() {
@@ -512,6 +962,14 @@
     function showDashboard() {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
+      
+      // Определяем устройство при загрузке
+      if (window.innerWidth <= 768) {
+        setView('mobile');
+      } else {
+        setView('desktop');
+      }
+      
       loadAllData();
     }
     
@@ -530,6 +988,7 @@
       loadFunnel();
       loadEconomy();
       renderUsersTable();
+      updateMobileView();
     }
     
     async function loadVisits() {
@@ -537,14 +996,16 @@
       const visits = snapshot.val() || {};
       const visitList = Object.values(visits);
       
-      document.getElementById('totalVisits').textContent = visitList.length;
+      const totalVisits = visitList.length;
+      document.getElementById('totalVisits').textContent = totalVisits;
+      document.getElementById('mobileTotalVisits').textContent = totalVisits;
       
-      // Активные за 24 часа
       const last24h = Date.now() - 86400000;
       const activeVisits = visitList.filter(v => v.timestamp > last24h);
-      document.getElementById('active24h').textContent = activeVisits.length;
+      const active24h = activeVisits.length;
+      document.getElementById('active24h').textContent = active24h;
+      document.getElementById('mobileActive24h').textContent = active24h;
       
-      // Источники трафика
       const telegramCount = visitList.filter(v => v.isTelegram).length;
       const browserCount = visitList.filter(v => !v.isTelegram).length;
       const referralCount = visitList.filter(v => v.referrer && v.referrer !== 'direct').length;
@@ -552,6 +1013,10 @@
       document.getElementById('telegramUsers').textContent = telegramCount;
       document.getElementById('browserUsers').textContent = browserCount;
       document.getElementById('referralUsers').textContent = referralCount;
+      
+      document.getElementById('mobileTelegramUsers').textContent = telegramCount;
+      document.getElementById('mobileBrowserUsers').textContent = browserCount;
+      document.getElementById('mobileReferralUsers').textContent = referralCount;
     }
     
     async function loadUsers() {
@@ -562,15 +1027,18 @@
         ...data
       }));
       
-      document.getElementById('totalUsers').textContent = allUsers.length;
+      const totalUsers = allUsers.length;
+      document.getElementById('totalUsers').textContent = totalUsers;
+      document.getElementById('mobileTotalUsers').textContent = totalUsers;
       
-      // Новые сегодня
       const today = new Date().toDateString();
       const newUsers = allUsers.filter(u => {
         const created = u.created_at ? new Date(u.created_at).toDateString() : '';
         return created === today;
       });
-      document.getElementById('newToday').textContent = newUsers.length;
+      const newToday = newUsers.length;
+      document.getElementById('newToday').textContent = newToday;
+      document.getElementById('mobileNewToday').textContent = newToday;
     }
     
     async function loadAuthStats() {
@@ -769,6 +1237,18 @@
           </span>
         </div>
       `).join('');
+      
+      // Мобильная воронка
+      const mobileContainer = document.getElementById('mobileFunnelContainer');
+      mobileContainer.innerHTML = funnelData.map(item => `
+        <div class="funnel-item" style="padding: 10px;">
+          <span class="funnel-label" style="font-size: 14px;">${item.label}</span>
+          <span>
+            <span class="funnel-value" style="font-size: 17px;">${item.value}</span>
+            <span class="funnel-percent" style="font-size: 12px;">${item.percent}%</span>
+          </span>
+        </div>
+      `).join('');
     }
     
     async function loadEconomy() {
@@ -789,17 +1269,35 @@
       
       document.getElementById('totalTokens').textContent = totalTokens.toLocaleString();
       document.getElementById('totalCrystals').textContent = totalCrystals.toLocaleString();
+      document.getElementById('mobileTotalTokens').textContent = totalTokens.toLocaleString();
+      document.getElementById('mobileTotalCrystals').textContent = totalCrystals.toLocaleString();
       
       const avgBalance = playerList.length > 0 ? Math.round(totalTokens / playerList.length) : 0;
       document.getElementById('avgBalance').textContent = avgBalance.toLocaleString();
+      document.getElementById('mobileAvgBalance').textContent = avgBalance.toLocaleString();
       
-      // Топ-10 игроков
       const top10 = playerList.sort((a, b) => b.tokens - a.tokens).slice(0, 10);
+      
+      // Десктоп топ-10
       const topPlayersContainer = document.getElementById('topPlayers');
       topPlayersContainer.innerHTML = top10.map((p, i) => {
         const user = allUsers.find(u => u.uid === p.uid);
         const name = user?.display_name || 'Unknown';
         return `<div style="padding: 5px 0;">${i+1}. ${escapeHtml(name)}: ${p.tokens.toLocaleString()} tokens</div>`;
+      }).join('');
+      
+      // Мобильный топ-10
+      const mobileTopContainer = document.getElementById('mobileTopPlayers');
+      mobileTopContainer.innerHTML = top10.map((p, i) => {
+        const user = allUsers.find(u => u.uid === p.uid);
+        const name = user?.display_name || 'Unknown';
+        return `
+          <div class="mobile-top-player">
+            <span class="rank">#${i+1}</span>
+            <span class="name">${escapeHtml(name)}</span>
+            <span class="tokens">${p.tokens.toLocaleString()}</span>
+          </div>
+        `;
       }).join('');
     }
     
@@ -814,12 +1312,12 @@
         
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td style="font-size: 11px;">${user.uid.slice(0, 12)}...</td>
-          <td>${escapeHtml(user.display_name || 'Unknown')}</td>
-          <td>${(data.score || 0).toLocaleString()}</td>
-          <td>${(data.crystals || 0).toLocaleString()}</td>
-          <td>${data.lastActive ? new Date(data.lastActive).toLocaleString('ru-RU') : 'Нет данных'}</td>
-          <td>
+          <td data-label="UID" style="font-size: 11px;">${user.uid.slice(0, 12)}...</td>
+          <td data-label="Имя">${escapeHtml(user.display_name || 'Unknown')}</td>
+          <td data-label="Токены">${(data.score || 0).toLocaleString()}</td>
+          <td data-label="Кристаллы">${(data.crystals || 0).toLocaleString()}</td>
+          <td data-label="Последняя активность">${data.lastActive ? new Date(data.lastActive).toLocaleString('ru-RU') : 'Нет данных'}</td>
+          <td data-label="Действия">
             <button class="action-btn btn-add" onclick="addTokens('${user.uid}')">+1000</button>
             <button class="action-btn btn-ban" onclick="banUser('${user.uid}')">Бан</button>
             <button class="action-btn btn-delete" onclick="deleteUser('${user.uid}')">Удалить</button>
@@ -827,6 +1325,8 @@
         `;
         tableBody.appendChild(row);
       }
+      
+      updateMobileUsersList();
     }
     
     function filterUsers() {
@@ -837,6 +1337,86 @@
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(search) ? '' : 'none';
       });
+    }
+    
+    // ==================== МОБИЛЬНЫЙ СПИСОК ПОЛЬЗОВАТЕЛЕЙ ====================
+    function updateMobileUsersList() {
+      const container = document.getElementById('mobileUsersList');
+      container.innerHTML = '';
+      
+      allUsers.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'mobile-user-item';
+        div.dataset.uid = user.uid;
+        div.dataset.name = (user.display_name || 'Unknown').toLowerCase();
+        
+        div.innerHTML = `
+          <div class="mobile-user-info">
+            <div class="mobile-user-name">${escapeHtml(user.display_name || 'Unknown')}</div>
+            <div class="mobile-user-uid">${user.uid.slice(0, 12)}...</div>
+          </div>
+          <div class="mobile-user-actions">
+            <button class="action-btn btn-add" onclick="addTokens('${user.uid}')">+1000</button>
+            <button class="action-btn btn-ban" onclick="banUser('${user.uid}')">Бан</button>
+            <button class="action-btn btn-delete" onclick="deleteUser('${user.uid}')">Удалить</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+    
+    function filterMobileUsers() {
+      const search = document.getElementById('mobileUserSearch').value.toLowerCase();
+      const items = document.querySelectorAll('#mobileUsersList .mobile-user-item');
+      
+      items.forEach(item => {
+        const name = item.dataset.name || '';
+        const uid = item.dataset.uid || '';
+        const text = (name + uid).toLowerCase();
+        item.style.display = text.includes(search) ? '' : 'none';
+      });
+    }
+    
+    // ==================== ОБНОВЛЕНИЕ МОБИЛЬНОГО ВИДА ====================
+    function updateMobileView() {
+      // Копируем данные из десктопных элементов в мобильные
+      const mapIds = [
+        ['totalVisits', 'mobileTotalVisits'],
+        ['totalUsers', 'mobileTotalUsers'],
+        ['newToday', 'mobileNewToday'],
+        ['active24h', 'mobileActive24h'],
+        ['telegramUsers', 'mobileTelegramUsers'],
+        ['browserUsers', 'mobileBrowserUsers'],
+        ['referralUsers', 'mobileReferralUsers'],
+        ['totalTokens', 'mobileTotalTokens'],
+        ['totalCrystals', 'mobileTotalCrystals'],
+        ['avgBalance', 'mobileAvgBalance']
+      ];
+      
+      mapIds.forEach(([from, to]) => {
+        const el = document.getElementById(from);
+        const target = document.getElementById(to);
+        if (el && target) {
+          target.textContent = el.textContent;
+        }
+      });
+      
+      // Обновляем топ-игроков
+      const topPlayersContainer = document.getElementById('topPlayers');
+      const mobileTopContainer = document.getElementById('mobileTopPlayers');
+      if (topPlayersContainer && mobileTopContainer) {
+        mobileTopContainer.innerHTML = topPlayersContainer.innerHTML;
+      }
+      
+      // Обновляем воронку
+      const funnelContainer = document.getElementById('funnelContainer');
+      const mobileFunnelContainer = document.getElementById('mobileFunnelContainer');
+      if (funnelContainer && mobileFunnelContainer) {
+        mobileFunnelContainer.innerHTML = funnelContainer.innerHTML;
+      }
+      
+      // Обновляем список пользователей
+      updateMobileUsersList();
     }
     
     // ==================== ДЕЙСТВИЯ ====================
@@ -932,6 +1512,17 @@
     if (sessionStorage.getItem('adminAuth') === 'true') {
       showDashboard();
     }
+    
+    // Отслеживаем изменение размера окна для авто-переключения
+    window.addEventListener('resize', function() {
+      if (document.getElementById('dashboard').style.display === 'block') {
+        if (window.innerWidth <= 768 && currentView === 'desktop') {
+          setView('mobile');
+        } else if (window.innerWidth > 768 && currentView === 'mobile') {
+          setView('desktop');
+        }
+      }
+    });
   </script>
 </body>
 </html>
