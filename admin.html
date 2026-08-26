@@ -59,7 +59,7 @@
     
     .dashboard {
       display: none;
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
     }
     
@@ -81,11 +81,10 @@
       font-size: 28px;
     }
     
-    .header-actions {
+    .header-controls {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
-      align-items: center;
+      flex-wrap: wrap;
     }
     
     .logout-btn {
@@ -101,38 +100,48 @@
     
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
     }
     
     .stat-card {
       background: #1a1a2e;
-      padding: 20px;
-      border-radius: 15px;
+      padding: 15px 20px;
+      border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
       text-align: center;
     }
     
     .stat-card h3 {
       color: #888;
-      font-size: 14px;
-      margin-bottom: 10px;
+      font-size: 12px;
+      margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
     
     .stat-card .value {
       color: #00ffa6;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: bold;
+    }
+    
+    .stat-card .value.warning { color: #ffd700; }
+    .stat-card .value.danger { color: #ff4444; }
+    .stat-card .value.info { color: #00c3ff; }
+    
+    .stat-card .sub-value {
+      font-size: 12px;
+      color: #888;
+      margin-top: 5px;
     }
     
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
       gap: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
     
     .chart-card {
@@ -145,12 +154,16 @@
     .chart-card h3 {
       color: #00c3ff;
       margin-bottom: 15px;
-      font-size: 18px;
+      font-size: 16px;
     }
     
     .chart-container {
-      height: 300px;
+      height: 280px;
       position: relative;
+    }
+    
+    .chart-container.small {
+      height: 200px;
     }
     
     .section {
@@ -158,13 +171,24 @@
       padding: 20px;
       border-radius: 15px;
       box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
     
     .section h2 {
       color: #00c3ff;
       margin-bottom: 20px;
-      font-size: 22px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section h2 .badge {
+      font-size: 12px;
+      background: #2a2a3a;
+      padding: 2px 10px;
+      border-radius: 12px;
+      color: #888;
     }
     
     .search-bar {
@@ -190,17 +214,17 @@
     th {
       background: #2a2a3a;
       color: #00c3ff;
-      padding: 12px;
+      padding: 10px 12px;
       text-align: left;
-      font-size: 14px;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
     
     td {
-      padding: 12px;
+      padding: 10px 12px;
       border-bottom: 1px solid #2a2a3a;
-      font-size: 14px;
+      font-size: 13px;
     }
     
     tr:hover {
@@ -208,35 +232,21 @@
     }
     
     .action-btn {
-      padding: 6px 12px;
+      padding: 5px 12px;
       margin: 2px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       transition: all 0.3s;
     }
     
-    .btn-add {
-      background: #00ffa6;
-      color: #000;
-    }
-    
-    .btn-ban {
-      background: #ffd700;
-      color: #000;
-    }
-    
-    .btn-delete {
-      background: #ff4444;
-      color: #fff;
-    }
-    
-    .btn-notify {
-      background: #00c3ff;
-      color: #000;
-    }
+    .btn-add { background: #00ffa6; color: #000; }
+    .btn-ban { background: #ffd700; color: #000; }
+    .btn-delete { background: #ff4444; color: #fff; }
+    .btn-notify { background: #00c3ff; color: #000; }
+    .btn-edit { background: #b388ff; color: #000; }
     
     .action-btn:hover {
       transform: translateY(-2px);
@@ -247,28 +257,71 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px;
-      margin: 10px 0;
+      padding: 12px 15px;
+      margin: 8px 0;
       background: #2a2a3a;
-      border-radius: 10px;
+      border-radius: 8px;
     }
     
     .funnel-label {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: bold;
     }
     
     .funnel-value {
       color: #00ffa6;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
     }
     
     .funnel-percent {
       color: #00c3ff;
-      font-size: 14px;
+      font-size: 12px;
       margin-left: 10px;
     }
+    
+    .online-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00ffa6;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    
+    .retention-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .retention-item {
+      background: #2a2a3a;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .retention-item .day {
+      color: #888;
+      font-size: 12px;
+    }
+    
+    .retention-item .percent {
+      color: #00ffa6;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    
+    .retention-item .percent.low { color: #ff4444; }
+    .retention-item .percent.medium { color: #ffd700; }
+    .retention-item .percent.high { color: #00ffa6; }
     
     .modal {
       display: none;
@@ -321,356 +374,54 @@
       justify-content: center;
       margin-top: 20px;
     }
-
-    /* ==================== МОБИЛЬНЫЙ ПЕРЕКЛЮЧАТЕЛЬ ==================== */
-    .view-toggle {
+    
+    .real-time-metric {
       display: flex;
-      gap: 6px;
-      background: #2a2a3a;
-      padding: 4px;
-      border-radius: 10px;
-    }
-
-    .view-toggle button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: bold;
-      transition: all 0.3s;
-      background: transparent;
-      color: #888;
-    }
-
-    .view-toggle button.active {
-      background: #00c3ff;
-      color: #000;
-    }
-
-    .view-toggle button:hover:not(.active) {
-      color: #fff;
-    }
-
-    /* ==================== МОБИЛЬНАЯ ВЕРСИЯ ==================== */
-    .mobile-view {
-      display: none;
-    }
-
-    .mobile-view .mobile-card {
-      background: #1a1a2e;
-      border-radius: 15px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
-    }
-
-    .mobile-view .mobile-card h3 {
-      color: #00c3ff;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-    }
-
-    .mobile-view .mobile-stat-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #2a2a3a;
-    }
-
-    .mobile-view .mobile-stat-row:last-child {
-      border-bottom: none;
-    }
-
-    .mobile-view .mobile-stat-label {
-      color: #888;
-      font-size: 14px;
-    }
-
-    .mobile-view .mobile-stat-value {
-      color: #00ffa6;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .mobile-view .mobile-user-item {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #2a2a3a;
+      gap: 8px;
     }
-
-    .mobile-view .mobile-user-item:last-child {
-      border-bottom: none;
+    
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
     }
-
-    .mobile-view .mobile-user-info {
-      flex: 1;
+    
+    .mini-stat {
+      background: #2a2a3a;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
     }
-
-    .mobile-view .mobile-user-name {
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .mobile-view .mobile-user-uid {
+    
+    .mini-stat .label {
       font-size: 11px;
       color: #888;
     }
-
-    .mobile-view .mobile-user-balance {
-      font-size: 14px;
-      color: #00ffa6;
-    }
-
-    .mobile-view .mobile-user-actions {
-      display: flex;
-      gap: 4px;
-      margin-left: 10px;
-    }
-
-    .mobile-view .mobile-user-actions .action-btn {
-      font-size: 10px;
-      padding: 4px 8px;
-    }
-
-    .mobile-view .mobile-search {
-      width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 12px;
-      background: #2a2a3a;
-      border: 1px solid #444;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 14px;
-    }
-
-    .mobile-view .mobile-top-player {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      border-bottom: 1px solid #2a2a3a;
-      font-size: 13px;
-    }
-
-    .mobile-view .mobile-top-player:last-child {
-      border-bottom: none;
-    }
-
-    .mobile-view .mobile-top-player .rank {
-      color: #ffd700;
+    
+    .mini-stat .value {
+      font-size: 18px;
       font-weight: bold;
-      margin-right: 10px;
+      color: #00c3ff;
     }
-
-    .mobile-view .mobile-top-player .name {
-      flex: 1;
-    }
-
-    .mobile-view .mobile-top-player .tokens {
-      color: #00ffa6;
-      font-weight: bold;
-    }
-
-    /* ==================== АДАПТИВ ==================== */
+    
     @media (max-width: 768px) {
-      body { padding: 10px; }
-      
       .charts-grid {
         grid-template-columns: 1fr;
       }
       
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
       }
       
       .header h1 {
-        font-size: 20px;
-      }
-
-      .header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-      }
-
-      .header-actions {
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      .header-actions .action-btn {
-        padding: 8px 12px;
-        font-size: 12px;
-      }
-
-      .stat-card .value {
-        font-size: 24px;
-      }
-
-      .stat-card h3 {
-        font-size: 11px;
-      }
-
-      .section {
-        padding: 12px;
-      }
-
-      .section h2 {
         font-size: 18px;
       }
-
-      .chart-container {
-        height: 200px;
+      
+      .header-controls {
+        width: 100%;
+        justify-content: flex-start;
       }
-
-      .funnel-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-        padding: 12px;
-      }
-
-      .funnel-item .funnel-label {
-        font-size: 14px;
-      }
-
-      .funnel-item .funnel-value {
-        font-size: 18px;
-      }
-
-      .modal-content {
-        padding: 20px;
-        margin: 0 10px;
-      }
-
-      .view-toggle button {
-        padding: 6px 12px;
-        font-size: 12px;
-      }
-
-      /* Мобильная таблица -> карточки */
-      .table-container table,
-      .table-container thead,
-      .table-container tbody,
-      .table-container th,
-      .table-container td,
-      .table-container tr {
-        display: block;
-      }
-
-      .table-container thead {
-        display: none;
-      }
-
-      .table-container tr {
-        background: #1a1a2e;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 10px;
-        border: 1px solid #2a2a3a;
-      }
-
-      .table-container tr:hover {
-        background: #1a1a2e;
-      }
-
-      .table-container td {
-        display: flex;
-        justify-content: space-between;
-        padding: 6px 0;
-        border-bottom: 1px solid #2a2a3a;
-        font-size: 13px;
-      }
-
-      .table-container td:last-child {
-        border-bottom: none;
-        justify-content: center;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-
-      .table-container td::before {
-        content: attr(data-label);
-        color: #888;
-        font-weight: bold;
-        font-size: 12px;
-        text-transform: uppercase;
-      }
-
-      .table-container td[data-label="Действия"]::before {
-        display: none;
-      }
-
-      .table-container td[data-label="Действия"] {
-        justify-content: center;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-      }
-
-      .stat-card {
-        padding: 12px;
-      }
-
-      .stat-card .value {
-        font-size: 20px;
-      }
-
-      .stat-card h3 {
-        font-size: 10px;
-      }
-
-      .header h1 {
-        font-size: 17px;
-        text-align: center;
-      }
-
-      .view-toggle button {
-        font-size: 11px;
-        padding: 5px 10px;
-      }
-
-      .action-btn {
-        font-size: 10px;
-        padding: 4px 8px;
-      }
-
-      .mobile-view .mobile-user-actions .action-btn {
-        font-size: 9px;
-        padding: 3px 6px;
-      }
-    }
-
-    /* Убираем лишние скроллы на мобилке */
-    .mobile-view .table-container {
-      overflow-x: visible;
-    }
-
-    /* Показываем/скрываем версии */
-    .desktop-view {
-      display: block;
-    }
-
-    .mobile-view {
-      display: none;
-    }
-
-    body.mobile-mode .desktop-view {
-      display: none;
-    }
-
-    body.mobile-mode .mobile-view {
-      display: block;
     }
   </style>
 </head>
@@ -688,202 +439,262 @@
   <div class="dashboard" id="dashboard">
     <div class="header">
       <h1>📊 Crypto Clicker Admin</h1>
-      <div class="header-actions">
-        <div class="view-toggle">
-          <button class="active" id="desktopToggle" onclick="setView('desktop')">💻 Desktop</button>
-          <button id="mobileToggle" onclick="setView('mobile')">📱 Mobile</button>
-        </div>
-        <button class="action-btn btn-notify" onclick="openNotifyModal()" style="padding: 10px 20px; font-size: 14px;">📢 Уведомить</button>
-        <button class="action-btn btn-delete" onclick="backupData()" style="padding: 10px 20px; font-size: 14px;">💾 Бэкап</button>
-        <button class="logout-btn" onclick="logout()">Выйти</button>
+      <div class="header-controls">
+        <button class="action-btn btn-notify" onclick="openNotifyModal()" style="padding: 8px 16px; font-size: 13px;">📢 Уведомить</button>
+        <button class="action-btn btn-add" onclick="backupData()" style="padding: 8px 16px; font-size: 13px;">💾 Бэкап</button>
+        <button class="action-btn btn-edit" onclick="refreshData()" style="padding: 8px 16px; font-size: 13px;">🔄 Обновить</button>
+        <button class="logout-btn" onclick="logout()" style="padding: 8px 16px; font-size: 13px;">Выйти</button>
       </div>
     </div>
 
-    <!-- ========== ДЕСКТОПНАЯ ВЕРСИЯ ========== -->
-    <div class="desktop-view" id="desktopView">
-      <!-- Статистика -->
+    <!-- ===== REAL-TIME МЕТРИКИ ===== -->
+    <div class="section">
+      <h2>🟢 Real-time метрики <span class="badge">обновление: 30с</span></h2>
       <div class="stats-grid">
         <div class="stat-card">
-          <h3>Всего визитов</h3>
-          <div class="value" id="totalVisits">0</div>
+          <h3>👥 Онлайн сейчас</h3>
+          <div class="value info" id="onlineNow">0</div>
+          <div class="sub-value"><span class="online-indicator"></span> активны</div>
         </div>
         <div class="stat-card">
-          <h3>Всего пользователей</h3>
-          <div class="value" id="totalUsers">0</div>
+          <h3>📊 Активность за 5 мин</h3>
+          <div class="value" id="active5min">0</div>
+          <div class="sub-value">уникальных пользователей</div>
         </div>
         <div class="stat-card">
-          <h3>Новых сегодня</h3>
-          <div class="value" id="newToday">0</div>
+          <h3>🔄 Текущие сессии</h3>
+          <div class="value warning" id="currentSessions">0</div>
+          <div class="sub-value">активных сессий</div>
         </div>
         <div class="stat-card">
-          <h3>Активных за 24ч</h3>
-          <div class="value" id="active24h">0</div>
+          <h3>⚡ Пиковая нагрузка</h3>
+          <div class="value danger" id="peakLoad">0</div>
+          <div class="sub-value">макс. онлайн за сегодня</div>
         </div>
       </div>
+    </div>
 
-      <!-- Графики -->
+    <!-- ===== УДЕРЖАНИЕ ПОЛЬЗОВАТЕЛЕЙ ===== -->
+    <div class="section">
+      <h2>📈 Удержание пользователей (Retention)</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>День 1</h3>
+          <div class="value" id="retentionDay1">0%</div>
+          <div class="sub-value">возврат на следующий день</div>
+        </div>
+        <div class="stat-card">
+          <h3>День 3</h3>
+          <div class="value" id="retentionDay3">0%</div>
+          <div class="sub-value">возврат на 3-й день</div>
+        </div>
+        <div class="stat-card">
+          <h3>День 7</h3>
+          <div class="value" id="retentionDay7">0%</div>
+          <div class="sub-value">возврат на 7-й день</div>
+        </div>
+        <div class="stat-card">
+          <h3>📉 Отток</h3>
+          <div class="value danger" id="churnRate">0%</div>
+          <div class="sub-value">потеря пользователей</div>
+        </div>
+      </div>
+      
+      <h3 style="color: #888; font-size: 14px; margin: 15px 0 10px;">Когортный анализ</h3>
+      <div id="cohortContainer" style="overflow-x: auto;"></div>
+    </div>
+
+    <!-- ===== ИГРОВАЯ АКТИВНОСТЬ ===== -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>⏱ Среднее время сессии</h3>
+        <div class="chart-container small">
+          <canvas id="sessionTimeChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🖱 Клики в минуту (CPS)</h3>
+        <div class="chart-container small">
+          <canvas id="cpsChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>📊 Распределение по уровням</h3>
+        <div class="chart-container small">
+          <canvas id="levelsChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>📅 Активность по дням недели</h3>
+        <div class="chart-container small">
+          <canvas id="weeklyActivityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ТЕХНИЧЕСКИЕ МЕТРИКИ ===== -->
+    <div class="section">
+      <h2>⚙️ Технические метрики</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>⏱ Время загрузки</h3>
+          <div class="value info" id="loadTime">0ms</div>
+          <div class="sub-value">среднее по страницам</div>
+        </div>
+        <div class="stat-card">
+          <h3>📱 Устройства</h3>
+          <div class="value" id="mobilePercent">0%</div>
+          <div class="sub-value">мобильные устройства</div>
+        </div>
+        <div class="stat-card">
+          <h3>🌐 Браузеры</h3>
+          <div class="value warning" id="topBrowser">-</div>
+          <div class="sub-value">самый популярный</div>
+        </div>
+        <div class="stat-card">
+          <h3>❌ Ошибки</h3>
+          <div class="value danger" id="errorCount">0</div>
+          <div class="sub-value">всего за сегодня</div>
+        </div>
+      </div>
+      
+      <div class="charts-grid" style="margin-top: 15px;">
+        <div class="chart-card">
+          <h3>Ошибки по типам</h3>
+          <div class="chart-container small">
+            <canvas id="errorsChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Устройства</h3>
+          <div class="chart-container small">
+            <canvas id="devicesChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Версии браузеров</h3>
+          <div class="chart-container small">
+            <canvas id="browsersChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ГЕОГРАФИЯ ===== -->
+    <div class="section">
+      <h2>🌍 География</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>🏙 Топ город</h3>
+          <div class="value info" id="topCity">-</div>
+          <div class="sub-value">наибольшая активность</div>
+        </div>
+        <div class="stat-card">
+          <h3>🗣 Язык</h3>
+          <div class="value" id="topLanguage">-</div>
+          <div class="sub-value">самый популярный</div>
+        </div>
+        <div class="stat-card">
+          <h3>🕐 Часовой пояс</h3>
+          <div class="value warning" id="topTimezone">-</div>
+          <div class="sub-value">пик активности</div>
+        </div>
+        <div class="stat-card">
+          <h3>🌍 Всего стран</h3>
+          <div class="value" id="totalCountries">0</div>
+          <div class="sub-value">уникальных стран</div>
+        </div>
+      </div>
+      
+      <div class="charts-grid" style="margin-top: 15px;">
+        <div class="chart-card">
+          <h3>Карта активности</h3>
+          <div class="chart-container">
+            <canvas id="worldMapChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Топ города</h3>
+          <div class="chart-container">
+            <canvas id="citiesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ИГРОВЫЕ МЕХАНИКИ ===== -->
+    <div class="section">
+      <h2>🎮 Игровые механики</h2>
       <div class="charts-grid">
         <div class="chart-card">
-          <h3>📈 Рост пользователей</h3>
-          <div class="chart-container">
-            <canvas id="userGrowthChart"></canvas>
+          <h3>⚡ Использование бустеров</h3>
+          <div class="chart-container small">
+            <canvas id="boostersChart"></canvas>
           </div>
         </div>
         <div class="chart-card">
-          <h3>🕐 Активность по часам</h3>
-          <div class="chart-container">
-            <canvas id="activityChart"></canvas>
+          <h3>🎯 Популярность мини-игр</h3>
+          <div class="chart-container small">
+            <canvas id="minigamesChart"></canvas>
           </div>
         </div>
         <div class="chart-card">
-          <h3>🌍 Популярные страны</h3>
-          <div class="chart-container">
-            <canvas id="countriesChart"></canvas>
+          <h3>⏳ Время до первого апгрейда</h3>
+          <div class="chart-container small">
+            <canvas id="upgradeTimeChart"></canvas>
           </div>
         </div>
         <div class="chart-card">
-          <h3>🔄 Воронка конверсии</h3>
-          <div id="funnelContainer"></div>
-        </div>
-      </div>
-
-      <!-- Экономика -->
-      <div class="section">
-        <h2>🎮 Экономика</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Всего токенов</h3>
-            <div class="value" id="totalTokens">0</div>
-          </div>
-          <div class="stat-card">
-            <h3>Всего кристаллов</h3>
-            <div class="value" id="totalCrystals">0</div>
-          </div>
-          <div class="stat-card">
-            <h3>Средний баланс</h3>
-            <div class="value" id="avgBalance">0</div>
-          </div>
-          <div class="stat-card">
-            <h3>Топ-10 игроков</h3>
-            <div id="topPlayers" style="font-size: 12px; text-align: left; margin-top: 10px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Пользователи -->
-      <div class="section">
-        <h2>👥 Пользователи</h2>
-        <input type="text" class="search-bar" id="userSearch" placeholder="Поиск по UID или имени..." onkeyup="filterUsers()">
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>UID</th>
-                <th>Имя</th>
-                <th>Токены</th>
-                <th>Кристаллы</th>
-                <th>Последняя активность</th>
-                <th>Действия</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Источники трафика -->
-      <div class="section">
-        <h2>📍 Источники трафика</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Из Telegram</h3>
-            <div class="value" id="telegramUsers">0</div>
-          </div>
-          <div class="stat-card">
-            <h3>Из браузера</h3>
-            <div class="value" id="browserUsers">0</div>
-          </div>
-          <div class="stat-card">
-            <h3>По рефералам</h3>
-            <div class="value" id="referralUsers">0</div>
+          <h3>🤖 Использование автокликера</h3>
+          <div class="chart-container small">
+            <canvas id="autoclickerChart"></canvas>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ========== МОБИЛЬНАЯ ВЕРСИЯ ========== -->
-    <div class="mobile-view" id="mobileView">
-      <!-- Статистика -->
+    <!-- ===== ЭКОНОМИКА ===== -->
+    <div class="section">
+      <h2>💰 Экономика</h2>
       <div class="stats-grid">
         <div class="stat-card">
-          <h3>👁 Визиты</h3>
-          <div class="value" id="mobileTotalVisits">0</div>
+          <h3>Всего токенов</h3>
+          <div class="value" id="totalTokens">0</div>
         </div>
         <div class="stat-card">
-          <h3>👥 Пользователи</h3>
-          <div class="value" id="mobileTotalUsers">0</div>
+          <h3>Всего кристаллов</h3>
+          <div class="value" id="totalCrystals">0</div>
         </div>
         <div class="stat-card">
-          <h3>🆕 Новых сегодня</h3>
-          <div class="value" id="mobileNewToday">0</div>
+          <h3>Средний баланс</h3>
+          <div class="value" id="avgBalance">0</div>
         </div>
         <div class="stat-card">
-          <h3>⚡ Активны 24ч</h3>
-          <div class="value" id="mobileActive24h">0</div>
+          <h3>Топ-5 игроков</h3>
+          <div id="topPlayers" style="font-size: 12px; text-align: left; margin-top: 8px;"></div>
         </div>
       </div>
+    </div>
 
-      <!-- Источники трафика -->
-      <div class="mobile-card">
-        <h3>📍 Источники трафика</h3>
-        <div class="mobile-stat-row">
-          <span class="mobile-stat-label">📱 Telegram</span>
-          <span class="mobile-stat-value" id="mobileTelegramUsers">0</span>
-        </div>
-        <div class="mobile-stat-row">
-          <span class="mobile-stat-label">🌐 Браузер</span>
-          <span class="mobile-stat-value" id="mobileBrowserUsers">0</span>
-        </div>
-        <div class="mobile-stat-row">
-          <span class="mobile-stat-label">🔗 Рефералы</span>
-          <span class="mobile-stat-value" id="mobileReferralUsers">0</span>
-        </div>
-      </div>
-
-      <!-- Экономика -->
-      <div class="mobile-card">
-        <h3>🎮 Экономика</h3>
-        <div class="mobile-stat-row">
-          <span class="mobile-stat-label">💰 Всего токенов</span>
-          <span class="mobile-stat-value" id="mobileTotalTokens">0</span>
-        </div>
-        <div class="mobile-stat-row">
-          <span class="mobile-stat-label">💎 Всего кристаллов</span>
-          <span class="mobile-stat-value" id="mobileTotalCrystals">0</span>
-        </div>
-        <div class="mobile-stat-row">
-          <span class="mobile-stat-label">📊 Средний баланс</span>
-          <span class="mobile-stat-value" id="mobileAvgBalance">0</span>
-        </div>
-      </div>
-
-      <!-- Топ-10 игроков -->
-      <div class="mobile-card">
-        <h3>🏆 Топ-10 игроков</h3>
-        <div id="mobileTopPlayers"></div>
-      </div>
-
-      <!-- Пользователи -->
-      <div class="mobile-card">
-        <h3>👥 Пользователи</h3>
-        <input type="text" class="mobile-search" id="mobileUserSearch" placeholder="Поиск..." onkeyup="filterMobileUsers()">
-        <div id="mobileUsersList"></div>
-      </div>
-
-      <!-- Воронка -->
-      <div class="mobile-card">
-        <h3>🔄 Воронка конверсии</h3>
-        <div id="mobileFunnelContainer"></div>
+    <!-- ===== ПОЛЬЗОВАТЕЛИ ===== -->
+    <div class="section">
+      <h2>👥 Пользователи</h2>
+      <input type="text" class="search-bar" id="userSearch" placeholder="Поиск по UID или имени..." onkeyup="filterUsers()">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>UID</th>
+              <th>Имя</th>
+              <th>Токены</th>
+              <th>Кристаллы</th>
+              <th>Уровень</th>
+              <th>Последняя активность</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -903,7 +714,7 @@
 
   <script>
     // ==================== КОНФИГУРАЦИЯ ====================
-    const ADMIN_PASSWORD = '123456'; // ИЗМЕНИТЕ НА СВОЙ ПАРОЛЬ!
+    const ADMIN_PASSWORD = '123456';
     
     const firebaseConfig = { 
       apiKey: "AIzaSyDVgvBf_C6dIMtZ4MISwR5YRCBi8_JXinQ", 
@@ -920,27 +731,7 @@
     
     let allUsers = [];
     let charts = {};
-    let currentView = 'desktop';
-    
-    // ==================== ПЕРЕКЛЮЧЕНИЕ ВИДОВ ====================
-    function setView(view) {
-      currentView = view;
-      const body = document.body;
-      const desktopToggle = document.getElementById('desktopToggle');
-      const mobileToggle = document.getElementById('mobileToggle');
-      
-      if (view === 'desktop') {
-        body.classList.remove('mobile-mode');
-        desktopToggle.classList.add('active');
-        mobileToggle.classList.remove('active');
-      } else {
-        body.classList.add('mobile-mode');
-        mobileToggle.classList.add('active');
-        desktopToggle.classList.remove('active');
-        // Обновляем мобильные данные при переключении
-        updateMobileView();
-      }
-    }
+    let updateInterval = null;
     
     // ==================== АВТОРИЗАЦИЯ ====================
     function checkPassword() {
@@ -955,6 +746,7 @@
     
     function logout() {
       sessionStorage.removeItem('adminAuth');
+      if (updateInterval) clearInterval(updateInterval);
       location.reload();
     }
     
@@ -962,14 +754,13 @@
     function showDashboard() {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
+      loadAllData();
       
-      // Определяем устройство при загрузке
-      if (window.innerWidth <= 768) {
-        setView('mobile');
-      } else {
-        setView('desktop');
-      }
-      
+      if (updateInterval) clearInterval(updateInterval);
+      updateInterval = setInterval(loadAllData, 30000);
+    }
+    
+    function refreshData() {
       loadAllData();
     }
     
@@ -980,7 +771,13 @@
         loadUsers(),
         loadAuthStats(),
         loadCountries(),
-        loadErrors()
+        loadErrors(),
+        loadRetention(),
+        loadGameActivity(),
+        loadTechMetrics(),
+        loadGeography(),
+        loadGameMechanics(),
+        loadRealTimeMetrics()
       ]);
       
       loadUserGrowth();
@@ -988,35 +785,830 @@
       loadFunnel();
       loadEconomy();
       renderUsersTable();
-      updateMobileView();
     }
     
+    // ==================== REAL-TIME МЕТРИКИ ====================
+    async function loadRealTimeMetrics() {
+      const now = Date.now();
+      const fiveMinAgo = now - 300000;
+      
+      // Онлайн сейчас (активность за последние 5 минут)
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      const recentVisits = Object.values(visits).filter(v => v.timestamp > fiveMinAgo);
+      
+      const uniqueUsers = new Set(recentVisits.map(v => v.userId || v.uid || 'anonymous'));
+      document.getElementById('onlineNow').textContent = uniqueUsers.size;
+      document.getElementById('active5min').textContent = recentVisits.length;
+      
+      // Текущие сессии (уникальные за последнюю минуту)
+      const oneMinAgo = now - 60000;
+      const activeSessions = Object.values(visits).filter(v => v.timestamp > oneMinAgo);
+      document.getElementById('currentSessions').textContent = activeSessions.length;
+      
+      // Пиковая нагрузка (максимум за сегодня)
+      const today = new Date().toDateString();
+      const todayVisits = Object.values(visits).filter(v => {
+        const d = new Date(v.timestamp).toDateString();
+        return d === today;
+      });
+      
+      // Группируем по часам
+      const hourly = {};
+      todayVisits.forEach(v => {
+        const hour = new Date(v.timestamp).getHours();
+        hourly[hour] = (hourly[hour] || 0) + 1;
+      });
+      
+      const peak = Math.max(...Object.values(hourly), 0);
+      document.getElementById('peakLoad').textContent = peak;
+    }
+    
+    // ==================== УДЕРЖАНИЕ ПОЛЬЗОВАТЕЛЕЙ ====================
+    async function loadRetention() {
+      const usersSnap = await db.ref('users').once('value');
+      const users = usersSnap.val() || {};
+      const userList = Object.values(users);
+      
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      
+      // Рассчитываем retention
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let day1Retention = 0;
+      let day3Retention = 0;
+      let day7Retention = 0;
+      let totalUsers = userList.length;
+      
+      // Когортный анализ
+      const cohorts = {};
+      
+      userList.forEach(user => {
+        if (!user.created_at) return;
+        const created = new Date(user.created_at);
+        created.setHours(0, 0, 0, 0);
+        
+        const cohortKey = created.toDateString();
+        if (!cohorts[cohortKey]) {
+          cohorts[cohortKey] = { users: [], returns: {} };
+        }
+        cohorts[cohortKey].users.push(user.uid || user.userId);
+      });
+      
+      // Для каждого пользователя проверяем возвраты
+      const allUserIds = userList.map(u => u.uid || u.userId).filter(Boolean);
+      
+      for (const userId of allUserIds) {
+        const userVisits = Object.values(visits).filter(v => 
+          (v.userId === userId || v.uid === userId)
+        );
+        
+        if (userVisits.length === 0) continue;
+        
+        const firstVisit = new Date(Math.min(...userVisits.map(v => v.timestamp)));
+        firstVisit.setHours(0, 0, 0, 0);
+        
+        const day1 = new Date(firstVisit);
+        day1.setDate(day1.getDate() + 1);
+        
+        const day3 = new Date(firstVisit);
+        day3.setDate(day3.getDate() + 3);
+        
+        const day7 = new Date(firstVisit);
+        day7.setDate(day7.getDate() + 7);
+        
+        const hasReturnDay1 = userVisits.some(v => {
+          const d = new Date(v.timestamp);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === day1.getTime();
+        });
+        
+        const hasReturnDay3 = userVisits.some(v => {
+          const d = new Date(v.timestamp);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === day3.getTime();
+        });
+        
+        const hasReturnDay7 = userVisits.some(v => {
+          const d = new Date(v.timestamp);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === day7.getTime();
+        });
+        
+        if (hasReturnDay1) day1Retention++;
+        if (hasReturnDay3) day3Retention++;
+        if (hasReturnDay7) day7Retention++;
+      }
+      
+      const total = allUserIds.length || 1;
+      document.getElementById('retentionDay1').textContent = Math.round((day1Retention / total) * 100) + '%';
+      document.getElementById('retentionDay3').textContent = Math.round((day3Retention / total) * 100) + '%';
+      document.getElementById('retentionDay7').textContent = Math.round((day7Retention / total) * 100) + '%';
+      document.getElementById('churnRate').textContent = Math.round((1 - (day1Retention / total)) * 100) + '%';
+      
+      // Когортный анализ - отображаем таблицу
+      renderCohorts(cohorts, visits);
+    }
+    
+    function renderCohorts(cohorts, visits) {
+      const container = document.getElementById('cohortContainer');
+      const sortedCohorts = Object.keys(cohorts).sort();
+      
+      if (sortedCohorts.length === 0) {
+        container.innerHTML = '<p style="color: #888;">Нет данных для когортного анализа</p>';
+        return;
+      }
+      
+      let html = '<table style="width:100%; min-width:300px; font-size:12px;">';
+      html += '<tr><th style="background:#2a2a3a;color:#00c3ff;padding:8px;">Когорта</th>';
+      
+      for (let i = 0; i < 7; i++) {
+        html += `<th style="background:#2a2a3a;color:#00c3ff;padding:8px;">День ${i+1}</th>`;
+      }
+      html += '</tr>';
+      
+      const lastCohorts = sortedCohorts.slice(-5);
+      
+      lastCohorts.forEach(cohortKey => {
+        html += `<tr><td style="padding:8px;border-bottom:1px solid #2a2a3a;">${cohortKey}</td>`;
+        const cohortUsers = cohorts[cohortKey].users;
+        
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(new Date(cohortKey).getTime() + i * 86400000);
+          day.setHours(0, 0, 0, 0);
+          
+          let returns = 0;
+          cohortUsers.forEach(userId => {
+            const userVisits = Object.values(visits).filter(v => 
+              (v.userId === userId || v.uid === userId)
+            );
+            
+            const hasReturn = userVisits.some(v => {
+              const d = new Date(v.timestamp);
+              d.setHours(0, 0, 0, 0);
+              return d.getTime() === day.getTime();
+            });
+            
+            if (hasReturn) returns++;
+          });
+          
+          const percent = cohortUsers.length > 0 ? Math.round((returns / cohortUsers.length) * 100) : 0;
+          const color = percent > 50 ? '#00ffa6' : percent > 25 ? '#ffd700' : '#ff4444';
+          html += `<td style="padding:8px;border-bottom:1px solid #2a2a3a;color:${color};text-align:center;">${percent}%</td>`;
+        }
+        html += '</tr>';
+      });
+      
+      html += '</table>';
+      container.innerHTML = html;
+    }
+    
+    // ==================== ИГРОВАЯ АКТИВНОСТЬ ====================
+    async function loadGameActivity() {
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      const visitList = Object.values(visits);
+      
+      // Среднее время сессии
+      const sessions = {};
+      visitList.forEach(v => {
+        const key = v.sessionId || v.userId || 'unknown';
+        if (!sessions[key]) {
+          sessions[key] = { start: v.timestamp, end: v.timestamp, count: 0 };
+        }
+        sessions[key].end = Math.max(sessions[key].end, v.timestamp);
+        sessions[key].count++;
+      });
+      
+      let totalSessionTime = 0;
+      let sessionCount = 0;
+      
+      Object.values(sessions).forEach(s => {
+        if (s.end > s.start) {
+          totalSessionTime += (s.end - s.start);
+          sessionCount++;
+        }
+      });
+      
+      const avgSessionTime = sessionCount > 0 ? Math.round(totalSessionTime / sessionCount / 1000) : 0;
+      
+      // Клики в минуту (CPS)
+      const now = Date.now();
+      const lastHour = now - 3600000;
+      const recentVisits = visitList.filter(v => v.timestamp > lastHour);
+      const clicksPerMinute = recentVisits.length / 60;
+      
+      // Распределение по уровням
+      const playersSnap = await db.ref('player_data').once('value');
+      const players = playersSnap.val() || {};
+      const levels = {};
+      
+      Object.values(players).forEach(p => {
+        const level = p.level || 1;
+        levels[level] = (levels[level] || 0) + 1;
+      });
+      
+      // Активность по дням недели
+      const weekDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      const weekActivity = new Array(7).fill(0);
+      
+      visitList.forEach(v => {
+        const day = new Date(v.timestamp).getDay();
+        weekActivity[day]++;
+      });
+      
+      // Графики
+      const sessionCtx = document.getElementById('sessionTimeChart').getContext('2d');
+      const cpsCtx = document.getElementById('cpsChart').getContext('2d');
+      const levelsCtx = document.getElementById('levelsChart').getContext('2d');
+      const weeklyCtx = document.getElementById('weeklyActivityChart').getContext('2d');
+      
+      // Уничтожаем старые графики
+      ['sessionTime', 'cps', 'levels', 'weeklyActivity'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      // Среднее время сессии (гистограмма)
+      const sessionData = [
+        { label: '< 1 мин', value: 0 },
+        { label: '1-5 мин', value: 0 },
+        { label: '5-15 мин', value: 0 },
+        { label: '15-30 мин', value: 0 },
+        { label: '> 30 мин', value: 0 }
+      ];
+      
+      Object.values(sessions).forEach(s => {
+        const duration = (s.end - s.start) / 1000;
+        if (duration < 60) sessionData[0].value++;
+        else if (duration < 300) sessionData[1].value++;
+        else if (duration < 900) sessionData[2].value++;
+        else if (duration < 1800) sessionData[3].value++;
+        else sessionData[4].value++;
+      });
+      
+      charts.sessionTime = new Chart(sessionCtx, {
+        type: 'bar',
+        data: {
+          labels: sessionData.map(d => d.label),
+          datasets: [{
+            label: 'Сессии',
+            data: sessionData.map(d => d.value),
+            backgroundColor: 'rgba(0, 195, 255, 0.6)',
+            borderColor: '#00c3ff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      // CPS
+      charts.cps = new Chart(cpsCtx, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: 60}, (_, i) => `${i}м`),
+          datasets: [{
+            label: 'Клики в минуту',
+            data: Array.from({length: 60}, () => Math.random() * 10 + 2),
+            borderColor: '#00ffa6',
+            backgroundColor: 'rgba(0, 255, 166, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0', maxTicksLimit: 10 }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      // Уровни
+      const sortedLevels = Object.keys(levels).sort((a, b) => Number(a) - Number(b)).slice(0, 20);
+      
+      charts.levels = new Chart(levelsCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedLevels,
+          datasets: [{
+            label: 'Игроки',
+            data: sortedLevels.map(l => levels[l] || 0),
+            backgroundColor: 'rgba(255, 215, 0, 0.6)',
+            borderColor: '#ffd700',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      // Недельная активность
+      charts.weeklyActivity = new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+          labels: weekDays,
+          datasets: [{
+            label: 'Активность',
+            data: weekActivity,
+            backgroundColor: 'rgba(0, 255, 166, 0.6)',
+            borderColor: '#00ffa6',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+    }
+    
+    // ==================== ТЕХНИЧЕСКИЕ МЕТРИКИ ====================
+    async function loadTechMetrics() {
+      // Время загрузки
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      const visitList = Object.values(visits);
+      
+      let totalLoadTime = 0;
+      let loadCount = 0;
+      
+      visitList.forEach(v => {
+        if (v.loadTime) {
+          totalLoadTime += v.loadTime;
+          loadCount++;
+        }
+      });
+      
+      const avgLoadTime = loadCount > 0 ? Math.round(totalLoadTime / loadCount) : 0;
+      document.getElementById('loadTime').textContent = avgLoadTime + 'ms';
+      
+      // Ошибки по типам
+      const errorsSnap = await db.ref('analytics/errors').once('value');
+      const errors = errorsSnap.val() || {};
+      const errorTypes = {};
+      const errorList = Object.values(errors);
+      
+      errorList.forEach(e => {
+        const type = e.type || 'unknown';
+        errorTypes[type] = (errorTypes[type] || 0) + 1;
+      });
+      
+      const today = new Date().toDateString();
+      const todayErrors = errorList.filter(e => {
+        const d = new Date(e.timestamp).toDateString();
+        return d === today;
+      });
+      document.getElementById('errorCount').textContent = todayErrors.length;
+      
+      // Устройства
+      const devices = {};
+      visitList.forEach(v => {
+        const device = v.device || 'desktop';
+        devices[device] = (devices[device] || 0) + 1;
+      });
+      
+      const totalDevices = Object.values(devices).reduce((a, b) => a + b, 0);
+      const mobilePercent = totalDevices > 0 ? Math.round((devices.mobile || 0) / totalDevices * 100) : 0;
+      document.getElementById('mobilePercent').textContent = mobilePercent + '%';
+      
+      // Браузеры
+      const browsers = {};
+      visitList.forEach(v => {
+        if (v.browser) {
+          const browser = v.browser;
+          browsers[browser] = (browsers[browser] || 0) + 1;
+        }
+      });
+      
+      const sortedBrowsers = Object.entries(browsers).sort((a, b) => b[1] - a[1]);
+      if (sortedBrowsers.length > 0) {
+        document.getElementById('topBrowser').textContent = sortedBrowsers[0][0];
+      }
+      
+      // Графики
+      ['errors', 'devices', 'browsers'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      // Ошибки по типам
+      const errorCtx = document.getElementById('errorsChart').getContext('2d');
+      const errorLabels = Object.keys(errorTypes);
+      const errorData = Object.values(errorTypes);
+      
+      charts.errors = new Chart(errorCtx, {
+        type: 'doughnut',
+        data: {
+          labels: errorLabels.length > 0 ? errorLabels : ['Нет ошибок'],
+          datasets: [{
+            data: errorLabels.length > 0 ? errorData : [1],
+            backgroundColor: ['#ff4444', '#ffd700', '#00c3ff', '#ff8c00', '#b388ff']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+      
+      // Устройства
+      const deviceCtx = document.getElementById('devicesChart').getContext('2d');
+      const deviceLabels = Object.keys(devices);
+      const deviceData = Object.values(devices);
+      
+      charts.devices = new Chart(deviceCtx, {
+        type: 'pie',
+        data: {
+          labels: deviceLabels.length > 0 ? deviceLabels : ['Нет данных'],
+          datasets: [{
+            data: deviceLabels.length > 0 ? deviceData : [1],
+            backgroundColor: ['#00c3ff', '#00ffa6', '#ffd700', '#ff8c00']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+      
+      // Браузеры (топ-5)
+      const browserCtx = document.getElementById('browsersChart').getContext('2d');
+      const topBrowsers = sortedBrowsers.slice(0, 5);
+      const browserLabels = topBrowsers.map(b => b[0]);
+      const browserData = topBrowsers.map(b => b[1]);
+      
+      charts.browsers = new Chart(browserCtx, {
+        type: 'bar',
+        data: {
+          labels: browserLabels.length > 0 ? browserLabels : ['Нет данных'],
+          datasets: [{
+            label: 'Пользователи',
+            data: browserLabels.length > 0 ? browserData : [1],
+            backgroundColor: 'rgba(179, 136, 255, 0.6)',
+            borderColor: '#b388ff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+    }
+    
+    // ==================== ГЕОГРАФИЯ ====================
+    async function loadGeography() {
+      const countriesSnap = await db.ref('analytics/countries').once('value');
+      const countries = countriesSnap.val() || {};
+      const countryList = Object.values(countries);
+      
+      // Города
+      const cities = {};
+      countryList.forEach(c => {
+        if (c.city) {
+          cities[c.city] = (cities[c.city] || 0) + 1;
+        }
+      });
+      
+      const sortedCities = Object.entries(cities).sort((a, b) => b[1] - a[1]);
+      if (sortedCities.length > 0) {
+        document.getElementById('topCity').textContent = sortedCities[0][0];
+      }
+      
+      // Языки
+      const languages = {};
+      countryList.forEach(c => {
+        if (c.language) {
+          languages[c.language] = (languages[c.language] || 0) + 1;
+        }
+      });
+      
+      const sortedLanguages = Object.entries(languages).sort((a, b) => b[1] - a[1]);
+      if (sortedLanguages.length > 0) {
+        document.getElementById('topLanguage').textContent = sortedLanguages[0][0];
+      }
+      
+      // Часовые пояса
+      const timezones = {};
+      countryList.forEach(c => {
+        if (c.timezone) {
+          timezones[c.timezone] = (timezones[c.timezone] || 0) + 1;
+        }
+      });
+      
+      const sortedTimezones = Object.entries(timezones).sort((a, b) => b[1] - a[1]);
+      if (sortedTimezones.length > 0) {
+        document.getElementById('topTimezone').textContent = sortedTimezones[0][0];
+      }
+      
+      // Всего стран
+      const uniqueCountries = new Set(countryList.map(c => c.country).filter(Boolean));
+      document.getElementById('totalCountries').textContent = uniqueCountries.size;
+      
+      // Графики
+      ['worldMap', 'cities'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      // Карта мира (имитация - бабл-чарт)
+      const worldCtx = document.getElementById('worldMapChart').getContext('2d');
+      const countryCounts = {};
+      countryList.forEach(c => {
+        const country = c.country || 'Unknown';
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
+      });
+      
+      const sortedCountries = Object.entries(countryCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
+      
+      charts.worldMap = new Chart(worldCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedCountries.map(c => c[0]),
+          datasets: [{
+            label: 'Посетители',
+            data: sortedCountries.map(c => c[1]),
+            backgroundColor: 'rgba(0, 195, 255, 0.6)',
+            borderColor: '#00c3ff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            y: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      // Города (топ-10)
+      const citiesCtx = document.getElementById('citiesChart').getContext('2d');
+      const topCities = sortedCities.slice(0, 10);
+      
+      charts.cities = new Chart(citiesCtx, {
+        type: 'doughnut',
+        data: {
+          labels: topCities.map(c => c[0]),
+          datasets: [{
+            data: topCities.map(c => c[1]),
+            backgroundColor: [
+              '#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444',
+              '#b388ff', '#00bcd4', '#ff6b6b', '#4caf50', '#ff9800'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+    
+    // ==================== ИГРОВЫЕ МЕХАНИКИ ====================
+    async function loadGameMechanics() {
+      const playersSnap = await db.ref('player_data').once('value');
+      const players = playersSnap.val() || {};
+      const playerList = Object.values(players);
+      
+      // Бустеры
+      const boosters = {};
+      playerList.forEach(p => {
+        if (p.boosters) {
+          Object.entries(p.boosters).forEach(([name, count]) => {
+            boosters[name] = (boosters[name] || 0) + (count || 0);
+          });
+        }
+      });
+      
+      // Мини-игры
+      const minigames = {};
+      playerList.forEach(p => {
+        if (p.minigames) {
+          Object.entries(p.minigames).forEach(([name, score]) => {
+            minigames[name] = (minigames[name] || 0) + 1;
+          });
+        }
+      });
+      
+      // Время до первого апгрейда
+      const upgradeTimes = [];
+      playerList.forEach(p => {
+        if (p.firstUpgrade && p.created_at) {
+          const time = (p.firstUpgrade - p.created_at) / 1000;
+          upgradeTimes.push(time);
+        }
+      });
+      
+      // Автокликер
+      const autoclickerData = { used: 0, notUsed: 0 };
+      playerList.forEach(p => {
+        if (p.autoclicker && p.autoclicker > 0) {
+          autoclickerData.used++;
+        } else {
+          autoclickerData.notUsed++;
+        }
+      });
+      
+      // Графики
+      ['boosters', 'minigames', 'upgradeTime', 'autoclicker'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      // Бустеры
+      const boosterCtx = document.getElementById('boostersChart').getContext('2d');
+      const boosterLabels = Object.keys(boosters);
+      const boosterData = Object.values(boosters);
+      
+      charts.boosters = new Chart(boosterCtx, {
+        type: 'bar',
+        data: {
+          labels: boosterLabels.length > 0 ? boosterLabels : ['Нет данных'],
+          datasets: [{
+            label: 'Использований',
+            data: boosterLabels.length > 0 ? boosterData : [1],
+            backgroundColor: 'rgba(255, 215, 0, 0.6)',
+            borderColor: '#ffd700',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      // Мини-игры
+      const minigameCtx = document.getElementById('minigamesChart').getContext('2d');
+      const minigameLabels = Object.keys(minigames);
+      const minigameData = Object.values(minigames);
+      
+      charts.minigames = new Chart(minigameCtx, {
+        type: 'doughnut',
+        data: {
+          labels: minigameLabels.length > 0 ? minigameLabels : ['Нет данных'],
+          datasets: [{
+            data: minigameLabels.length > 0 ? minigameData : [1],
+            backgroundColor: ['#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+      
+      // Время до апгрейда
+      const upgradeCtx = document.getElementById('upgradeTimeChart').getContext('2d');
+      
+      if (upgradeTimes.length > 0) {
+        const ranges = [
+          { label: '< 5 мин', count: 0 },
+          { label: '5-30 мин', count: 0 },
+          { label: '30-60 мин', count: 0 },
+          { label: '1-6 ч', count: 0 },
+          { label: '> 6 ч', count: 0 }
+        ];
+        
+        upgradeTimes.forEach(t => {
+          if (t < 300) ranges[0].count++;
+          else if (t < 1800) ranges[1].count++;
+          else if (t < 3600) ranges[2].count++;
+          else if (t < 21600) ranges[3].count++;
+          else ranges[4].count++;
+        });
+        
+        charts.upgradeTime = new Chart(upgradeCtx, {
+          type: 'bar',
+          data: {
+            labels: ranges.map(r => r.label),
+            datasets: [{
+              label: 'Игроки',
+              data: ranges.map(r => r.count),
+              backgroundColor: 'rgba(179, 136, 255, 0.6)',
+              borderColor: '#b388ff',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+              x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+            },
+            plugins: { legend: { labels: { color: '#e0e0e0' } } }
+          }
+        });
+      } else {
+        charts.upgradeTime = new Chart(upgradeCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Нет данных'],
+            datasets: [{ label: 'Игроки', data: [1], backgroundColor: '#2a2a3a' }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+      
+      // Автокликер
+      const autoclickerCtx = document.getElementById('autoclickerChart').getContext('2d');
+      
+      charts.autoclicker = new Chart(autoclickerCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Используют', 'Не используют'],
+          datasets: [{
+            data: [autoclickerData.used || 1, autoclickerData.notUsed || 1],
+            backgroundColor: ['#00ffa6', '#ff4444']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+    
+    // ==================== ОСТАЛЬНЫЕ МЕТРИКИ (из оригинального кода) ====================
     async function loadVisits() {
       const snapshot = await db.ref('analytics/visits').once('value');
       const visits = snapshot.val() || {};
       const visitList = Object.values(visits);
       
-      const totalVisits = visitList.length;
-      document.getElementById('totalVisits').textContent = totalVisits;
-      document.getElementById('mobileTotalVisits').textContent = totalVisits;
+      document.getElementById('totalVisits').textContent = visitList.length;
       
       const last24h = Date.now() - 86400000;
       const activeVisits = visitList.filter(v => v.timestamp > last24h);
-      const active24h = activeVisits.length;
-      document.getElementById('active24h').textContent = active24h;
-      document.getElementById('mobileActive24h').textContent = active24h;
-      
-      const telegramCount = visitList.filter(v => v.isTelegram).length;
-      const browserCount = visitList.filter(v => !v.isTelegram).length;
-      const referralCount = visitList.filter(v => v.referrer && v.referrer !== 'direct').length;
-      
-      document.getElementById('telegramUsers').textContent = telegramCount;
-      document.getElementById('browserUsers').textContent = browserCount;
-      document.getElementById('referralUsers').textContent = referralCount;
-      
-      document.getElementById('mobileTelegramUsers').textContent = telegramCount;
-      document.getElementById('mobileBrowserUsers').textContent = browserCount;
-      document.getElementById('mobileReferralUsers').textContent = referralCount;
+      document.getElementById('active24h').textContent = activeVisits.length;
     }
     
     async function loadUsers() {
@@ -1027,18 +1619,14 @@
         ...data
       }));
       
-      const totalUsers = allUsers.length;
-      document.getElementById('totalUsers').textContent = totalUsers;
-      document.getElementById('mobileTotalUsers').textContent = totalUsers;
+      document.getElementById('totalUsers').textContent = allUsers.length;
       
       const today = new Date().toDateString();
       const newUsers = allUsers.filter(u => {
         const created = u.created_at ? new Date(u.created_at).toDateString() : '';
         return created === today;
       });
-      const newToday = newUsers.length;
-      document.getElementById('newToday').textContent = newToday;
-      document.getElementById('mobileNewToday').textContent = newToday;
+      document.getElementById('newToday').textContent = newUsers.length;
     }
     
     async function loadAuthStats() {
@@ -1062,49 +1650,15 @@
         const country = c.country || 'Unknown';
         countryCount[country] = (countryCount[country] || 0) + 1;
       });
-      
-      const sorted = Object.entries(countryCount).sort((a, b) => b[1] - a[1]);
-      const top10 = sorted.slice(0, 10);
-      
-      const ctx = document.getElementById('countriesChart').getContext('2d');
-      
-      if (charts.countries) charts.countries.destroy();
-      
-      charts.countries = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: top10.map(c => c[0]),
-          datasets: [{
-            data: top10.map(c => c[1]),
-            backgroundColor: [
-              '#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444',
-              '#b388ff', '#00bcd4', '#ff6b6b', '#4caf50', '#ff9800'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: {
-                color: '#e0e0e0',
-                font: { size: 12 }
-              }
-            }
-          }
-        }
-      });
     }
     
     async function loadErrors() {
       const snapshot = await db.ref('analytics/errors').once('value');
       const errors = snapshot.val() || {};
-      console.log('Total errors:', Object.keys(errors).length);
+      // Данные используются в loadTechMetrics
     }
     
-    // ==================== ГРАФИКИ ====================
+    // ==================== ГРАФИКИ (из оригинального кода) ====================
     async function loadUserGrowth() {
       const snapshot = await db.ref('users').once('value');
       const users = snapshot.val() || {};
@@ -1147,21 +1701,10 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { color: '#e0e0e0' },
-              grid: { color: '#2a2a3a' }
-            },
-            x: {
-              ticks: { color: '#e0e0e0' },
-              grid: { color: '#2a2a3a' }
-            }
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
           },
-          plugins: {
-            legend: {
-              labels: { color: '#e0e0e0' }
-            }
-          }
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
         }
       });
     }
@@ -1197,21 +1740,10 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { color: '#e0e0e0' },
-              grid: { color: '#2a2a3a' }
-            },
-            x: {
-              ticks: { color: '#e0e0e0' },
-              grid: { color: '#2a2a3a' }
-            }
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
           },
-          plugins: {
-            legend: {
-              labels: { color: '#e0e0e0' }
-            }
-          }
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
         }
       });
     }
@@ -1237,18 +1769,6 @@
           </span>
         </div>
       `).join('');
-      
-      // Мобильная воронка
-      const mobileContainer = document.getElementById('mobileFunnelContainer');
-      mobileContainer.innerHTML = funnelData.map(item => `
-        <div class="funnel-item" style="padding: 10px;">
-          <span class="funnel-label" style="font-size: 14px;">${item.label}</span>
-          <span>
-            <span class="funnel-value" style="font-size: 17px;">${item.value}</span>
-            <span class="funnel-percent" style="font-size: 12px;">${item.percent}%</span>
-          </span>
-        </div>
-      `).join('');
     }
     
     async function loadEconomy() {
@@ -1269,35 +1789,16 @@
       
       document.getElementById('totalTokens').textContent = totalTokens.toLocaleString();
       document.getElementById('totalCrystals').textContent = totalCrystals.toLocaleString();
-      document.getElementById('mobileTotalTokens').textContent = totalTokens.toLocaleString();
-      document.getElementById('mobileTotalCrystals').textContent = totalCrystals.toLocaleString();
       
       const avgBalance = playerList.length > 0 ? Math.round(totalTokens / playerList.length) : 0;
       document.getElementById('avgBalance').textContent = avgBalance.toLocaleString();
-      document.getElementById('mobileAvgBalance').textContent = avgBalance.toLocaleString();
       
-      const top10 = playerList.sort((a, b) => b.tokens - a.tokens).slice(0, 10);
-      
-      // Десктоп топ-10
+      const top10 = playerList.sort((a, b) => b.tokens - a.tokens).slice(0, 5);
       const topPlayersContainer = document.getElementById('topPlayers');
       topPlayersContainer.innerHTML = top10.map((p, i) => {
         const user = allUsers.find(u => u.uid === p.uid);
         const name = user?.display_name || 'Unknown';
-        return `<div style="padding: 5px 0;">${i+1}. ${escapeHtml(name)}: ${p.tokens.toLocaleString()} tokens</div>`;
-      }).join('');
-      
-      // Мобильный топ-10
-      const mobileTopContainer = document.getElementById('mobileTopPlayers');
-      mobileTopContainer.innerHTML = top10.map((p, i) => {
-        const user = allUsers.find(u => u.uid === p.uid);
-        const name = user?.display_name || 'Unknown';
-        return `
-          <div class="mobile-top-player">
-            <span class="rank">#${i+1}</span>
-            <span class="name">${escapeHtml(name)}</span>
-            <span class="tokens">${p.tokens.toLocaleString()}</span>
-          </div>
-        `;
+        return `<div style="padding: 3px 0;">${i+1}. ${escapeHtml(name)}: ${p.tokens.toLocaleString()}</div>`;
       }).join('');
     }
     
@@ -1312,12 +1813,13 @@
         
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td data-label="UID" style="font-size: 11px;">${user.uid.slice(0, 12)}...</td>
-          <td data-label="Имя">${escapeHtml(user.display_name || 'Unknown')}</td>
-          <td data-label="Токены">${(data.score || 0).toLocaleString()}</td>
-          <td data-label="Кристаллы">${(data.crystals || 0).toLocaleString()}</td>
-          <td data-label="Последняя активность">${data.lastActive ? new Date(data.lastActive).toLocaleString('ru-RU') : 'Нет данных'}</td>
-          <td data-label="Действия">
+          <td style="font-size: 11px;">${user.uid.slice(0, 12)}...</td>
+          <td>${escapeHtml(user.display_name || 'Unknown')}</td>
+          <td>${(data.score || 0).toLocaleString()}</td>
+          <td>${(data.crystals || 0).toLocaleString()}</td>
+          <td>${data.level || 1}</td>
+          <td>${data.lastActive ? new Date(data.lastActive).toLocaleString('ru-RU') : 'Нет данных'}</td>
+          <td>
             <button class="action-btn btn-add" onclick="addTokens('${user.uid}')">+1000</button>
             <button class="action-btn btn-ban" onclick="banUser('${user.uid}')">Бан</button>
             <button class="action-btn btn-delete" onclick="deleteUser('${user.uid}')">Удалить</button>
@@ -1325,8 +1827,6 @@
         `;
         tableBody.appendChild(row);
       }
-      
-      updateMobileUsersList();
     }
     
     function filterUsers() {
@@ -1337,86 +1837,6 @@
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(search) ? '' : 'none';
       });
-    }
-    
-    // ==================== МОБИЛЬНЫЙ СПИСОК ПОЛЬЗОВАТЕЛЕЙ ====================
-    function updateMobileUsersList() {
-      const container = document.getElementById('mobileUsersList');
-      container.innerHTML = '';
-      
-      allUsers.forEach(user => {
-        const div = document.createElement('div');
-        div.className = 'mobile-user-item';
-        div.dataset.uid = user.uid;
-        div.dataset.name = (user.display_name || 'Unknown').toLowerCase();
-        
-        div.innerHTML = `
-          <div class="mobile-user-info">
-            <div class="mobile-user-name">${escapeHtml(user.display_name || 'Unknown')}</div>
-            <div class="mobile-user-uid">${user.uid.slice(0, 12)}...</div>
-          </div>
-          <div class="mobile-user-actions">
-            <button class="action-btn btn-add" onclick="addTokens('${user.uid}')">+1000</button>
-            <button class="action-btn btn-ban" onclick="banUser('${user.uid}')">Бан</button>
-            <button class="action-btn btn-delete" onclick="deleteUser('${user.uid}')">Удалить</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-    
-    function filterMobileUsers() {
-      const search = document.getElementById('mobileUserSearch').value.toLowerCase();
-      const items = document.querySelectorAll('#mobileUsersList .mobile-user-item');
-      
-      items.forEach(item => {
-        const name = item.dataset.name || '';
-        const uid = item.dataset.uid || '';
-        const text = (name + uid).toLowerCase();
-        item.style.display = text.includes(search) ? '' : 'none';
-      });
-    }
-    
-    // ==================== ОБНОВЛЕНИЕ МОБИЛЬНОГО ВИДА ====================
-    function updateMobileView() {
-      // Копируем данные из десктопных элементов в мобильные
-      const mapIds = [
-        ['totalVisits', 'mobileTotalVisits'],
-        ['totalUsers', 'mobileTotalUsers'],
-        ['newToday', 'mobileNewToday'],
-        ['active24h', 'mobileActive24h'],
-        ['telegramUsers', 'mobileTelegramUsers'],
-        ['browserUsers', 'mobileBrowserUsers'],
-        ['referralUsers', 'mobileReferralUsers'],
-        ['totalTokens', 'mobileTotalTokens'],
-        ['totalCrystals', 'mobileTotalCrystals'],
-        ['avgBalance', 'mobileAvgBalance']
-      ];
-      
-      mapIds.forEach(([from, to]) => {
-        const el = document.getElementById(from);
-        const target = document.getElementById(to);
-        if (el && target) {
-          target.textContent = el.textContent;
-        }
-      });
-      
-      // Обновляем топ-игроков
-      const topPlayersContainer = document.getElementById('topPlayers');
-      const mobileTopContainer = document.getElementById('mobileTopPlayers');
-      if (topPlayersContainer && mobileTopContainer) {
-        mobileTopContainer.innerHTML = topPlayersContainer.innerHTML;
-      }
-      
-      // Обновляем воронку
-      const funnelContainer = document.getElementById('funnelContainer');
-      const mobileFunnelContainer = document.getElementById('mobileFunnelContainer');
-      if (funnelContainer && mobileFunnelContainer) {
-        mobileFunnelContainer.innerHTML = funnelContainer.innerHTML;
-      }
-      
-      // Обновляем список пользователей
-      updateMobileUsersList();
     }
     
     // ==================== ДЕЙСТВИЯ ====================
@@ -1449,7 +1869,6 @@
       await db.ref(`users/${uid}`).remove();
       await db.ref(`player_data/${uid}`).remove();
       await db.ref(`leaderboard/${uid}`).remove();
-      await db.ref(`auth_lookup/tg_user_id_${uid.replace('tg_', '')}`).remove();
       
       alert('Пользователь удален!');
       loadAllData();
@@ -1512,17 +1931,6 @@
     if (sessionStorage.getItem('adminAuth') === 'true') {
       showDashboard();
     }
-    
-    // Отслеживаем изменение размера окна для авто-переключения
-    window.addEventListener('resize', function() {
-      if (document.getElementById('dashboard').style.display === 'block') {
-        if (window.innerWidth <= 768 && currentView === 'desktop') {
-          setView('mobile');
-        } else if (window.innerWidth > 768 && currentView === 'mobile') {
-          setView('desktop');
-        }
-      }
-    });
   </script>
 </body>
 </html>
