@@ -2146,18 +2146,11 @@
       } catch (e) { return null; }
     }
 
-    // ==================== ПЕРЕМЕННЫЕ ИГРЫ ====================
+    // ==================== ПЕРЕМЕННЫЕ ИГРЫ (только 3 задания) ====================
     const dailyTasks = [
-      { id: "clickMarathon", description: "Make 100 clicks", goal: 100, reward: 50, period: "daily" },
-      { id: "collectTokens", description: "Collect tokens", goalOptions: [1000, 3000, 5000], rewards: [100, 350, 600], period: "daily" },
-      { id: "subscribeTwitter", description: "Follow @CircleGameTry on X", goal: 1, reward: 20, period: "daily", link: "https://x.com/CircleGameTry" },
       { id: "watchRewardedAd", description: "Watch rewarded ad", goal: 1, reward: AD_SETTINGS.rewards.taskAd, period: "daily", isAdTask: true },
       { id: AD_CRYSTAL_TASK.id, description: "Watch 5 ads", goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward, rewardType: "crystals", period: "daily", isAdCrystalTask: true },
-      { id: "clickMasterWeekly", description: "Make 500 clicks in a week", goal: 500, reward: 500, period: "weekly" },
-      { id: "autoclickerMaster", description: "Activate autoclicker 5 times in a week", goal: 5, reward: "Free 5-minute autoclicker", period: "weekly", alternate: true },
-      { id: "collectBigTokens", description: "Collect tokens in a week", goalOptions: [10000, 12000, 15000], rewards: [1000, 1200, 1500], period: "weekly", alternate: true },
-      { id: "miniGameChallenge", description: "Play 5 mini-games", goal: 5, reward: 1, rewardType: "crystals", period: "daily" },
-      { id: "onlineTime", description: "Stay online for 30 minutes", goal: 1800, reward: 2, rewardType: "crystals", period: "daily" }
+      { id: "subscribeTwitter", description: "Follow @CircleGameTry on X", goal: 1, reward: 20, period: "daily", link: "https://x.com/CircleGameTry" }
     ];
 
     // ==================== MINING FARM VARIABLES ====================
@@ -2436,7 +2429,6 @@
     function setupCrossPlatformSync() {
       if (!user) return;
       
-      // Существующие слушатели
       db.ref(`player_data/${user.uid}/score`).on('value', (snapshot) => {
         const newScore = snapshot.val();
         if (newScore !== null && newScore !== score) { 
@@ -2494,7 +2486,6 @@
         }
       });
       
-      // ====== НОВЫЙ СЛУШАТЕЛЬ ДЛЯ warehouseTokens ======
       db.ref(`player_data/${user.uid}/warehouseTokens`).on('value', (snapshot) => {
         const newWarehouse = snapshot.val();
         if (newWarehouse !== null && newWarehouse !== warehouseTokens) {
@@ -2737,10 +2728,7 @@
       
       savePlayerScore();
       
-      updateTaskProgress("clickMarathon", 1);
-      updateTaskProgress("collectTokens", clickPower);
-      updateTaskProgress("collectBigTokens", clickPower);
-      updateTaskProgress("clickMasterWeekly", 1);
+      // Удалены вызовы updateTaskProgress для удаленных заданий
       checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel();
       
       if (hasResonance && totalClicks % 100 === 0) { 
@@ -2990,7 +2978,6 @@
         miniGamesPlayed++;
         miniGamesWon++;
         showMessage(`${t('victory')} +${MINI_GAME_REWARD} tokens!`); 
-        updateTaskProgress("miniGameChallenge", 1); 
         updateProfilePanel(); 
         updateCounterDisplay(); 
         checkAchievements();
@@ -3009,16 +2996,16 @@
       checkAchievements();
     }
 
-    // ==================== ЗАДАНИЯ ====================
+    // ==================== ЗАДАНИЯ (ТОЛЬКО 3) ====================
     function renderTasks() {
       if (isRenderingTasks) return; isRenderingTasks = true;
       const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; }
       list.innerHTML = "Loading..."; if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; }
       db.ref(`tasks/${user.uid}`).once("value").then(s => {
-        const td = s.val() || {}, today = new Date().toDateString(), sow = new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1))).toDateString(), wn = getWeekNumber(), ew = wn % 2 === 0;
-        const at = dailyTasks.filter(t => { if (!t.alternate) return true; if (t.id==="autoclickerMaster"&&ew) return true; if (t.id==="collectBigTokens"&&!ew) return true; return false; });
+        const td = s.val() || {}, today = new Date().toDateString();
         list.innerHTML = "";
         
+        // Задание 1: Просмотр рекламы (всегда показывается первым)
         const adTaskDiv = document.createElement("div");
         adTaskDiv.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
@@ -3034,6 +3021,7 @@
         `;
         list.appendChild(adTaskDiv);
         
+        // Задание 2: 5 просмотров рекламы за кристалл
         const crystalTask = dailyTasks.find(t => t.id === AD_CRYSTAL_TASK.id);
         if (crystalTask) {
           let ctd = td[AD_CRYSTAL_TASK.id] || { progress: 0, lastReset: today, completions: 0, completed: false, goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward };
@@ -3066,20 +3054,23 @@
           list.appendChild(crystalDiv);
         }
         
-        at.forEach(task => {
-          if (task.isAdTask || task.isAdCrystalTask) return;
-          let tdd = td[task.id] || { progress: 0, lastReset: "", completions: 0, completed: false };
-          const rk = task.period === "weekly" ? sow : today;
-          if (tdd.lastReset !== rk) { tdd = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; db.ref(`tasks/${user.uid}/${task.id}`).set(tdd).catch(()=>{}); }
-          const div = document.createElement("div");
-          if (tdd.completed || tdd.completions >= 1) { div.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(task.description)} - Done!</span>`; }
-          else { const g = tdd.goal || task.goal, p = tdd.progress || 0, rw = tdd.reward || task.reward, rt = task.rewardType === "crystals" ? `${rw} 💎` : `${rw} tokens`, cc = p >= g;
-            if (task.id === "subscribeTwitter") { div.innerHTML = `${escapeHTML(task.description)}<br><a href="${task.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${task.id}')" style="padding:5px 15px;font-size:12px;">Claim</button>`; }
-            else if (task.id === "onlineTime") { const progressTime = formatTimeFromSeconds(p); const goalTime = formatTimeFromSeconds(g); div.innerHTML = `${escapeHTML(task.description)}: ${progressTime} / ${goalTime}<br><small>Reward: ${rt}</small>`; div.setAttribute('data-task-id', 'onlineTime'); }
-            else if (task.id === "miniGameChallenge") { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g}<br><small>Reward: ${rt}</small>`; }
-            else { div.innerHTML = `${escapeHTML(task.description)}: ${p}/${g} (${rt})<br><button class="click-button" onclick="claimTask('${task.id}')" ${!cc?'disabled':''} style="padding:5px 15px;font-size:12px;">${cc?'Claim':'In Progress'}</button>`; } }
-          list.appendChild(div);
-        });
+        // Задание 3: Подписка на Twitter
+        const twitterTask = dailyTasks.find(t => t.id === "subscribeTwitter");
+        if (twitterTask) {
+          let tdd = td[twitterTask.id] || { progress: 0, lastReset: today, completions: 0, completed: false };
+          if (tdd.lastReset !== today) {
+            tdd = { progress: 0, lastReset: today, completions: 0, completed: false };
+            db.ref(`tasks/${user.uid}/${twitterTask.id}`).set(tdd).catch(()=>{});
+          }
+          const twitterDiv = document.createElement("div");
+          if (tdd.completed || tdd.completions >= 1) {
+            twitterDiv.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(twitterTask.description)} - ${t('adTaskDone')}!</span>`;
+          } else {
+            twitterDiv.innerHTML = `${escapeHTML(twitterTask.description)}<br><a href="${twitterTask.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${twitterTask.id}')" style="padding:5px 15px;font-size:12px;margin-left:10px;">${t('adTaskClaim')}</button>`;
+          }
+          list.appendChild(twitterDiv);
+        }
+        
         updateAdTaskUI();
         updateAdStreakUI();
         isRenderingTasks = false;
@@ -3113,49 +3104,14 @@
     }
     window.claimAdCrystalTask = claimAdCrystalTask;
     
-    function updateTaskProgress(taskId, inc) {
-      if (!user) return;
-      const task = dailyTasks.find(t => t.id === taskId); if (!task) return;
-      if (task.isAdTask || task.isAdCrystalTask) return;
-      if (task.alternate) { const wn = getWeekNumber(), ew = wn % 2 === 0; if (task.id==="autoclickerMaster"&&!ew) return; if (task.id==="collectBigTokens"&&ew) return; }
-      const now = new Date(), today = now.toDateString(), sow = new Date(now.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1))).toDateString(), rk = task.period === "weekly" ? sow : today;
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
-        let td = s.val() || { progress: 0, lastReset: rk, completions: 0, completed: false };
-        if (td.lastReset !== rk) { td = { progress: 0, lastReset: rk, completions: 0, completed: false, ...(task.goalOptions && { goal: task.goalOptions[Math.floor(Math.random()*task.goalOptions.length)], reward: task.rewards[Math.floor(Math.random()*task.rewards.length)] }) }; }
-        if (td.completed || td.completions >= 1) return;
-        const np = Math.min((td.progress||0) + inc, td.goal || task.goal);
-        if (np !== td.progress) { td.progress = np; db.ref(`tasks/${user.uid}/${taskId}`).set(td).catch(()=>{}); if (taskId === "onlineTime") updateOnlineTimeDisplay(np); }
-      }).catch(()=>{});
-    }
-    
-    function claimTask(taskId) {
-      if (!user) return showMessage(t('signIn'));
-      if (taskId === AD_CRYSTAL_TASK.id) { claimAdCrystalTask(); return; }
-      db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
-        const td = s.val(), task = dailyTasks.find(t => t.id === taskId); if (!task || !td) return;
-        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
-        const g = td.goal || task.goal;
-        if ((td.progress||0) >= g) { const rw = td.reward || task.reward;
-          if (task.rewardType === "crystals") { crystals += rw; showMessage(`✅ +${rw} 💎`); savePlayerCrystals(); checkAchievements(); }
-          else if (task.id === "autoclickerMaster") { startAutoclicker(300000, true); showMessage("✅ Free 5-min!"); }
-          else { score += rw; savePlayerScore(); showMessage(`✅ +${rw} tokens!`); checkAchievements(); }
-          db.ref(`tasks/${user.uid}/${task.id}`).set({...td, completions: (td.completions||0)+1, completed: true}).then(() => { updateProfilePanel(); updateCounterDisplay(); renderTasks(); });
-        } else showMessage(`${td.progress}/${g}`);
-      });
-    }
-    
     function completeTwitterTask(taskId) {
       if (!user) return showMessage(t('signIn'));
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
-        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId); if (!task) return;
+        const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId);
+        if (!task) return;
         if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
         db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); checkAchievements(); });
       });
-    }
-
-    function updateOnlineTimeDisplay(progress) {
-      const tasksList = document.getElementById("tasksList"); if (!tasksList || !tasksList.children.length) return;
-      for (let i = 0; i < tasksList.children.length; i++) { if (tasksList.children[i].hasAttribute('data-task-id') && tasksList.children[i].getAttribute('data-task-id') === 'onlineTime') { const task = dailyTasks.find(t => t.id === "onlineTime"); if (!task) return; tasksList.children[i].innerHTML = `Stay online for 30 minutes: ${formatTimeFromSeconds(progress)} / ${formatTimeFromSeconds(task.goal)}<br><small>Reward: ${task.reward} 💎</small>`; break; } }
     }
 
     // ==================== ЛИДЕРБОРД ====================
@@ -3315,16 +3271,13 @@
       updateFarmUI();
     }
 
-    // ====== ИСПРАВЛЕННАЯ ФУНКЦИЯ СБОРА МОНЕТ ======
     function collectWarehouse() {
       if (!user || warehouseTokens <= 0) return;
       const amount = Math.floor(warehouseTokens);
       
-      // Сначала добавляем токены игроку
       score += amount;
       warehouseTokens = 0;
       
-      // Немедленно обновляем Firebase
       db.ref(`player_data/${user.uid}`).update({
         warehouseTokens: 0,
         score: score,
@@ -3339,7 +3292,6 @@
       updateProfilePanel();
       updateFarmUI();
       showMessage('✅ +' + amount + ' tokens!');
-      updateTaskProgress("collectTokens", amount);
       checkAchievements();
     }
 
@@ -3741,14 +3693,13 @@
           showMessage(t('mergeNoPartner'));
         } else {
           let msg = t('mergeNeedSame') + ' ';
-          const diffs = [];
           const partner = farmSlots.find((s, i) => s && s.type === slot.type && !s.merged && i !== selectedRigSlot);
           if (partner) {
-            if ((partner.overclock || 0) !== (slot.overclock || 0)) diffs.push('Overclock');
-            if ((partner.efficiency || 0) !== (slot.efficiency || 0)) diffs.push('Efficiency');
-            if ((partner.luck || 0) !== (slot.luck || 0)) diffs.push('Luck');
+            if ((partner.overclock || 0) !== (slot.overclock || 0)) msg += 'Overclock ';
+            if ((partner.efficiency || 0) !== (slot.efficiency || 0)) msg += 'Efficiency ';
+            if ((partner.luck || 0) !== (slot.luck || 0)) msg += 'Luck ';
           }
-          showMessage(msg + diffs.join(', '));
+          showMessage(msg);
         }
         return;
       }
@@ -3819,7 +3770,6 @@
           const diff = Math.floor((Date.now() - lastOnlinePing) / 1000);
           if (diff > 0) {
             onlineTime += diff;
-            updateTaskProgress("onlineTime", diff);
             lastOnlinePing = Date.now();
           }
         }
