@@ -447,6 +447,26 @@
       </div>
     </div>
 
+    <!-- ===== ОРИГИНАЛЬНАЯ СТАТИСТИКА ===== -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Всего визитов</h3>
+        <div class="value" id="totalVisits">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Всего пользователей</h3>
+        <div class="value" id="totalUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Новых сегодня</h3>
+        <div class="value" id="newToday">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Активных за 24ч</h3>
+        <div class="value" id="active24h">0</div>
+      </div>
+    </div>
+
     <!-- ===== REAL-TIME МЕТРИКИ ===== -->
     <div class="section">
       <h2>🟢 Real-time метрики <span class="badge">обновление: 30с</span></h2>
@@ -504,6 +524,32 @@
       <div id="cohortContainer" style="overflow-x: auto;"></div>
     </div>
 
+    <!-- ===== ОРИГИНАЛЬНЫЕ ГРАФИКИ ===== -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>📈 Рост пользователей</h3>
+        <div class="chart-container">
+          <canvas id="userGrowthChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🕐 Активность по часам</h3>
+        <div class="chart-container">
+          <canvas id="activityChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🌍 Популярные страны</h3>
+        <div class="chart-container">
+          <canvas id="countriesChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>🔄 Воронка конверсии</h3>
+        <div id="funnelContainer"></div>
+      </div>
+    </div>
+
     <!-- ===== ИГРОВАЯ АКТИВНОСТЬ ===== -->
     <div class="charts-grid">
       <div class="chart-card">
@@ -542,17 +588,17 @@
           <div class="sub-value">среднее по страницам</div>
         </div>
         <div class="stat-card">
-          <h3>📱 Устройства</h3>
+          <h3>📱 Мобильные</h3>
           <div class="value" id="mobilePercent">0%</div>
           <div class="sub-value">мобильные устройства</div>
         </div>
         <div class="stat-card">
-          <h3>🌐 Браузеры</h3>
+          <h3>🌐 Топ браузер</h3>
           <div class="value warning" id="topBrowser">-</div>
           <div class="sub-value">самый популярный</div>
         </div>
         <div class="stat-card">
-          <h3>❌ Ошибки</h3>
+          <h3>❌ Ошибки сегодня</h3>
           <div class="value danger" id="errorCount">0</div>
           <div class="sub-value">всего за сегодня</div>
         </div>
@@ -608,7 +654,7 @@
       
       <div class="charts-grid" style="margin-top: 15px;">
         <div class="chart-card">
-          <h3>Карта активности</h3>
+          <h3>Карта активности (топ страны)</h3>
           <div class="chart-container">
             <canvas id="worldMapChart"></canvas>
           </div>
@@ -653,9 +699,9 @@
       </div>
     </div>
 
-    <!-- ===== ЭКОНОМИКА ===== -->
+    <!-- ===== ОРИГИНАЛЬНАЯ ЭКОНОМИКА ===== -->
     <div class="section">
-      <h2>💰 Экономика</h2>
+      <h2>🎮 Экономика</h2>
       <div class="stats-grid">
         <div class="stat-card">
           <h3>Всего токенов</h3>
@@ -670,8 +716,27 @@
           <div class="value" id="avgBalance">0</div>
         </div>
         <div class="stat-card">
-          <h3>Топ-5 игроков</h3>
+          <h3>Топ-10 игроков</h3>
           <div id="topPlayers" style="font-size: 12px; text-align: left; margin-top: 8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ОРИГИНАЛЬНЫЕ ИСТОЧНИКИ ТРАФИКА ===== -->
+    <div class="section">
+      <h2>📍 Источники трафика</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Из Telegram</h3>
+          <div class="value" id="telegramUsers">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Из браузера</h3>
+          <div class="value" id="browserUsers">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>По рефералам</h3>
+          <div class="value" id="referralUsers">0</div>
         </div>
       </div>
     </div>
@@ -750,7 +815,6 @@
       location.reload();
     }
     
-    // ==================== ПОКАЗ ДАШБОРДА ====================
     function showDashboard() {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
@@ -764,7 +828,7 @@
       loadAllData();
     }
     
-    // ==================== ЗАГРУЗКА ДАННЫХ ====================
+    // ==================== ЗАГРУЗКА ВСЕХ ДАННЫХ ====================
     async function loadAllData() {
       await Promise.all([
         loadVisits(),
@@ -787,818 +851,7 @@
       renderUsersTable();
     }
     
-    // ==================== REAL-TIME МЕТРИКИ ====================
-    async function loadRealTimeMetrics() {
-      const now = Date.now();
-      const fiveMinAgo = now - 300000;
-      
-      // Онлайн сейчас (активность за последние 5 минут)
-      const visitsSnap = await db.ref('analytics/visits').once('value');
-      const visits = visitsSnap.val() || {};
-      const recentVisits = Object.values(visits).filter(v => v.timestamp > fiveMinAgo);
-      
-      const uniqueUsers = new Set(recentVisits.map(v => v.userId || v.uid || 'anonymous'));
-      document.getElementById('onlineNow').textContent = uniqueUsers.size;
-      document.getElementById('active5min').textContent = recentVisits.length;
-      
-      // Текущие сессии (уникальные за последнюю минуту)
-      const oneMinAgo = now - 60000;
-      const activeSessions = Object.values(visits).filter(v => v.timestamp > oneMinAgo);
-      document.getElementById('currentSessions').textContent = activeSessions.length;
-      
-      // Пиковая нагрузка (максимум за сегодня)
-      const today = new Date().toDateString();
-      const todayVisits = Object.values(visits).filter(v => {
-        const d = new Date(v.timestamp).toDateString();
-        return d === today;
-      });
-      
-      // Группируем по часам
-      const hourly = {};
-      todayVisits.forEach(v => {
-        const hour = new Date(v.timestamp).getHours();
-        hourly[hour] = (hourly[hour] || 0) + 1;
-      });
-      
-      const peak = Math.max(...Object.values(hourly), 0);
-      document.getElementById('peakLoad').textContent = peak;
-    }
-    
-    // ==================== УДЕРЖАНИЕ ПОЛЬЗОВАТЕЛЕЙ ====================
-    async function loadRetention() {
-      const usersSnap = await db.ref('users').once('value');
-      const users = usersSnap.val() || {};
-      const userList = Object.values(users);
-      
-      const visitsSnap = await db.ref('analytics/visits').once('value');
-      const visits = visitsSnap.val() || {};
-      
-      // Рассчитываем retention
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      let day1Retention = 0;
-      let day3Retention = 0;
-      let day7Retention = 0;
-      let totalUsers = userList.length;
-      
-      // Когортный анализ
-      const cohorts = {};
-      
-      userList.forEach(user => {
-        if (!user.created_at) return;
-        const created = new Date(user.created_at);
-        created.setHours(0, 0, 0, 0);
-        
-        const cohortKey = created.toDateString();
-        if (!cohorts[cohortKey]) {
-          cohorts[cohortKey] = { users: [], returns: {} };
-        }
-        cohorts[cohortKey].users.push(user.uid || user.userId);
-      });
-      
-      // Для каждого пользователя проверяем возвраты
-      const allUserIds = userList.map(u => u.uid || u.userId).filter(Boolean);
-      
-      for (const userId of allUserIds) {
-        const userVisits = Object.values(visits).filter(v => 
-          (v.userId === userId || v.uid === userId)
-        );
-        
-        if (userVisits.length === 0) continue;
-        
-        const firstVisit = new Date(Math.min(...userVisits.map(v => v.timestamp)));
-        firstVisit.setHours(0, 0, 0, 0);
-        
-        const day1 = new Date(firstVisit);
-        day1.setDate(day1.getDate() + 1);
-        
-        const day3 = new Date(firstVisit);
-        day3.setDate(day3.getDate() + 3);
-        
-        const day7 = new Date(firstVisit);
-        day7.setDate(day7.getDate() + 7);
-        
-        const hasReturnDay1 = userVisits.some(v => {
-          const d = new Date(v.timestamp);
-          d.setHours(0, 0, 0, 0);
-          return d.getTime() === day1.getTime();
-        });
-        
-        const hasReturnDay3 = userVisits.some(v => {
-          const d = new Date(v.timestamp);
-          d.setHours(0, 0, 0, 0);
-          return d.getTime() === day3.getTime();
-        });
-        
-        const hasReturnDay7 = userVisits.some(v => {
-          const d = new Date(v.timestamp);
-          d.setHours(0, 0, 0, 0);
-          return d.getTime() === day7.getTime();
-        });
-        
-        if (hasReturnDay1) day1Retention++;
-        if (hasReturnDay3) day3Retention++;
-        if (hasReturnDay7) day7Retention++;
-      }
-      
-      const total = allUserIds.length || 1;
-      document.getElementById('retentionDay1').textContent = Math.round((day1Retention / total) * 100) + '%';
-      document.getElementById('retentionDay3').textContent = Math.round((day3Retention / total) * 100) + '%';
-      document.getElementById('retentionDay7').textContent = Math.round((day7Retention / total) * 100) + '%';
-      document.getElementById('churnRate').textContent = Math.round((1 - (day1Retention / total)) * 100) + '%';
-      
-      // Когортный анализ - отображаем таблицу
-      renderCohorts(cohorts, visits);
-    }
-    
-    function renderCohorts(cohorts, visits) {
-      const container = document.getElementById('cohortContainer');
-      const sortedCohorts = Object.keys(cohorts).sort();
-      
-      if (sortedCohorts.length === 0) {
-        container.innerHTML = '<p style="color: #888;">Нет данных для когортного анализа</p>';
-        return;
-      }
-      
-      let html = '<table style="width:100%; min-width:300px; font-size:12px;">';
-      html += '<tr><th style="background:#2a2a3a;color:#00c3ff;padding:8px;">Когорта</th>';
-      
-      for (let i = 0; i < 7; i++) {
-        html += `<th style="background:#2a2a3a;color:#00c3ff;padding:8px;">День ${i+1}</th>`;
-      }
-      html += '</tr>';
-      
-      const lastCohorts = sortedCohorts.slice(-5);
-      
-      lastCohorts.forEach(cohortKey => {
-        html += `<tr><td style="padding:8px;border-bottom:1px solid #2a2a3a;">${cohortKey}</td>`;
-        const cohortUsers = cohorts[cohortKey].users;
-        
-        for (let i = 0; i < 7; i++) {
-          const day = new Date(new Date(cohortKey).getTime() + i * 86400000);
-          day.setHours(0, 0, 0, 0);
-          
-          let returns = 0;
-          cohortUsers.forEach(userId => {
-            const userVisits = Object.values(visits).filter(v => 
-              (v.userId === userId || v.uid === userId)
-            );
-            
-            const hasReturn = userVisits.some(v => {
-              const d = new Date(v.timestamp);
-              d.setHours(0, 0, 0, 0);
-              return d.getTime() === day.getTime();
-            });
-            
-            if (hasReturn) returns++;
-          });
-          
-          const percent = cohortUsers.length > 0 ? Math.round((returns / cohortUsers.length) * 100) : 0;
-          const color = percent > 50 ? '#00ffa6' : percent > 25 ? '#ffd700' : '#ff4444';
-          html += `<td style="padding:8px;border-bottom:1px solid #2a2a3a;color:${color};text-align:center;">${percent}%</td>`;
-        }
-        html += '</tr>';
-      });
-      
-      html += '</table>';
-      container.innerHTML = html;
-    }
-    
-    // ==================== ИГРОВАЯ АКТИВНОСТЬ ====================
-    async function loadGameActivity() {
-      const visitsSnap = await db.ref('analytics/visits').once('value');
-      const visits = visitsSnap.val() || {};
-      const visitList = Object.values(visits);
-      
-      // Среднее время сессии
-      const sessions = {};
-      visitList.forEach(v => {
-        const key = v.sessionId || v.userId || 'unknown';
-        if (!sessions[key]) {
-          sessions[key] = { start: v.timestamp, end: v.timestamp, count: 0 };
-        }
-        sessions[key].end = Math.max(sessions[key].end, v.timestamp);
-        sessions[key].count++;
-      });
-      
-      let totalSessionTime = 0;
-      let sessionCount = 0;
-      
-      Object.values(sessions).forEach(s => {
-        if (s.end > s.start) {
-          totalSessionTime += (s.end - s.start);
-          sessionCount++;
-        }
-      });
-      
-      const avgSessionTime = sessionCount > 0 ? Math.round(totalSessionTime / sessionCount / 1000) : 0;
-      
-      // Клики в минуту (CPS)
-      const now = Date.now();
-      const lastHour = now - 3600000;
-      const recentVisits = visitList.filter(v => v.timestamp > lastHour);
-      const clicksPerMinute = recentVisits.length / 60;
-      
-      // Распределение по уровням
-      const playersSnap = await db.ref('player_data').once('value');
-      const players = playersSnap.val() || {};
-      const levels = {};
-      
-      Object.values(players).forEach(p => {
-        const level = p.level || 1;
-        levels[level] = (levels[level] || 0) + 1;
-      });
-      
-      // Активность по дням недели
-      const weekDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-      const weekActivity = new Array(7).fill(0);
-      
-      visitList.forEach(v => {
-        const day = new Date(v.timestamp).getDay();
-        weekActivity[day]++;
-      });
-      
-      // Графики
-      const sessionCtx = document.getElementById('sessionTimeChart').getContext('2d');
-      const cpsCtx = document.getElementById('cpsChart').getContext('2d');
-      const levelsCtx = document.getElementById('levelsChart').getContext('2d');
-      const weeklyCtx = document.getElementById('weeklyActivityChart').getContext('2d');
-      
-      // Уничтожаем старые графики
-      ['sessionTime', 'cps', 'levels', 'weeklyActivity'].forEach(key => {
-        if (charts[key]) charts[key].destroy();
-      });
-      
-      // Среднее время сессии (гистограмма)
-      const sessionData = [
-        { label: '< 1 мин', value: 0 },
-        { label: '1-5 мин', value: 0 },
-        { label: '5-15 мин', value: 0 },
-        { label: '15-30 мин', value: 0 },
-        { label: '> 30 мин', value: 0 }
-      ];
-      
-      Object.values(sessions).forEach(s => {
-        const duration = (s.end - s.start) / 1000;
-        if (duration < 60) sessionData[0].value++;
-        else if (duration < 300) sessionData[1].value++;
-        else if (duration < 900) sessionData[2].value++;
-        else if (duration < 1800) sessionData[3].value++;
-        else sessionData[4].value++;
-      });
-      
-      charts.sessionTime = new Chart(sessionCtx, {
-        type: 'bar',
-        data: {
-          labels: sessionData.map(d => d.label),
-          datasets: [{
-            label: 'Сессии',
-            data: sessionData.map(d => d.value),
-            backgroundColor: 'rgba(0, 195, 255, 0.6)',
-            borderColor: '#00c3ff',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
-      
-      // CPS
-      charts.cps = new Chart(cpsCtx, {
-        type: 'line',
-        data: {
-          labels: Array.from({length: 60}, (_, i) => `${i}м`),
-          datasets: [{
-            label: 'Клики в минуту',
-            data: Array.from({length: 60}, () => Math.random() * 10 + 2),
-            borderColor: '#00ffa6',
-            backgroundColor: 'rgba(0, 255, 166, 0.1)',
-            tension: 0.4,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-            x: { ticks: { color: '#e0e0e0', maxTicksLimit: 10 }, grid: { color: '#2a2a3a' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
-      
-      // Уровни
-      const sortedLevels = Object.keys(levels).sort((a, b) => Number(a) - Number(b)).slice(0, 20);
-      
-      charts.levels = new Chart(levelsCtx, {
-        type: 'bar',
-        data: {
-          labels: sortedLevels,
-          datasets: [{
-            label: 'Игроки',
-            data: sortedLevels.map(l => levels[l] || 0),
-            backgroundColor: 'rgba(255, 215, 0, 0.6)',
-            borderColor: '#ffd700',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
-      
-      // Недельная активность
-      charts.weeklyActivity = new Chart(weeklyCtx, {
-        type: 'bar',
-        data: {
-          labels: weekDays,
-          datasets: [{
-            label: 'Активность',
-            data: weekActivity,
-            backgroundColor: 'rgba(0, 255, 166, 0.6)',
-            borderColor: '#00ffa6',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
-    }
-    
-    // ==================== ТЕХНИЧЕСКИЕ МЕТРИКИ ====================
-    async function loadTechMetrics() {
-      // Время загрузки
-      const visitsSnap = await db.ref('analytics/visits').once('value');
-      const visits = visitsSnap.val() || {};
-      const visitList = Object.values(visits);
-      
-      let totalLoadTime = 0;
-      let loadCount = 0;
-      
-      visitList.forEach(v => {
-        if (v.loadTime) {
-          totalLoadTime += v.loadTime;
-          loadCount++;
-        }
-      });
-      
-      const avgLoadTime = loadCount > 0 ? Math.round(totalLoadTime / loadCount) : 0;
-      document.getElementById('loadTime').textContent = avgLoadTime + 'ms';
-      
-      // Ошибки по типам
-      const errorsSnap = await db.ref('analytics/errors').once('value');
-      const errors = errorsSnap.val() || {};
-      const errorTypes = {};
-      const errorList = Object.values(errors);
-      
-      errorList.forEach(e => {
-        const type = e.type || 'unknown';
-        errorTypes[type] = (errorTypes[type] || 0) + 1;
-      });
-      
-      const today = new Date().toDateString();
-      const todayErrors = errorList.filter(e => {
-        const d = new Date(e.timestamp).toDateString();
-        return d === today;
-      });
-      document.getElementById('errorCount').textContent = todayErrors.length;
-      
-      // Устройства
-      const devices = {};
-      visitList.forEach(v => {
-        const device = v.device || 'desktop';
-        devices[device] = (devices[device] || 0) + 1;
-      });
-      
-      const totalDevices = Object.values(devices).reduce((a, b) => a + b, 0);
-      const mobilePercent = totalDevices > 0 ? Math.round((devices.mobile || 0) / totalDevices * 100) : 0;
-      document.getElementById('mobilePercent').textContent = mobilePercent + '%';
-      
-      // Браузеры
-      const browsers = {};
-      visitList.forEach(v => {
-        if (v.browser) {
-          const browser = v.browser;
-          browsers[browser] = (browsers[browser] || 0) + 1;
-        }
-      });
-      
-      const sortedBrowsers = Object.entries(browsers).sort((a, b) => b[1] - a[1]);
-      if (sortedBrowsers.length > 0) {
-        document.getElementById('topBrowser').textContent = sortedBrowsers[0][0];
-      }
-      
-      // Графики
-      ['errors', 'devices', 'browsers'].forEach(key => {
-        if (charts[key]) charts[key].destroy();
-      });
-      
-      // Ошибки по типам
-      const errorCtx = document.getElementById('errorsChart').getContext('2d');
-      const errorLabels = Object.keys(errorTypes);
-      const errorData = Object.values(errorTypes);
-      
-      charts.errors = new Chart(errorCtx, {
-        type: 'doughnut',
-        data: {
-          labels: errorLabels.length > 0 ? errorLabels : ['Нет ошибок'],
-          datasets: [{
-            data: errorLabels.length > 0 ? errorData : [1],
-            backgroundColor: ['#ff4444', '#ffd700', '#00c3ff', '#ff8c00', '#b388ff']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: { color: '#e0e0e0', font: { size: 11 } }
-            }
-          }
-        }
-      });
-      
-      // Устройства
-      const deviceCtx = document.getElementById('devicesChart').getContext('2d');
-      const deviceLabels = Object.keys(devices);
-      const deviceData = Object.values(devices);
-      
-      charts.devices = new Chart(deviceCtx, {
-        type: 'pie',
-        data: {
-          labels: deviceLabels.length > 0 ? deviceLabels : ['Нет данных'],
-          datasets: [{
-            data: deviceLabels.length > 0 ? deviceData : [1],
-            backgroundColor: ['#00c3ff', '#00ffa6', '#ffd700', '#ff8c00']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: { color: '#e0e0e0', font: { size: 11 } }
-            }
-          }
-        }
-      });
-      
-      // Браузеры (топ-5)
-      const browserCtx = document.getElementById('browsersChart').getContext('2d');
-      const topBrowsers = sortedBrowsers.slice(0, 5);
-      const browserLabels = topBrowsers.map(b => b[0]);
-      const browserData = topBrowsers.map(b => b[1]);
-      
-      charts.browsers = new Chart(browserCtx, {
-        type: 'bar',
-        data: {
-          labels: browserLabels.length > 0 ? browserLabels : ['Нет данных'],
-          datasets: [{
-            label: 'Пользователи',
-            data: browserLabels.length > 0 ? browserData : [1],
-            backgroundColor: 'rgba(179, 136, 255, 0.6)',
-            borderColor: '#b388ff',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
-    }
-    
-    // ==================== ГЕОГРАФИЯ ====================
-    async function loadGeography() {
-      const countriesSnap = await db.ref('analytics/countries').once('value');
-      const countries = countriesSnap.val() || {};
-      const countryList = Object.values(countries);
-      
-      // Города
-      const cities = {};
-      countryList.forEach(c => {
-        if (c.city) {
-          cities[c.city] = (cities[c.city] || 0) + 1;
-        }
-      });
-      
-      const sortedCities = Object.entries(cities).sort((a, b) => b[1] - a[1]);
-      if (sortedCities.length > 0) {
-        document.getElementById('topCity').textContent = sortedCities[0][0];
-      }
-      
-      // Языки
-      const languages = {};
-      countryList.forEach(c => {
-        if (c.language) {
-          languages[c.language] = (languages[c.language] || 0) + 1;
-        }
-      });
-      
-      const sortedLanguages = Object.entries(languages).sort((a, b) => b[1] - a[1]);
-      if (sortedLanguages.length > 0) {
-        document.getElementById('topLanguage').textContent = sortedLanguages[0][0];
-      }
-      
-      // Часовые пояса
-      const timezones = {};
-      countryList.forEach(c => {
-        if (c.timezone) {
-          timezones[c.timezone] = (timezones[c.timezone] || 0) + 1;
-        }
-      });
-      
-      const sortedTimezones = Object.entries(timezones).sort((a, b) => b[1] - a[1]);
-      if (sortedTimezones.length > 0) {
-        document.getElementById('topTimezone').textContent = sortedTimezones[0][0];
-      }
-      
-      // Всего стран
-      const uniqueCountries = new Set(countryList.map(c => c.country).filter(Boolean));
-      document.getElementById('totalCountries').textContent = uniqueCountries.size;
-      
-      // Графики
-      ['worldMap', 'cities'].forEach(key => {
-        if (charts[key]) charts[key].destroy();
-      });
-      
-      // Карта мира (имитация - бабл-чарт)
-      const worldCtx = document.getElementById('worldMapChart').getContext('2d');
-      const countryCounts = {};
-      countryList.forEach(c => {
-        const country = c.country || 'Unknown';
-        countryCounts[country] = (countryCounts[country] || 0) + 1;
-      });
-      
-      const sortedCountries = Object.entries(countryCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 15);
-      
-      charts.worldMap = new Chart(worldCtx, {
-        type: 'bar',
-        data: {
-          labels: sortedCountries.map(c => c[0]),
-          datasets: [{
-            label: 'Посетители',
-            data: sortedCountries.map(c => c[1]),
-            backgroundColor: 'rgba(0, 195, 255, 0.6)',
-            borderColor: '#00c3ff',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-            y: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
-      
-      // Города (топ-10)
-      const citiesCtx = document.getElementById('citiesChart').getContext('2d');
-      const topCities = sortedCities.slice(0, 10);
-      
-      charts.cities = new Chart(citiesCtx, {
-        type: 'doughnut',
-        data: {
-          labels: topCities.map(c => c[0]),
-          datasets: [{
-            data: topCities.map(c => c[1]),
-            backgroundColor: [
-              '#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444',
-              '#b388ff', '#00bcd4', '#ff6b6b', '#4caf50', '#ff9800'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: { color: '#e0e0e0', font: { size: 11 } }
-            }
-          }
-        }
-      });
-    }
-    
-    // ==================== ИГРОВЫЕ МЕХАНИКИ ====================
-    async function loadGameMechanics() {
-      const playersSnap = await db.ref('player_data').once('value');
-      const players = playersSnap.val() || {};
-      const playerList = Object.values(players);
-      
-      // Бустеры
-      const boosters = {};
-      playerList.forEach(p => {
-        if (p.boosters) {
-          Object.entries(p.boosters).forEach(([name, count]) => {
-            boosters[name] = (boosters[name] || 0) + (count || 0);
-          });
-        }
-      });
-      
-      // Мини-игры
-      const minigames = {};
-      playerList.forEach(p => {
-        if (p.minigames) {
-          Object.entries(p.minigames).forEach(([name, score]) => {
-            minigames[name] = (minigames[name] || 0) + 1;
-          });
-        }
-      });
-      
-      // Время до первого апгрейда
-      const upgradeTimes = [];
-      playerList.forEach(p => {
-        if (p.firstUpgrade && p.created_at) {
-          const time = (p.firstUpgrade - p.created_at) / 1000;
-          upgradeTimes.push(time);
-        }
-      });
-      
-      // Автокликер
-      const autoclickerData = { used: 0, notUsed: 0 };
-      playerList.forEach(p => {
-        if (p.autoclicker && p.autoclicker > 0) {
-          autoclickerData.used++;
-        } else {
-          autoclickerData.notUsed++;
-        }
-      });
-      
-      // Графики
-      ['boosters', 'minigames', 'upgradeTime', 'autoclicker'].forEach(key => {
-        if (charts[key]) charts[key].destroy();
-      });
-      
-      // Бустеры
-      const boosterCtx = document.getElementById('boostersChart').getContext('2d');
-      const boosterLabels = Object.keys(boosters);
-      const boosterData = Object.values(boosters);
-      
-      charts.boosters = new Chart(boosterCtx, {
-        type: 'bar',
-        data: {
-          labels: boosterLabels.length > 0 ? boosterLabels : ['Нет данных'],
-          datasets: [{
-            label: 'Использований',
-            data: boosterLabels.length > 0 ? boosterData : [1],
-            backgroundColor: 'rgba(255, 215, 0, 0.6)',
-            borderColor: '#ffd700',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
-          },
-          plugins: { legend: { labels: { color: '#e0e0e0' } } }
-        }
-      });
-      
-      // Мини-игры
-      const minigameCtx = document.getElementById('minigamesChart').getContext('2d');
-      const minigameLabels = Object.keys(minigames);
-      const minigameData = Object.values(minigames);
-      
-      charts.minigames = new Chart(minigameCtx, {
-        type: 'doughnut',
-        data: {
-          labels: minigameLabels.length > 0 ? minigameLabels : ['Нет данных'],
-          datasets: [{
-            data: minigameLabels.length > 0 ? minigameData : [1],
-            backgroundColor: ['#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: { color: '#e0e0e0', font: { size: 11 } }
-            }
-          }
-        }
-      });
-      
-      // Время до апгрейда
-      const upgradeCtx = document.getElementById('upgradeTimeChart').getContext('2d');
-      
-      if (upgradeTimes.length > 0) {
-        const ranges = [
-          { label: '< 5 мин', count: 0 },
-          { label: '5-30 мин', count: 0 },
-          { label: '30-60 мин', count: 0 },
-          { label: '1-6 ч', count: 0 },
-          { label: '> 6 ч', count: 0 }
-        ];
-        
-        upgradeTimes.forEach(t => {
-          if (t < 300) ranges[0].count++;
-          else if (t < 1800) ranges[1].count++;
-          else if (t < 3600) ranges[2].count++;
-          else if (t < 21600) ranges[3].count++;
-          else ranges[4].count++;
-        });
-        
-        charts.upgradeTime = new Chart(upgradeCtx, {
-          type: 'bar',
-          data: {
-            labels: ranges.map(r => r.label),
-            datasets: [{
-              label: 'Игроки',
-              data: ranges.map(r => r.count),
-              backgroundColor: 'rgba(179, 136, 255, 0.6)',
-              borderColor: '#b388ff',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
-              x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
-            },
-            plugins: { legend: { labels: { color: '#e0e0e0' } } }
-          }
-        });
-      } else {
-        charts.upgradeTime = new Chart(upgradeCtx, {
-          type: 'bar',
-          data: {
-            labels: ['Нет данных'],
-            datasets: [{ label: 'Игроки', data: [1], backgroundColor: '#2a2a3a' }]
-          },
-          options: { responsive: true, maintainAspectRatio: false }
-        });
-      }
-      
-      // Автокликер
-      const autoclickerCtx = document.getElementById('autoclickerChart').getContext('2d');
-      
-      charts.autoclicker = new Chart(autoclickerCtx, {
-        type: 'pie',
-        data: {
-          labels: ['Используют', 'Не используют'],
-          datasets: [{
-            data: [autoclickerData.used || 1, autoclickerData.notUsed || 1],
-            backgroundColor: ['#00ffa6', '#ff4444']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: { color: '#e0e0e0', font: { size: 11 } }
-            }
-          }
-        }
-      });
-    }
-    
-    // ==================== ОСТАЛЬНЫЕ МЕТРИКИ (из оригинального кода) ====================
+    // ==================== ОРИГИНАЛЬНЫЕ ФУНКЦИИ ====================
     async function loadVisits() {
       const snapshot = await db.ref('analytics/visits').once('value');
       const visits = snapshot.val() || {};
@@ -1609,6 +862,14 @@
       const last24h = Date.now() - 86400000;
       const activeVisits = visitList.filter(v => v.timestamp > last24h);
       document.getElementById('active24h').textContent = activeVisits.length;
+      
+      const telegramCount = visitList.filter(v => v.isTelegram).length;
+      const browserCount = visitList.filter(v => !v.isTelegram).length;
+      const referralCount = visitList.filter(v => v.referrer && v.referrer !== 'direct').length;
+      
+      document.getElementById('telegramUsers').textContent = telegramCount;
+      document.getElementById('browserUsers').textContent = browserCount;
+      document.getElementById('referralUsers').textContent = referralCount;
     }
     
     async function loadUsers() {
@@ -1650,15 +911,45 @@
         const country = c.country || 'Unknown';
         countryCount[country] = (countryCount[country] || 0) + 1;
       });
+      
+      const sorted = Object.entries(countryCount).sort((a, b) => b[1] - a[1]);
+      const top10 = sorted.slice(0, 10);
+      
+      const ctx = document.getElementById('countriesChart').getContext('2d');
+      
+      if (charts.countries) charts.countries.destroy();
+      
+      charts.countries = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: top10.map(c => c[0]),
+          datasets: [{
+            data: top10.map(c => c[1]),
+            backgroundColor: [
+              '#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444',
+              '#b388ff', '#00bcd4', '#ff6b6b', '#4caf50', '#ff9800'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 12 } }
+            }
+          }
+        }
+      });
     }
     
     async function loadErrors() {
       const snapshot = await db.ref('analytics/errors').once('value');
       const errors = snapshot.val() || {};
-      // Данные используются в loadTechMetrics
+      console.log('Total errors:', Object.keys(errors).length);
     }
     
-    // ==================== ГРАФИКИ (из оригинального кода) ====================
     async function loadUserGrowth() {
       const snapshot = await db.ref('users').once('value');
       const users = snapshot.val() || {};
@@ -1793,13 +1084,762 @@
       const avgBalance = playerList.length > 0 ? Math.round(totalTokens / playerList.length) : 0;
       document.getElementById('avgBalance').textContent = avgBalance.toLocaleString();
       
-      const top10 = playerList.sort((a, b) => b.tokens - a.tokens).slice(0, 5);
+      const top10 = playerList.sort((a, b) => b.tokens - a.tokens).slice(0, 10);
       const topPlayersContainer = document.getElementById('topPlayers');
       topPlayersContainer.innerHTML = top10.map((p, i) => {
         const user = allUsers.find(u => u.uid === p.uid);
         const name = user?.display_name || 'Unknown';
-        return `<div style="padding: 3px 0;">${i+1}. ${escapeHtml(name)}: ${p.tokens.toLocaleString()}</div>`;
+        return `<div style="padding: 3px 0;">${i+1}. ${escapeHtml(name)}: ${p.tokens.toLocaleString()} tokens</div>`;
       }).join('');
+    }
+    
+    // ==================== НОВЫЕ ФУНКЦИИ ====================
+    
+    // REAL-TIME МЕТРИКИ
+    async function loadRealTimeMetrics() {
+      const now = Date.now();
+      const fiveMinAgo = now - 300000;
+      
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      const visitList = Object.values(visits);
+      
+      const recentVisits = visitList.filter(v => v.timestamp > fiveMinAgo);
+      const uniqueUsers = new Set(recentVisits.map(v => v.userId || v.uid || 'anonymous'));
+      document.getElementById('onlineNow').textContent = uniqueUsers.size;
+      document.getElementById('active5min').textContent = recentVisits.length;
+      
+      const oneMinAgo = now - 60000;
+      const activeSessions = visitList.filter(v => v.timestamp > oneMinAgo);
+      document.getElementById('currentSessions').textContent = activeSessions.length;
+      
+      const today = new Date().toDateString();
+      const todayVisits = visitList.filter(v => {
+        const d = new Date(v.timestamp).toDateString();
+        return d === today;
+      });
+      
+      const hourly = {};
+      todayVisits.forEach(v => {
+        const hour = new Date(v.timestamp).getHours();
+        hourly[hour] = (hourly[hour] || 0) + 1;
+      });
+      
+      const peak = Math.max(...Object.values(hourly), 0);
+      document.getElementById('peakLoad').textContent = peak;
+    }
+    
+    // УДЕРЖАНИЕ ПОЛЬЗОВАТЕЛЕЙ
+    async function loadRetention() {
+      const usersSnap = await db.ref('users').once('value');
+      const users = usersSnap.val() || {};
+      const userList = Object.values(users);
+      
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      
+      const allUserIds = userList.map(u => u.uid || u.userId).filter(Boolean);
+      
+      let day1Retention = 0;
+      let day3Retention = 0;
+      let day7Retention = 0;
+      
+      for (const userId of allUserIds) {
+        const userVisits = Object.values(visits).filter(v => 
+          (v.userId === userId || v.uid === userId)
+        );
+        
+        if (userVisits.length === 0) continue;
+        
+        const firstVisit = new Date(Math.min(...userVisits.map(v => v.timestamp)));
+        firstVisit.setHours(0, 0, 0, 0);
+        
+        const day1 = new Date(firstVisit);
+        day1.setDate(day1.getDate() + 1);
+        
+        const day3 = new Date(firstVisit);
+        day3.setDate(day3.getDate() + 3);
+        
+        const day7 = new Date(firstVisit);
+        day7.setDate(day7.getDate() + 7);
+        
+        const hasReturnDay1 = userVisits.some(v => {
+          const d = new Date(v.timestamp);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === day1.getTime();
+        });
+        
+        const hasReturnDay3 = userVisits.some(v => {
+          const d = new Date(v.timestamp);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === day3.getTime();
+        });
+        
+        const hasReturnDay7 = userVisits.some(v => {
+          const d = new Date(v.timestamp);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === day7.getTime();
+        });
+        
+        if (hasReturnDay1) day1Retention++;
+        if (hasReturnDay3) day3Retention++;
+        if (hasReturnDay7) day7Retention++;
+      }
+      
+      const total = allUserIds.length || 1;
+      document.getElementById('retentionDay1').textContent = Math.round((day1Retention / total) * 100) + '%';
+      document.getElementById('retentionDay3').textContent = Math.round((day3Retention / total) * 100) + '%';
+      document.getElementById('retentionDay7').textContent = Math.round((day7Retention / total) * 100) + '%';
+      document.getElementById('churnRate').textContent = Math.round((1 - (day1Retention / total)) * 100) + '%';
+      
+      // Когортный анализ
+      renderCohorts(userList, visits);
+    }
+    
+    function renderCohorts(userList, visits) {
+      const container = document.getElementById('cohortContainer');
+      
+      const cohorts = {};
+      userList.forEach(user => {
+        if (!user.created_at) return;
+        const created = new Date(user.created_at);
+        created.setHours(0, 0, 0, 0);
+        const cohortKey = created.toDateString();
+        if (!cohorts[cohortKey]) {
+          cohorts[cohortKey] = { users: [] };
+        }
+        cohorts[cohortKey].users.push(user.uid || user.userId);
+      });
+      
+      const sortedCohorts = Object.keys(cohorts).sort();
+      
+      if (sortedCohorts.length === 0) {
+        container.innerHTML = '<p style="color: #888;">Нет данных для когортного анализа</p>';
+        return;
+      }
+      
+      let html = '<table style="width:100%; min-width:300px; font-size:12px;">';
+      html += '<tr><th style="background:#2a2a3a;color:#00c3ff;padding:8px;">Когорта</th>';
+      for (let i = 0; i < 7; i++) {
+        html += `<th style="background:#2a2a3a;color:#00c3ff;padding:8px;">День ${i+1}</th>`;
+      }
+      html += '</tr>';
+      
+      const lastCohorts = sortedCohorts.slice(-5);
+      
+      lastCohorts.forEach(cohortKey => {
+        html += `<tr><td style="padding:8px;border-bottom:1px solid #2a2a3a;">${cohortKey}</td>`;
+        const cohortUsers = cohorts[cohortKey].users;
+        
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(new Date(cohortKey).getTime() + i * 86400000);
+          day.setHours(0, 0, 0, 0);
+          
+          let returns = 0;
+          cohortUsers.forEach(userId => {
+            const userVisits = Object.values(visits).filter(v => 
+              (v.userId === userId || v.uid === userId)
+            );
+            const hasReturn = userVisits.some(v => {
+              const d = new Date(v.timestamp);
+              d.setHours(0, 0, 0, 0);
+              return d.getTime() === day.getTime();
+            });
+            if (hasReturn) returns++;
+          });
+          
+          const percent = cohortUsers.length > 0 ? Math.round((returns / cohortUsers.length) * 100) : 0;
+          const color = percent > 50 ? '#00ffa6' : percent > 25 ? '#ffd700' : '#ff4444';
+          html += `<td style="padding:8px;border-bottom:1px solid #2a2a3a;color:${color};text-align:center;">${percent}%</td>`;
+        }
+        html += '</tr>';
+      });
+      
+      html += '</table>';
+      container.innerHTML = html;
+    }
+    
+    // ИГРОВАЯ АКТИВНОСТЬ
+    async function loadGameActivity() {
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      const visitList = Object.values(visits);
+      
+      const sessions = {};
+      visitList.forEach(v => {
+        const key = v.sessionId || v.userId || 'unknown';
+        if (!sessions[key]) {
+          sessions[key] = { start: v.timestamp, end: v.timestamp, count: 0 };
+        }
+        sessions[key].end = Math.max(sessions[key].end, v.timestamp);
+        sessions[key].count++;
+      });
+      
+      const playersSnap = await db.ref('player_data').once('value');
+      const players = playersSnap.val() || {};
+      const levels = {};
+      
+      Object.values(players).forEach(p => {
+        const level = p.level || 1;
+        levels[level] = (levels[level] || 0) + 1;
+      });
+      
+      const weekDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      const weekActivity = new Array(7).fill(0);
+      
+      visitList.forEach(v => {
+        const day = new Date(v.timestamp).getDay();
+        weekActivity[day]++;
+      });
+      
+      // Графики
+      const sessionCtx = document.getElementById('sessionTimeChart').getContext('2d');
+      const cpsCtx = document.getElementById('cpsChart').getContext('2d');
+      const levelsCtx = document.getElementById('levelsChart').getContext('2d');
+      const weeklyCtx = document.getElementById('weeklyActivityChart').getContext('2d');
+      
+      ['sessionTime', 'cps', 'levels', 'weeklyActivity'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      const sessionData = [
+        { label: '< 1 мин', value: 0 },
+        { label: '1-5 мин', value: 0 },
+        { label: '5-15 мин', value: 0 },
+        { label: '15-30 мин', value: 0 },
+        { label: '> 30 мин', value: 0 }
+      ];
+      
+      Object.values(sessions).forEach(s => {
+        const duration = (s.end - s.start) / 1000;
+        if (duration < 60) sessionData[0].value++;
+        else if (duration < 300) sessionData[1].value++;
+        else if (duration < 900) sessionData[2].value++;
+        else if (duration < 1800) sessionData[3].value++;
+        else sessionData[4].value++;
+      });
+      
+      charts.sessionTime = new Chart(sessionCtx, {
+        type: 'bar',
+        data: {
+          labels: sessionData.map(d => d.label),
+          datasets: [{
+            label: 'Сессии',
+            data: sessionData.map(d => d.value),
+            backgroundColor: 'rgba(0, 195, 255, 0.6)',
+            borderColor: '#00c3ff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      charts.cps = new Chart(cpsCtx, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: 60}, (_, i) => `${i}м`),
+          datasets: [{
+            label: 'Клики в минуту',
+            data: Array.from({length: 60}, () => Math.random() * 10 + 2),
+            borderColor: '#00ffa6',
+            backgroundColor: 'rgba(0, 255, 166, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0', maxTicksLimit: 10 }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      const sortedLevels = Object.keys(levels).sort((a, b) => Number(a) - Number(b)).slice(0, 20);
+      
+      charts.levels = new Chart(levelsCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedLevels,
+          datasets: [{
+            label: 'Игроки',
+            data: sortedLevels.map(l => levels[l] || 0),
+            backgroundColor: 'rgba(255, 215, 0, 0.6)',
+            borderColor: '#ffd700',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      charts.weeklyActivity = new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+          labels: weekDays,
+          datasets: [{
+            label: 'Активность',
+            data: weekActivity,
+            backgroundColor: 'rgba(0, 255, 166, 0.6)',
+            borderColor: '#00ffa6',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+    }
+    
+    // ТЕХНИЧЕСКИЕ МЕТРИКИ
+    async function loadTechMetrics() {
+      const visitsSnap = await db.ref('analytics/visits').once('value');
+      const visits = visitsSnap.val() || {};
+      const visitList = Object.values(visits);
+      
+      let totalLoadTime = 0;
+      let loadCount = 0;
+      
+      visitList.forEach(v => {
+        if (v.loadTime) {
+          totalLoadTime += v.loadTime;
+          loadCount++;
+        }
+      });
+      
+      const avgLoadTime = loadCount > 0 ? Math.round(totalLoadTime / loadCount) : 0;
+      document.getElementById('loadTime').textContent = avgLoadTime + 'ms';
+      
+      const errorsSnap = await db.ref('analytics/errors').once('value');
+      const errors = errorsSnap.val() || {};
+      const errorTypes = {};
+      const errorList = Object.values(errors);
+      
+      errorList.forEach(e => {
+        const type = e.type || 'unknown';
+        errorTypes[type] = (errorTypes[type] || 0) + 1;
+      });
+      
+      const today = new Date().toDateString();
+      const todayErrors = errorList.filter(e => {
+        const d = new Date(e.timestamp).toDateString();
+        return d === today;
+      });
+      document.getElementById('errorCount').textContent = todayErrors.length;
+      
+      const devices = {};
+      visitList.forEach(v => {
+        const device = v.device || 'desktop';
+        devices[device] = (devices[device] || 0) + 1;
+      });
+      
+      const totalDevices = Object.values(devices).reduce((a, b) => a + b, 0);
+      const mobilePercent = totalDevices > 0 ? Math.round((devices.mobile || 0) / totalDevices * 100) : 0;
+      document.getElementById('mobilePercent').textContent = mobilePercent + '%';
+      
+      const browsers = {};
+      visitList.forEach(v => {
+        if (v.browser) {
+          const browser = v.browser;
+          browsers[browser] = (browsers[browser] || 0) + 1;
+        }
+      });
+      
+      const sortedBrowsers = Object.entries(browsers).sort((a, b) => b[1] - a[1]);
+      if (sortedBrowsers.length > 0) {
+        document.getElementById('topBrowser').textContent = sortedBrowsers[0][0];
+      }
+      
+      ['errors', 'devices', 'browsers'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      const errorCtx = document.getElementById('errorsChart').getContext('2d');
+      const errorLabels = Object.keys(errorTypes);
+      const errorData = Object.values(errorTypes);
+      
+      charts.errors = new Chart(errorCtx, {
+        type: 'doughnut',
+        data: {
+          labels: errorLabels.length > 0 ? errorLabels : ['Нет ошибок'],
+          datasets: [{
+            data: errorLabels.length > 0 ? errorData : [1],
+            backgroundColor: ['#ff4444', '#ffd700', '#00c3ff', '#ff8c00', '#b388ff']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+      
+      const deviceCtx = document.getElementById('devicesChart').getContext('2d');
+      const deviceLabels = Object.keys(devices);
+      const deviceData = Object.values(devices);
+      
+      charts.devices = new Chart(deviceCtx, {
+        type: 'pie',
+        data: {
+          labels: deviceLabels.length > 0 ? deviceLabels : ['Нет данных'],
+          datasets: [{
+            data: deviceLabels.length > 0 ? deviceData : [1],
+            backgroundColor: ['#00c3ff', '#00ffa6', '#ffd700', '#ff8c00']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+      
+      const browserCtx = document.getElementById('browsersChart').getContext('2d');
+      const topBrowsers = sortedBrowsers.slice(0, 5);
+      const browserLabels = topBrowsers.map(b => b[0]);
+      const browserData = topBrowsers.map(b => b[1]);
+      
+      charts.browsers = new Chart(browserCtx, {
+        type: 'bar',
+        data: {
+          labels: browserLabels.length > 0 ? browserLabels : ['Нет данных'],
+          datasets: [{
+            label: 'Пользователи',
+            data: browserLabels.length > 0 ? browserData : [1],
+            backgroundColor: 'rgba(179, 136, 255, 0.6)',
+            borderColor: '#b388ff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+    }
+    
+    // ГЕОГРАФИЯ
+    async function loadGeography() {
+      const countriesSnap = await db.ref('analytics/countries').once('value');
+      const countries = countriesSnap.val() || {};
+      const countryList = Object.values(countries);
+      
+      const cities = {};
+      countryList.forEach(c => {
+        if (c.city) {
+          cities[c.city] = (cities[c.city] || 0) + 1;
+        }
+      });
+      
+      const sortedCities = Object.entries(cities).sort((a, b) => b[1] - a[1]);
+      if (sortedCities.length > 0) {
+        document.getElementById('topCity').textContent = sortedCities[0][0];
+      }
+      
+      const languages = {};
+      countryList.forEach(c => {
+        if (c.language) {
+          languages[c.language] = (languages[c.language] || 0) + 1;
+        }
+      });
+      
+      const sortedLanguages = Object.entries(languages).sort((a, b) => b[1] - a[1]);
+      if (sortedLanguages.length > 0) {
+        document.getElementById('topLanguage').textContent = sortedLanguages[0][0];
+      }
+      
+      const timezones = {};
+      countryList.forEach(c => {
+        if (c.timezone) {
+          timezones[c.timezone] = (timezones[c.timezone] || 0) + 1;
+        }
+      });
+      
+      const sortedTimezones = Object.entries(timezones).sort((a, b) => b[1] - a[1]);
+      if (sortedTimezones.length > 0) {
+        document.getElementById('topTimezone').textContent = sortedTimezones[0][0];
+      }
+      
+      const uniqueCountries = new Set(countryList.map(c => c.country).filter(Boolean));
+      document.getElementById('totalCountries').textContent = uniqueCountries.size;
+      
+      ['worldMap', 'cities'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      const worldCtx = document.getElementById('worldMapChart').getContext('2d');
+      const countryCounts = {};
+      countryList.forEach(c => {
+        const country = c.country || 'Unknown';
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
+      });
+      
+      const sortedCountries = Object.entries(countryCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
+      
+      charts.worldMap = new Chart(worldCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedCountries.map(c => c[0]),
+          datasets: [{
+            label: 'Посетители',
+            data: sortedCountries.map(c => c[1]),
+            backgroundColor: 'rgba(0, 195, 255, 0.6)',
+            borderColor: '#00c3ff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            y: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      const citiesCtx = document.getElementById('citiesChart').getContext('2d');
+      const topCities = sortedCities.slice(0, 10);
+      
+      charts.cities = new Chart(citiesCtx, {
+        type: 'doughnut',
+        data: {
+          labels: topCities.map(c => c[0]),
+          datasets: [{
+            data: topCities.map(c => c[1]),
+            backgroundColor: [
+              '#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444',
+              '#b388ff', '#00bcd4', '#ff6b6b', '#4caf50', '#ff9800'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+    
+    // ИГРОВЫЕ МЕХАНИКИ
+    async function loadGameMechanics() {
+      const playersSnap = await db.ref('player_data').once('value');
+      const players = playersSnap.val() || {};
+      const playerList = Object.values(players);
+      
+      const boosters = {};
+      playerList.forEach(p => {
+        if (p.boosters) {
+          Object.entries(p.boosters).forEach(([name, count]) => {
+            boosters[name] = (boosters[name] || 0) + (count || 0);
+          });
+        }
+      });
+      
+      const minigames = {};
+      playerList.forEach(p => {
+        if (p.minigames) {
+          Object.entries(p.minigames).forEach(([name, score]) => {
+            minigames[name] = (minigames[name] || 0) + 1;
+          });
+        }
+      });
+      
+      const upgradeTimes = [];
+      playerList.forEach(p => {
+        if (p.firstUpgrade && p.created_at) {
+          const time = (p.firstUpgrade - p.created_at) / 1000;
+          upgradeTimes.push(time);
+        }
+      });
+      
+      const autoclickerData = { used: 0, notUsed: 0 };
+      playerList.forEach(p => {
+        if (p.autoclicker && p.autoclicker > 0) {
+          autoclickerData.used++;
+        } else {
+          autoclickerData.notUsed++;
+        }
+      });
+      
+      ['boosters', 'minigames', 'upgradeTime', 'autoclicker'].forEach(key => {
+        if (charts[key]) charts[key].destroy();
+      });
+      
+      const boosterCtx = document.getElementById('boostersChart').getContext('2d');
+      const boosterLabels = Object.keys(boosters);
+      const boosterData = Object.values(boosters);
+      
+      charts.boosters = new Chart(boosterCtx, {
+        type: 'bar',
+        data: {
+          labels: boosterLabels.length > 0 ? boosterLabels : ['Нет данных'],
+          datasets: [{
+            label: 'Использований',
+            data: boosterLabels.length > 0 ? boosterData : [1],
+            backgroundColor: 'rgba(255, 215, 0, 0.6)',
+            borderColor: '#ffd700',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+          },
+          plugins: { legend: { labels: { color: '#e0e0e0' } } }
+        }
+      });
+      
+      const minigameCtx = document.getElementById('minigamesChart').getContext('2d');
+      const minigameLabels = Object.keys(minigames);
+      const minigameData = Object.values(minigames);
+      
+      charts.minigames = new Chart(minigameCtx, {
+        type: 'doughnut',
+        data: {
+          labels: minigameLabels.length > 0 ? minigameLabels : ['Нет данных'],
+          datasets: [{
+            data: minigameLabels.length > 0 ? minigameData : [1],
+            backgroundColor: ['#00ffa6', '#00c3ff', '#ffd700', '#ff8c00', '#ff4444']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
+      
+      const upgradeCtx = document.getElementById('upgradeTimeChart').getContext('2d');
+      
+      if (upgradeTimes.length > 0) {
+        const ranges = [
+          { label: '< 5 мин', count: 0 },
+          { label: '5-30 мин', count: 0 },
+          { label: '30-60 мин', count: 0 },
+          { label: '1-6 ч', count: 0 },
+          { label: '> 6 ч', count: 0 }
+        ];
+        
+        upgradeTimes.forEach(t => {
+          if (t < 300) ranges[0].count++;
+          else if (t < 1800) ranges[1].count++;
+          else if (t < 3600) ranges[2].count++;
+          else if (t < 21600) ranges[3].count++;
+          else ranges[4].count++;
+        });
+        
+        charts.upgradeTime = new Chart(upgradeCtx, {
+          type: 'bar',
+          data: {
+            labels: ranges.map(r => r.label),
+            datasets: [{
+              label: 'Игроки',
+              data: ranges.map(r => r.count),
+              backgroundColor: 'rgba(179, 136, 255, 0.6)',
+              borderColor: '#b388ff',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } },
+              x: { ticks: { color: '#e0e0e0' }, grid: { color: '#2a2a3a' } }
+            },
+            plugins: { legend: { labels: { color: '#e0e0e0' } } }
+          }
+        });
+      } else {
+        charts.upgradeTime = new Chart(upgradeCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Нет данных'],
+            datasets: [{ label: 'Игроки', data: [1], backgroundColor: '#2a2a3a' }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+      
+      const autoclickerCtx = document.getElementById('autoclickerChart').getContext('2d');
+      
+      charts.autoclicker = new Chart(autoclickerCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Используют', 'Не используют'],
+          datasets: [{
+            data: [autoclickerData.used || 1, autoclickerData.notUsed || 1],
+            backgroundColor: ['#00ffa6', '#ff4444']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e0e0e0', font: { size: 11 } }
+            }
+          }
+        }
+      });
     }
     
     // ==================== ПОЛЬЗОВАТЕЛИ ====================
