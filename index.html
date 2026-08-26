@@ -154,6 +154,70 @@
       z-index: 99998;
     }
 
+    /* Task category styles */
+    .task-category { 
+      margin-bottom: 15px; 
+      border: 1px solid #333; 
+      border-radius: 10px; 
+      padding: 10px; 
+      background: #15151a;
+    }
+    .task-category h4 { 
+      color: #00c3ff; 
+      margin-bottom: 10px; 
+      font-size: 14px; 
+      text-align: left;
+      border-bottom: 1px solid #222;
+      padding-bottom: 8px;
+    }
+    .task-category h4 .badge { 
+      font-size: 11px; 
+      background: #00c3ff; 
+      color: #000; 
+      padding: 2px 8px; 
+      border-radius: 10px; 
+      margin-left: 8px;
+    }
+    .task-category.special h4 { color: #ffd700; }
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 5px;
+      border-bottom: 1px solid #1a1a2a;
+      font-size: 13px;
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-item .task-info { flex: 1; min-width: 120px; text-align: left; }
+    .task-item .task-info .task-name { color: #fff; font-weight: 500; }
+    .task-item .task-info .task-progress { color: #888; font-size: 12px; }
+    .task-item .task-info .task-reward { color: #ffd700; font-size: 12px; }
+    .task-item .task-btn { 
+      padding: 5px 12px; 
+      border-radius: 6px; 
+      border: none; 
+      font-size: 12px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .task-item .task-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+    .task-item .task-btn.claim { background: linear-gradient(135deg, #00ffa6, #00c3ff); color: #000; }
+    .task-item .task-btn.claim:hover:not(:disabled) { transform: scale(1.05); }
+    .task-item .task-btn.done { background: #1a2a1a; color: #00ffa6; border: 1px solid #00ffa6; }
+    .task-item .task-btn.twitter-btn { background: #1da1f2; color: #fff; }
+    .task-item .task-btn.twitter-btn:hover:not(:disabled) { background: #1a8cd8; }
+    
+    .task-category .task-completed-text { 
+      color: #00ffa6; 
+      font-size: 13px; 
+      padding: 5px 0; 
+      text-align: center;
+    }
+
     @media (max-width: 1023px) {
       body { padding: 10px; } h1 { font-size: 1.6em; margin: 10px 0; }
       .game-header { flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
@@ -174,6 +238,8 @@
       .farm-grid { grid-template-columns: repeat(2, 1fr); }
       #aadsAdContainer { padding: 5px; min-height: 50px; }
       #aadsAdContainer iframe { min-height: 50px; width: 85%; }
+      .task-item { font-size: 12px; padding: 6px 3px; }
+      .task-item .task-btn { font-size: 11px; padding: 4px 10px; }
     }
     @media (max-width: 480px) { h1 { font-size: 1.4em; } .main-click-button { width: 90px; height: 90px; } .main-click-button .icon { font-size: 35px; } #mainButtonContainer { width: 220px; height: 220px; } #counter { font-size: 22px; } .score-popup { font-size: 14px; } }
     @media (min-width: 1024px) {
@@ -488,7 +554,7 @@
         </div>
       </div>
       <div id="achievements" class="panel"><h2>🏆 Achievements</h2><div id="achievementsList"></div></div>
-      <div id="tasks" class="panel"><h2>📋 Daily Tasks</h2><div id="tasksList"></div></div>
+      <div id="tasks" class="panel"><h2>📋 Tasks</h2><div id="tasksList"></div></div>
       <div id="mining" class="panel">
         <h2>⛏️ Mining Farm</h2>
         <div class="energy-panel-farm">
@@ -766,7 +832,7 @@
         adHourlyReward: '✅ Часовой бонус удвоен!',
         adNotAvailable: 'Реклама пока недоступна. Попробуйте позже.',
         adLoading: 'Загрузка...',
-        adBtnWatch: '▶️ Watch',
+        adBtnWatch: '▶️ Смотреть',
         adBtnWait: '⏳ Жди',
         adBtnLimit: '🚫 Лимит',
         adTaskProgress: 'Прогресс рекламы',
@@ -818,7 +884,53 @@
         dailyLoginClaimed: '✅ Получено',
         dailyLoginAlreadyClaimed: 'Уже получено сегодня!',
         dailyLoginNextDay: 'Приходите завтра!',
-        // Достижения RU
+        // Task names RU
+        task_watchRewardedAd: '📺 Просмотр рекламы',
+        task_watchAdsForCrystal: '📺 5 реклам за кристалл',
+        task_subscribeTwitter: '🐦 Подписка на X',
+        task_morningWorkout: '🏋️ Утренняя зарядка',
+        task_eveningMining: '🌙 Вечерний майнинг',
+        task_crystalDay: '💎 Кристальный день',
+        task_activeUser: '💪 Активный пользователь',
+        task_socialDay: '📱 Социальный день',
+        task_tokenCollector: '💰 Коллекционер токенов',
+        task_masterUpgrades: '🔧 Мастер апгрейдов',
+        task_luckyDay: '🍀 Счастливый день',
+        task_weeklyMarathon: '🏃 Недельный марафон',
+        task_weeklyMiner: '⛏️ Недельный майнер',
+        task_weeklyCrystal: '💎 Кристальная неделя',
+        task_weeklyAds: '📺 Неделя рекламы',
+        task_firstPurchase: '🛒 Первая покупка',
+        task_firstMiner: '⛏️ Первый майнер',
+        task_firstMerge: '🔗 Первое слияние',
+        task_firstRepair: '🔧 Первый ремонт',
+        task_firstMillion: '💵 Первый миллион',
+        // Task descriptions RU
+        task_desc_morningWorkout: 'Сделай 50 кликов до 12:00',
+        task_desc_eveningMining: 'Собери майнинг награду после 18:00',
+        task_desc_crystalDay: 'Заработай 5 кристаллов за день',
+        task_desc_activeUser: 'Проведи 1 час в игре',
+        task_desc_socialDay: 'Поделись ссылкой в соцсетях',
+        task_desc_tokenCollector: 'Собери 10,000 токенов за день',
+        task_desc_masterUpgrades: 'Купи 3 улучшения',
+        task_desc_luckyDay: 'Получи 3 критических удара',
+        task_desc_weeklyMarathon: 'Сделай 10,000 кликов за неделю',
+        task_desc_weeklyMiner: 'Заработай 100,000 токенов с майнинга',
+        task_desc_weeklyCrystal: 'Заработай 50 кристаллов за неделю',
+        task_desc_weeklyAds: 'Посмотри 20 реклам за неделю',
+        task_desc_firstPurchase: 'Купи первое улучшение',
+        task_desc_firstMiner: 'Купи первого майнера',
+        task_desc_firstMerge: 'Объедини майнеров',
+        task_desc_firstRepair: 'Почини майнер',
+        task_desc_firstMillion: 'Заработай первый миллион токенов',
+        task_daily: 'Ежедневные',
+        task_weekly: 'Еженедельные',
+        task_special: 'Специальные (разовые)',
+        task_claim: 'Забрать',
+        task_done: '✅ Выполнено',
+        task_in_progress: 'В процессе',
+        task_go_to_x: 'Перейти в X',
+        // Achievements RU
         ach_first_click: 'Первый шаг',
         ach_first_click_desc: 'Сделай первый клик',
         ach_thousander: 'Тысячник',
@@ -991,6 +1103,52 @@
         dailyLoginClaimed: '✅ Claimed',
         dailyLoginAlreadyClaimed: 'Already claimed today!',
         dailyLoginNextDay: 'Come back tomorrow!',
+        // Task names EN
+        task_watchRewardedAd: '📺 Watch rewarded ad',
+        task_watchAdsForCrystal: '📺 5 ads for crystal',
+        task_subscribeTwitter: '🐦 Follow on X',
+        task_morningWorkout: '🏋️ Morning workout',
+        task_eveningMining: '🌙 Evening mining',
+        task_crystalDay: '💎 Crystal day',
+        task_activeUser: '💪 Active user',
+        task_socialDay: '📱 Social day',
+        task_tokenCollector: '💰 Token collector',
+        task_masterUpgrades: '🔧 Master upgrades',
+        task_luckyDay: '🍀 Lucky day',
+        task_weeklyMarathon: '🏃 Weekly marathon',
+        task_weeklyMiner: '⛏️ Weekly miner',
+        task_weeklyCrystal: '💎 Crystal week',
+        task_weeklyAds: '📺 Ad week',
+        task_firstPurchase: '🛒 First purchase',
+        task_firstMiner: '⛏️ First miner',
+        task_firstMerge: '🔗 First merge',
+        task_firstRepair: '🔧 First repair',
+        task_firstMillion: '💵 First million',
+        // Task descriptions EN
+        task_desc_morningWorkout: 'Make 50 clicks before 12:00',
+        task_desc_eveningMining: 'Collect mining reward after 18:00',
+        task_desc_crystalDay: 'Earn 5 crystals in a day',
+        task_desc_activeUser: 'Spend 1 hour in the game',
+        task_desc_socialDay: 'Share a link on social media',
+        task_desc_tokenCollector: 'Collect 10,000 tokens in a day',
+        task_desc_masterUpgrades: 'Buy 3 upgrades',
+        task_desc_luckyDay: 'Get 3 critical hits',
+        task_desc_weeklyMarathon: 'Make 10,000 clicks in a week',
+        task_desc_weeklyMiner: 'Earn 100,000 tokens from mining',
+        task_desc_weeklyCrystal: 'Earn 50 crystals in a week',
+        task_desc_weeklyAds: 'Watch 20 ads in a week',
+        task_desc_firstPurchase: 'Buy your first upgrade',
+        task_desc_firstMiner: 'Buy your first miner',
+        task_desc_firstMerge: 'Merge miners',
+        task_desc_firstRepair: 'Repair a miner',
+        task_desc_firstMillion: 'Earn your first million tokens',
+        task_daily: 'Daily',
+        task_weekly: 'Weekly',
+        task_special: 'Special (one-time)',
+        task_claim: 'Claim',
+        task_done: '✅ Done',
+        task_in_progress: 'In Progress',
+        task_go_to_x: 'Go to X',
         // Achievements EN
         ach_first_click: 'First Step',
         ach_first_click_desc: 'Make your first click',
@@ -1351,6 +1509,8 @@
     let miniGamesPlayed = 0;
     let miniGamesWon = 0;
     let referrerCount = 0;
+    let hasClaimedDailyTasks = false;
+    let taskProgress = {};
     
     const MAX_CLICK_POWER = 100, MAX_SUSPICIOUS_FLAGS = 5;
     const INSTANT_AUTOCLICK_COST = 50, INSTANT_AUTOCLICK_DURATION = 3600000;
@@ -2069,6 +2229,9 @@
         
         showMessage(`✅ Получено ${rewardAmount} токенов! (Серия: ${adStreak} ${getDayWord(adStreak)})`);
         
+        // Update task progress for weekly ads
+        updateTaskProgress('weeklyAds', 1);
+        
       } else {
         switch (rewardType) {
           case 'minigame':
@@ -2146,7 +2309,307 @@
       } catch (e) { return null; }
     }
 
-    // ==================== ПЕРЕМЕННЫЕ ИГРЫ (только 3 задания) ====================
+    // ==================== РАСШИРЕННЫЕ ЗАДАНИЯ ====================
+    const TASK_DEFINITIONS = {
+      // Ежедневные задания
+      morningWorkout: {
+        id: 'morningWorkout',
+        category: 'daily',
+        goal: 50,
+        rewardTokens: 150,
+        rewardCrystals: 0,
+        check: () => {
+          const hour = new Date().getHours();
+          return hour < 12 && totalClicks >= 50;
+        },
+        getProgress: () => ({ current: Math.min(totalClicks, 50), goal: 50 })
+      },
+      eveningMining: {
+        id: 'eveningMining',
+        category: 'daily',
+        goal: 1,
+        rewardTokens: 200,
+        rewardCrystals: 0,
+        check: () => {
+          const hour = new Date().getHours();
+          return hour >= 18 && warehouseTokens > 0;
+        },
+        getProgress: () => ({ current: warehouseTokens > 0 && new Date().getHours() >= 18 ? 1 : 0, goal: 1 })
+      },
+      crystalDay: {
+        id: 'crystalDay',
+        category: 'daily',
+        goal: 5,
+        rewardTokens: 300,
+        rewardCrystals: 0,
+        check: () => {
+          const today = new Date().toDateString();
+          const key = 'crystalDay_' + today;
+          const earned = parseInt(localStorage.getItem(key) || '0');
+          return earned >= 5;
+        },
+        getProgress: () => {
+          const today = new Date().toDateString();
+          const key = 'crystalDay_' + today;
+          const earned = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(earned, 5), goal: 5 };
+        }
+      },
+      activeUser: {
+        id: 'activeUser',
+        category: 'daily',
+        goal: 3600,
+        rewardTokens: 250,
+        rewardCrystals: 0,
+        check: () => onlineTime >= 3600,
+        getProgress: () => ({ current: Math.min(onlineTime, 3600), goal: 3600 })
+      },
+      socialDay: {
+        id: 'socialDay',
+        category: 'daily',
+        goal: 1,
+        rewardTokens: 100,
+        rewardCrystals: 0,
+        check: () => {
+          const today = new Date().toDateString();
+          const key = 'socialDay_' + today;
+          return localStorage.getItem(key) === 'true';
+        },
+        getProgress: () => {
+          const today = new Date().toDateString();
+          const key = 'socialDay_' + today;
+          return { current: localStorage.getItem(key) === 'true' ? 1 : 0, goal: 1 };
+        }
+      },
+      tokenCollector: {
+        id: 'tokenCollector',
+        category: 'daily',
+        goal: 10000,
+        rewardTokens: 400,
+        rewardCrystals: 0,
+        check: () => {
+          const today = new Date().toDateString();
+          const key = 'tokenCollector_' + today;
+          const collected = parseInt(localStorage.getItem(key) || '0');
+          return collected >= 10000;
+        },
+        getProgress: () => {
+          const today = new Date().toDateString();
+          const key = 'tokenCollector_' + today;
+          const collected = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(collected, 10000), goal: 10000 };
+        }
+      },
+      masterUpgrades: {
+        id: 'masterUpgrades',
+        category: 'daily',
+        goal: 3,
+        rewardTokens: 200,
+        rewardCrystals: 0,
+        check: () => {
+          const today = new Date().toDateString();
+          const key = 'masterUpgrades_' + today;
+          const count = parseInt(localStorage.getItem(key) || '0');
+          return count >= 3;
+        },
+        getProgress: () => {
+          const today = new Date().toDateString();
+          const key = 'masterUpgrades_' + today;
+          const count = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(count, 3), goal: 3 };
+        }
+      },
+      luckyDay: {
+        id: 'luckyDay',
+        category: 'daily',
+        goal: 3,
+        rewardTokens: 150,
+        rewardCrystals: 0,
+        check: () => {
+          const today = new Date().toDateString();
+          const key = 'luckyDay_' + today;
+          const count = parseInt(localStorage.getItem(key) || '0');
+          return count >= 3;
+        },
+        getProgress: () => {
+          const today = new Date().toDateString();
+          const key = 'luckyDay_' + today;
+          const count = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(count, 3), goal: 3 };
+        }
+      },
+      // Еженедельные задания
+      weeklyMarathon: {
+        id: 'weeklyMarathon',
+        category: 'weekly',
+        goal: 10000,
+        rewardTokens: 0,
+        rewardCrystals: 3,
+        check: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyMarathon_' + weekKey;
+          const clicks = parseInt(localStorage.getItem(key) || '0');
+          return clicks >= 10000;
+        },
+        getProgress: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyMarathon_' + weekKey;
+          const clicks = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(clicks, 10000), goal: 10000 };
+        }
+      },
+      weeklyMiner: {
+        id: 'weeklyMiner',
+        category: 'weekly',
+        goal: 100000,
+        rewardTokens: 0,
+        rewardCrystals: 5,
+        check: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyMiner_' + weekKey;
+          const mined = parseInt(localStorage.getItem(key) || '0');
+          return mined >= 100000;
+        },
+        getProgress: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyMiner_' + weekKey;
+          const mined = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(mined, 100000), goal: 100000 };
+        }
+      },
+      weeklyCrystal: {
+        id: 'weeklyCrystal',
+        category: 'weekly',
+        goal: 50,
+        rewardTokens: 0,
+        rewardCrystals: 10,
+        check: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyCrystal_' + weekKey;
+          const earned = parseInt(localStorage.getItem(key) || '0');
+          return earned >= 50;
+        },
+        getProgress: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyCrystal_' + weekKey;
+          const earned = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(earned, 50), goal: 50 };
+        }
+      },
+      weeklyAds: {
+        id: 'weeklyAds',
+        category: 'weekly',
+        goal: 20,
+        rewardTokens: 0,
+        rewardCrystals: 4,
+        check: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyAds_' + weekKey;
+          const watched = parseInt(localStorage.getItem(key) || '0');
+          return watched >= 20;
+        },
+        getProgress: () => {
+          const weekKey = getWeekKey();
+          const key = 'weeklyAds_' + weekKey;
+          const watched = parseInt(localStorage.getItem(key) || '0');
+          return { current: Math.min(watched, 20), goal: 20 };
+        }
+      },
+      // Специальные (разовые)
+      firstPurchase: {
+        id: 'firstPurchase',
+        category: 'special',
+        goal: 1,
+        rewardTokens: 200,
+        rewardCrystals: 0,
+        check: () => localStorage.getItem('firstPurchase_done') === 'true',
+        getProgress: () => ({ current: localStorage.getItem('firstPurchase_done') === 'true' ? 1 : 0, goal: 1 })
+      },
+      firstMiner: {
+        id: 'firstMiner',
+        category: 'special',
+        goal: 1,
+        rewardTokens: 300,
+        rewardCrystals: 0,
+        check: () => localStorage.getItem('firstMiner_done') === 'true',
+        getProgress: () => ({ current: localStorage.getItem('firstMiner_done') === 'true' ? 1 : 0, goal: 1 })
+      },
+      firstMerge: {
+        id: 'firstMerge',
+        category: 'special',
+        goal: 1,
+        rewardTokens: 500,
+        rewardCrystals: 0,
+        check: () => localStorage.getItem('firstMerge_done') === 'true',
+        getProgress: () => ({ current: localStorage.getItem('firstMerge_done') === 'true' ? 1 : 0, goal: 1 })
+      },
+      firstRepair: {
+        id: 'firstRepair',
+        category: 'special',
+        goal: 1,
+        rewardTokens: 200,
+        rewardCrystals: 0,
+        check: () => localStorage.getItem('firstRepair_done') === 'true',
+        getProgress: () => ({ current: localStorage.getItem('firstRepair_done') === 'true' ? 1 : 0, goal: 1 })
+      },
+      firstMillion: {
+        id: 'firstMillion',
+        category: 'special',
+        goal: 1000000,
+        rewardTokens: 0,
+        rewardCrystals: 20,
+        check: () => score >= 1000000,
+        getProgress: () => ({ current: Math.min(score, 1000000), goal: 1000000 })
+      }
+    };
+
+    // Функции для отслеживания прогресса заданий
+    function updateTaskProgress(taskId, amount) {
+      if (!user) return;
+      const task = TASK_DEFINITIONS[taskId];
+      if (!task) return;
+      
+      if (task.category === 'daily') {
+        const today = new Date().toDateString();
+        const key = taskId + '_' + today;
+        const current = parseInt(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, String(current + amount));
+      } else if (task.category === 'weekly') {
+        const weekKey = getWeekKey();
+        const key = taskId + '_' + weekKey;
+        const current = parseInt(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, String(current + amount));
+      }
+    }
+
+    function markTaskDone(taskId) {
+      if (!user) return;
+      localStorage.setItem(taskId + '_done', 'true');
+      
+      // Для специальных заданий отмечаем выполнение
+      if (taskId === 'firstPurchase') localStorage.setItem('firstPurchase_done', 'true');
+      if (taskId === 'firstMiner') localStorage.setItem('firstMiner_done', 'true');
+      if (taskId === 'firstMerge') localStorage.setItem('firstMerge_done', 'true');
+      if (taskId === 'firstRepair') localStorage.setItem('firstRepair_done', 'true');
+    }
+
+    function isTaskCompleted(taskId) {
+      const task = TASK_DEFINITIONS[taskId];
+      if (!task) return false;
+      return task.check();
+    }
+
+    function getTaskProgress(taskId) {
+      const task = TASK_DEFINITIONS[taskId];
+      if (!task) return { current: 0, goal: 0 };
+      return task.getProgress();
+    }
+
+    function getWeekNumber() { const n = new Date(); const s = new Date(n.getFullYear(), 0, 1); return Math.ceil(((n - s) / 86400000 + s.getDay() + 1) / 7); }
+    function getWeekKey() { return `${new Date().getFullYear()}_${getWeekNumber()}`; }
+
+    // ==================== ПЕРЕМЕННЫЕ ИГРЫ (обновленные) ====================
+    // Базовая реклама и Twitter остаются
     const dailyTasks = [
       { id: "watchRewardedAd", description: "Watch rewarded ad", goal: 1, reward: AD_SETTINGS.rewards.taskAd, period: "daily", isAdTask: true },
       { id: AD_CRYSTAL_TASK.id, description: "Watch 5 ads", goal: AD_CRYSTAL_TASK.goal, reward: AD_CRYSTAL_TASK.reward, rewardType: "crystals", period: "daily", isAdCrystalTask: true },
@@ -2665,8 +3128,6 @@
     function getClickPowerUpgradeCost() { return Math.floor(500 * Math.pow(6, clickPower - 1)); }
     function getAutoclickerDuration() { return Math.floor(60000 + (autoclickerLevel-1)*(14400000-60000)/19); }
     function getAutoclickerUpgradeCost() { if (autoclickerLevel >= 10) return { tokens: 1500000, crystals: 1000 }; if (autoclickerLevel >= 6) return { tokens: 1000000+125000*(autoclickerLevel-6), crystals: 500+125*(autoclickerLevel-6) }; return { tokens: Math.round(1000*Math.pow(Math.pow(1000,1/5),autoclickerLevel-1)), crystals: 10+98*(autoclickerLevel-1) }; }
-    function getWeekNumber() { const n = new Date(); const s = new Date(n.getFullYear(), 0, 1); return Math.ceil(((n - s) / 86400000 + s.getDay() + 1) / 7); }
-    function getWeekKey() { return `${new Date().getFullYear()}_${getWeekNumber()}`; }
     function generateReferralLink() { return user ? `${window.location.origin}/?ref=${user.uid}` : ''; }
     function copyReferralLink() { const r = document.getElementById('referralLink'); r.select(); document.execCommand('copy'); showMessage('Referral link copied!'); }
     function getPlayerLevel() { let lv = 1; for (let i = 0; i < levelUpRequirements.length; i++) { if (score >= levelUpRequirements[i]) lv = i + 2; else break; } return lv; }
@@ -2728,7 +3189,17 @@
       
       savePlayerScore();
       
-      // Удалены вызовы updateTaskProgress для удаленных заданий
+      // Обновление прогресса заданий
+      updateTaskProgress('morningWorkout', 1);
+      updateTaskProgress('weeklyMarathon', 1);
+      
+      // Проверка на быстрые клики для достижения
+      const now = Date.now();
+      const recentClicks = clickHistory.filter(t => now - t < 1000);
+      if (recentClicks.length >= 20) {
+        checkAchievements();
+      }
+      
       checkAchievements(); animateCounter(); updateCounterDisplay(); updateProfilePanel();
       
       if (hasResonance && totalClicks % 100 === 0) { 
@@ -2737,6 +3208,9 @@
         showMessage(`🔮 Resonance! +1 💎`); 
         updateProfilePanel(); 
         checkAchievements();
+        // Обновляем прогресс crystalDay
+        updateTaskProgress('crystalDay', 1);
+        updateTaskProgress('weeklyCrystal', 1);
       }
       updateResonanceUI();
       const btn = document.getElementById("mainClickButton"); if (btn) { btn.classList.add("pulse"); setTimeout(() => { if (btn) btn.classList.remove("pulse"); isAnimating = false; }, 200); } else isAnimating = false;
@@ -2850,6 +3324,10 @@
         updateClickPowerCostText(); 
         updateCounterDisplay(); 
         checkAchievements();
+        
+        // Обновляем прогресс заданий
+        updateTaskProgress('masterUpgrades', 1);
+        markTaskDone('firstPurchase');
       } else if (clickPower >= 8) showMessage(t('maxLevel')); 
     }
     
@@ -2868,6 +3346,8 @@
       updateAutoclickerShopUI(); 
       updateCounterDisplay(); 
       checkAchievements();
+      
+      updateTaskProgress('masterUpgrades', 1);
     }
     
     function buyResonance() { 
@@ -2996,16 +3476,20 @@
       checkAchievements();
     }
 
-    // ==================== ЗАДАНИЯ (ТОЛЬКО 3) ====================
+    // ==================== ЗАДАНИЯ (РАСШИРЕННЫЕ) ====================
     function renderTasks() {
       if (isRenderingTasks) return; isRenderingTasks = true;
       const list = document.getElementById("tasksList"); if (!list) { isRenderingTasks = false; return; }
       list.innerHTML = "Loading..."; if (!user) { list.innerHTML = "Sign in."; isRenderingTasks = false; return; }
+      
+      // Загружаем данные заданий из Firebase
       db.ref(`tasks/${user.uid}`).once("value").then(s => {
-        const td = s.val() || {}, today = new Date().toDateString();
+        const td = s.val() || {};
+        const today = new Date().toDateString();
         list.innerHTML = "";
         
-        // Задание 1: Просмотр рекламы (всегда показывается первым)
+        // ====== БАЗОВЫЕ ЗАДАНИЯ (реклама, кристалл, Twitter) ======
+        // Задание 1: Просмотр рекламы
         const adTaskDiv = document.createElement("div");
         adTaskDiv.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;">
@@ -3066,15 +3550,234 @@
           if (tdd.completed || tdd.completions >= 1) {
             twitterDiv.innerHTML = `<span style="color:#00ffa6;">✅ ${escapeHTML(twitterTask.description)} - ${t('adTaskDone')}!</span>`;
           } else {
-            twitterDiv.innerHTML = `${escapeHTML(twitterTask.description)}<br><a href="${twitterTask.link}" target="_blank" style="color:#00ffa6;">Go to X</a><button class="click-button" onclick="completeTwitterTask('${twitterTask.id}')" style="padding:5px 15px;font-size:12px;margin-left:10px;">${t('adTaskClaim')}</button>`;
+            twitterDiv.innerHTML = `${escapeHTML(twitterTask.description)}<br><a href="${twitterTask.link}" target="_blank" style="color:#00ffa6;">${t('task_go_to_x')}</a><button class="click-button" onclick="completeTwitterTask('${twitterTask.id}')" style="padding:5px 15px;font-size:12px;margin-left:10px;">${t('task_claim')}</button>`;
           }
           list.appendChild(twitterDiv);
+        }
+        
+        // ====== РАСШИРЕННЫЕ ЗАДАНИЯ ======
+        // Ежедневные задания
+        const dailyContainer = document.createElement("div");
+        dailyContainer.className = "task-category";
+        dailyContainer.innerHTML = `<h4>📅 ${t('task_daily')} <span class="badge">${currentLanguage === 'ru' ? 'Ежедневные' : 'Daily'}</span></h4>`;
+        let hasDailyTasks = false;
+        
+        const dailyTaskIds = ['morningWorkout', 'eveningMining', 'crystalDay', 'activeUser', 'socialDay', 'tokenCollector', 'masterUpgrades', 'luckyDay'];
+        for (const id of dailyTaskIds) {
+          const task = TASK_DEFINITIONS[id];
+          if (!task) continue;
+          const progress = getTaskProgress(id);
+          const completed = isTaskCompleted(id);
+          const isDone = localStorage.getItem(id + '_done_' + new Date().toDateString()) === 'true';
+          
+          if (!completed && isDone) continue;
+          
+          hasDailyTasks = true;
+          const item = document.createElement("div");
+          item.className = "task-item";
+          
+          const rewardText = task.rewardTokens > 0 ? `+${task.rewardTokens} 🪙` : (task.rewardCrystals > 0 ? `+${task.rewardCrystals} 💎` : '');
+          
+          if (completed && !isDone) {
+            // Можно забрать награду
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)}</div>
+                <div class="task-reward">${rewardText}</div>
+              </div>
+              <button class="task-btn claim" onclick="claimExtendedTask('${id}')">${t('task_claim')}</button>
+            `;
+          } else if (completed && isDone) {
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)}</div>
+                <div class="task-reward" style="color:#00ffa6;">${t('task_done')}</div>
+              </div>
+              <button class="task-btn done" disabled>✅</button>
+            `;
+          } else {
+            const progressPercent = Math.min(100, Math.round((progress.current / progress.goal) * 100));
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)} — ${progress.current}/${progress.goal} (${progressPercent}%)</div>
+                <div class="task-reward">${rewardText}</div>
+              </div>
+              <button class="task-btn" disabled>${t('task_in_progress')}</button>
+            `;
+          }
+          dailyContainer.appendChild(item);
+        }
+        
+        if (hasDailyTasks) {
+          list.appendChild(dailyContainer);
+        }
+        
+        // Еженедельные задания
+        const weeklyContainer = document.createElement("div");
+        weeklyContainer.className = "task-category";
+        weeklyContainer.innerHTML = `<h4>📆 ${t('task_weekly')} <span class="badge">${currentLanguage === 'ru' ? 'Еженедельные' : 'Weekly'}</span></h4>`;
+        let hasWeeklyTasks = false;
+        
+        const weeklyTaskIds = ['weeklyMarathon', 'weeklyMiner', 'weeklyCrystal', 'weeklyAds'];
+        for (const id of weeklyTaskIds) {
+          const task = TASK_DEFINITIONS[id];
+          if (!task) continue;
+          const progress = getTaskProgress(id);
+          const completed = isTaskCompleted(id);
+          const weekKey = getWeekKey();
+          const isDone = localStorage.getItem(id + '_done_' + weekKey) === 'true';
+          
+          if (!completed && isDone) continue;
+          
+          hasWeeklyTasks = true;
+          const item = document.createElement("div");
+          item.className = "task-item";
+          
+          const rewardText = task.rewardTokens > 0 ? `+${task.rewardTokens} 🪙` : (task.rewardCrystals > 0 ? `+${task.rewardCrystals} 💎` : '');
+          
+          if (completed && !isDone) {
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)}</div>
+                <div class="task-reward">${rewardText}</div>
+              </div>
+              <button class="task-btn claim" onclick="claimExtendedTask('${id}')">${t('task_claim')}</button>
+            `;
+          } else if (completed && isDone) {
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)}</div>
+                <div class="task-reward" style="color:#00ffa6;">${t('task_done')}</div>
+              </div>
+              <button class="task-btn done" disabled>✅</button>
+            `;
+          } else {
+            const progressPercent = Math.min(100, Math.round((progress.current / progress.goal) * 100));
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)} — ${progress.current}/${progress.goal} (${progressPercent}%)</div>
+                <div class="task-reward">${rewardText}</div>
+              </div>
+              <button class="task-btn" disabled>${t('task_in_progress')}</button>
+            `;
+          }
+          weeklyContainer.appendChild(item);
+        }
+        
+        if (hasWeeklyTasks) {
+          list.appendChild(weeklyContainer);
+        }
+        
+        // Специальные (разовые) задания
+        const specialContainer = document.createElement("div");
+        specialContainer.className = "task-category special";
+        specialContainer.innerHTML = `<h4>⭐ ${t('task_special')} <span class="badge" style="background:#ffd700;color:#000;">${currentLanguage === 'ru' ? 'Разовые' : 'One-time'}</span></h4>`;
+        let hasSpecialTasks = false;
+        
+        const specialTaskIds = ['firstPurchase', 'firstMiner', 'firstMerge', 'firstRepair', 'firstMillion'];
+        for (const id of specialTaskIds) {
+          const task = TASK_DEFINITIONS[id];
+          if (!task) continue;
+          const progress = getTaskProgress(id);
+          const completed = isTaskCompleted(id);
+          const isDone = localStorage.getItem(id + '_done_global') === 'true';
+          
+          if (isDone) continue;
+          
+          hasSpecialTasks = true;
+          const item = document.createElement("div");
+          item.className = "task-item";
+          
+          const rewardText = task.rewardTokens > 0 ? `+${task.rewardTokens} 🪙` : (task.rewardCrystals > 0 ? `+${task.rewardCrystals} 💎` : '');
+          
+          if (completed && !isDone) {
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)}</div>
+                <div class="task-reward">${rewardText}</div>
+              </div>
+              <button class="task-btn claim" onclick="claimExtendedTask('${id}')">${t('task_claim')}</button>
+            `;
+          } else {
+            const progressPercent = Math.min(100, Math.round((progress.current / progress.goal) * 100));
+            item.innerHTML = `
+              <div class="task-info">
+                <div class="task-name">${t('task_' + id)}</div>
+                <div class="task-progress">${t('task_desc_' + id)} — ${progress.current}/${progress.goal} (${progressPercent}%)</div>
+                <div class="task-reward">${rewardText}</div>
+              </div>
+              <button class="task-btn" disabled>${t('task_in_progress')}</button>
+            `;
+          }
+          specialContainer.appendChild(item);
+        }
+        
+        if (hasSpecialTasks) {
+          list.appendChild(specialContainer);
         }
         
         updateAdTaskUI();
         updateAdStreakUI();
         isRenderingTasks = false;
       }).catch(() => { list.innerHTML = "Error."; isRenderingTasks = false; });
+    }
+
+    function claimExtendedTask(taskId) {
+      if (!user) { showMessage(t('signIn')); return; }
+      
+      const task = TASK_DEFINITIONS[taskId];
+      if (!task) return;
+      
+      if (!isTaskCompleted(taskId)) {
+        showMessage(t('task_in_progress'));
+        return;
+      }
+      
+      // Проверяем, не получена ли уже награда
+      let doneKey;
+      if (task.category === 'daily') {
+        doneKey = taskId + '_done_' + new Date().toDateString();
+      } else if (task.category === 'weekly') {
+        doneKey = taskId + '_done_' + getWeekKey();
+      } else {
+        doneKey = taskId + '_done_global';
+      }
+      
+      if (localStorage.getItem(doneKey) === 'true') {
+        showMessage(t('task_done'));
+        return;
+      }
+      
+      // Выдаем награду
+      if (task.rewardTokens > 0) {
+        score += task.rewardTokens;
+        savePlayerScore();
+        showMessage(`✅ +${task.rewardTokens} 🪙`);
+      }
+      if (task.rewardCrystals > 0) {
+        crystals += task.rewardCrystals;
+        savePlayerCrystals();
+        showMessage(`✅ +${task.rewardCrystals} 💎`);
+      }
+      
+      localStorage.setItem(doneKey, 'true');
+      
+      // Для специальных заданий отмечаем глобально
+      if (task.category === 'special') {
+        markTaskDone(taskId);
+      }
+      
+      updateCounterDisplay();
+      updateProfilePanel();
+      renderTasks();
+      checkAchievements();
     }
 
     function claimAdCrystalTask() {
@@ -3109,7 +3812,7 @@
       db.ref(`tasks/${user.uid}/${taskId}`).once("value").then(s => {
         const td = s.val() || {}, task = dailyTasks.find(t => t.id === taskId);
         if (!task) return;
-        if (td.completed || (td.completions||0) >= 1) return showMessage("Done!");
+        if (td.completed || (td.completions||0) >= 1) return showMessage(t('task_done'));
         db.ref(`tasks/${user.uid}/${taskId}`).set({ progress: task.goal, lastReset: td.lastReset||new Date().toDateString(), completions: (td.completions||0)+1, completed: true }).then(() => { score += task.reward; savePlayerScore(); showMessage(`✅ +${task.reward} tokens!`); updateCounterDisplay(); renderTasks(); checkAchievements(); });
       });
     }
@@ -3260,6 +3963,9 @@
         const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
         const earned = totalIncomePerMin * actualMiningMinutes;
         showMessage(`${t('offlineEarning')} +${earned.toFixed(1)} ${t('tokens')} (${timeStr})`);
+        
+        // Обновляем прогресс weeklyMiner
+        updateTaskProgress('weeklyMiner', Math.floor(earned));
       }
     }
 
@@ -3293,6 +3999,11 @@
       updateFarmUI();
       showMessage('✅ +' + amount + ' tokens!');
       checkAchievements();
+      
+      // Обновляем прогресс eveningMining
+      updateTaskProgress('eveningMining', 1);
+      // Обновляем прогресс tokenCollector
+      updateTaskProgress('tokenCollector', amount);
     }
 
     function getFarmIncomePerMin() {
@@ -3554,6 +4265,14 @@
       
       showMessage(`${rig.icon} ${rig.name} ${t('rigInstalled')}`);
       checkAchievements();
+      
+      // Отмечаем выполнение задания "Первый майнер"
+      markTaskDone('firstMiner');
+      // Обновляем прогресс для достижения "Майнер-любитель" и "Промышленник"
+      const minerCount = farmSlots.filter(s => s !== null).length;
+      if (minerCount >= 5 || minerCount >= 25) {
+        checkAchievements();
+      }
     }
 
     function closeRigShopModal() {
@@ -3638,6 +4357,9 @@
       showRigDetail(selectedRigSlot);
       showMessage('⚡ Overclock +' + (slot.overclock * 10) + '%!');
       checkAchievements();
+      
+      // Проверяем достижение overclocker
+      if (slot.overclock >= 10) checkAchievements();
     }
 
     function upgradeRigEfficiency() {
@@ -3654,6 +4376,8 @@
       showRigDetail(selectedRigSlot);
       showMessage('🔋 Efficiency +' + (slot.efficiency * 3) + '%!');
       checkAchievements();
+      
+      if (slot.efficiency >= 5) checkAchievements();
     }
 
     function upgradeRigLuck() {
@@ -3712,6 +4436,9 @@
       document.getElementById('rigDetailPanel').classList.remove('open');
       showMessage(t('mergeSuccess'));
       checkAchievements();
+      
+      // Отмечаем выполнение задания "Первое слияние"
+      markTaskDone('firstMerge');
     }
 
     function repairRig() {
@@ -3728,6 +4455,9 @@
       showRigDetail(selectedRigSlot);
       showMessage('🔧 Rig repaired!');
       checkAchievements();
+      
+      // Отмечаем выполнение задания "Первый ремонт"
+      markTaskDone('firstRepair');
     }
 
     window.closeRigShopModal = closeRigShopModal;
@@ -3770,6 +4500,8 @@
           const diff = Math.floor((Date.now() - lastOnlinePing) / 1000);
           if (diff > 0) {
             onlineTime += diff;
+            // Обновляем прогресс активного пользователя
+            updateTaskProgress('activeUser', diff);
             lastOnlinePing = Date.now();
           }
         }
@@ -3802,6 +4534,11 @@
         startFarmSystem();
         
         checkAchievements();
+        
+        // Проверяем задание "Первый миллион"
+        if (score >= 1000000) {
+          markTaskDone('firstMillion');
+        }
         
         setTimeout(() => {
           if (lastDailyLoginDate !== new Date().toDateString()) {
